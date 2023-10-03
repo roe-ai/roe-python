@@ -86,7 +86,7 @@ class BookAgent(RoeAgent):
             ),
         ]
 
-        document_content_description = "Brief summary of a movie"
+        document_content_description = "Books of the Gutenberg library."
         llm = OpenAI(openai_api_key=self.config["openai"].api_key, temperature=0)
         retriever = SelfQueryRetriever.from_llm(
             llm,
