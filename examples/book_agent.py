@@ -103,7 +103,7 @@ book_agent.setup_cli()
 res = book_agent.run(
     {
         "pinecone": PineconeInput(
-            "89bfb2d6-af4e-4f59-9b94-1e91b1d107f2", "gcp-starter", "gutenburg"
+            "<secret>", "gcp-starter", "gutenburg"
         ),
         "query": TextInput("First paragraph of the Declaration of Independence of the U.S."),
     }
