@@ -20,8 +20,6 @@ class KnowledgeableAgent(RoeAgent):
         )
 
     def run_impl(self, input: Any) -> Any:
-        wikipedia = WikipediaQueryRun(api_wrapper=WikipediaAPIWrapper())
-
         agent_repo = RoeAgentRepo()
         book_agent = agent_repo.get("book")()
         book_agent.config = self.config
@@ -49,6 +47,7 @@ class KnowledgeableAgent(RoeAgent):
 
         Question: {input["query"].get()}
         """
+        print(prompt)
         llm = ChatOpenAI(openai_api_key=self.config["openai"].api_key, model="gpt-3.5-turbo-16k", temperature=0)
         response = llm.call_as_llm(
             prompt,
@@ -57,18 +56,18 @@ class KnowledgeableAgent(RoeAgent):
         return response
 
 
-knowledgeable_agent = KnowledgeableAgent()
-knowledgeable_agent.setup_cli()
-res = knowledgeable_agent.run(
-    {  
-        "pinecone": PineconeInput(
-            "cc4c64ff-e33a-4ab1-b54a-5a47505910ce", "gcp-starter", "gutenburg"
-        ),
-        "query": TextInput(
-            "What caused the world war one?"
-        ),
-    }
-)
-print(res)
+# knowledgeable_agent = KnowledgeableAgent()
+# knowledgeable_agent.setup_cli()
+# res = knowledgeable_agent.run(
+#     {  
+#         "pinecone": PineconeInput(
+#             "cc4c64ff-e33a-4ab1-b54a-5a47505910ce", "gcp-starter", "gutenburg"
+#         ),
+#         "query": TextInput(
+#             "What caused the world war one?"
+#         ),
+#     }
+# )
+# print(res)
 
 
