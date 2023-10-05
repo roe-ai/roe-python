@@ -28,7 +28,7 @@ class WikiAgent(RoeAgent):
 # res = wiki_agent.run(
 #     {
 #         "query": TextInput(
-#             "First paragraph of the Declaration of Independence of the U.S."
+#             "Can you tell me if Kevin McCarthy is still in the house?"
 #         ),
 #     }
 # )
