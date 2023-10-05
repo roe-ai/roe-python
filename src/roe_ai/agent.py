@@ -1,6 +1,6 @@
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
-from typing import Any, List
+from typing import Any, List, Optional
 
 from src.roe_ai.agent_input import AgentInput
 from src.roe_ai.agent_config import AgentConfig
@@ -18,6 +18,25 @@ class AgentSchema:
     agent_input: dict[str, AgentInput]
     agent_config: dict[str, AgentConfig]
 
+    @classmethod
+    def from_agents(
+        cls,
+        agent_classes: List["RoeAgent"],
+        agent_input: Optional[dict[str, AgentInput]] = None,
+        agent_config: Optional[dict[str, AgentConfig]] = None,
+    ) -> "AgentSchema":
+        """
+        Combines the schemas of multiple agents into a single schema.
+
+        :param agents: List of agents to combine schemas.
+        :return: Combined schema of the agents.
+        """
+        agent_input = agent_input or {}
+        agent_config = agent_config or {}
+        for agent_classes in agent_classes:
+            agent_config.update(agent_classes.schema().agent_config)
+        return AgentSchema(agent_input=agent_input, agent_config=agent_config)
+
 
 class RoeAgent(ABC):
     """
@@ -27,8 +46,9 @@ class RoeAgent(ABC):
     def __init__(self) -> None:
         self.config: dict[str, Any] = {}
 
+    @classmethod
     @abstractmethod
-    def schema(self) -> AgentSchema:
+    def schema(cls) -> AgentSchema:
         """
         Abstract method that derived agents must implement.
 

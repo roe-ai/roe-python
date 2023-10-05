@@ -4,9 +4,12 @@ from src.roe_ai.agent_config import OpenAIConfig
 from src.roe_ai.agent_input import PineconeInput, TextInput
 from langchain.vectorstores import Pinecone
 from langchain.embeddings.openai import OpenAIEmbeddings
-from langchain.llms import OpenAI
+from langchain.chat_models import ChatOpenAI
 from langchain.retrievers.self_query.base import SelfQueryRetriever
 from langchain.chains.query_constructor.base import AttributeInfo
+from langchain.chains import RetrievalQA
+from langchain.prompts import PromptTemplate
+import concurrent.futures
 
 
 class BookAgent(RoeAgent):
@@ -14,7 +17,8 @@ class BookAgent(RoeAgent):
     Book agent for the Roe platform.
     """
 
-    def schema(self) -> AgentSchema:
+    @classmethod
+    def schema(cls) -> AgentSchema:
         """
         Returns the BookAgent's configuration.
 
@@ -32,8 +36,9 @@ class BookAgent(RoeAgent):
         :param input_data: Input data for the agent.
         :return: Agent's output.
         """
+        openai_api_key = self.config["openai"].api_key
         embed = OpenAIEmbeddings(
-            openai_api_key=self.config["openai"].api_key,
+            openai_api_key=openai_api_key,
         )
         vectorstore = Pinecone(
             input["pinecone"].get(), embed.embed_query, "text"
@@ -86,8 +91,8 @@ class BookAgent(RoeAgent):
             ),
         ]
 
-        document_content_description = "Books of the Gutenberg library."
-        llm = OpenAI(openai_api_key=self.config["openai"].api_key, temperature=0)
+        document_content_description = "Book segments of the Gutenberg library."
+        llm = ChatOpenAI(openai_api_key=openai_api_key, temperature=0)
         retriever = SelfQueryRetriever.from_llm(
             llm,
             vectorstore,
@@ -95,17 +100,43 @@ class BookAgent(RoeAgent):
             metadata_field_info,
             verbose=True,
         )
-        return retriever.get_relevant_documents(input["query"].get())
+        docs = vectorstore.similarity_search(query=input["query"].get(), k=8)
+        summaries = []
+
+        
+
+        def summarize_doc(doc, query):
+            qdoc = f"Book {i}:\nMetadata:\n```{doc.metadata}```\nSegment:\n```{doc.page_content}```"
+            prompt = f"""
+                {qdoc}
+
+                Given related segment above from a book in the Gutenberg library:
+                Provide one long and detailed summary for the book segments without losing any information.
+                Include the book title and author in the summary.
+                The summary should take into account the query below.
+
+                Query: {query}
+            """
+            return llm.call_as_llm(prompt)
+
+        with concurrent.futures.ThreadPoolExecutor() as executor:
+            futures = []
+            for i, doc in enumerate(docs):
+                futures.append(executor.submit(summarize_doc, doc, input["query"].get()))
+            summaries = [f.result() for f in futures]
+
+        
+        return summaries
 
 
-book_agent = BookAgent()
-book_agent.setup_cli()
-res = book_agent.run(
-    {
-        "pinecone": PineconeInput(
-            "<secret>", "gcp-starter", "gutenburg"
-        ),
-        "query": TextInput("First paragraph of the Declaration of Independence of the U.S."),
-    }
-)
-print(res)
+# book_agent = BookAgent()
+# book_agent.setup_cli()
+# res = book_agent.run(
+#     {
+#         "pinecone": PineconeInput(
+#             "cc4c64ff-e33a-4ab1-b54a-5a47505910ce", "gcp-starter", "gutenburg"
+#         ),
+#         "query": TextInput("What caused the world war one?"),
+#     }
+# )
+# print(res)
