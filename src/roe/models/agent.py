@@ -77,6 +77,25 @@ class BaseAgent(BaseModel):
 
         return self._agents_api.run(agent_id=str(self.id), **inputs)
 
+    def run_async(self, **inputs) -> str:
+        """Run the agent asynchronously and return job ID.
+
+        Uses the agent's current version for execution.
+
+        Args:
+            **inputs: Dynamic inputs based on agent configuration.
+
+        Returns:
+            Agent job ID string.
+
+        Raises:
+            ValueError: If agents API is not set.
+        """
+        if not self._agents_api:
+            raise ValueError("Agents API not set. Use client.agents.run_async() instead.")
+
+        return self._agents_api.run_async(agent_id=str(self.id), **inputs)
+
     def list_versions(self) -> list["AgentVersion"]:
         """List all versions of this base agent.
 
@@ -165,3 +184,21 @@ class AgentVersion(BaseModel):
 
         # Run using the version ID directly
         return self._agents_api.run(agent_id=str(self.id), **inputs)
+
+    def run_async(self, **inputs) -> str:
+        """Run this specific version of the agent asynchronously and return job ID.
+
+        Args:
+            **inputs: Dynamic inputs based on this version's input definitions.
+
+        Returns:
+            Agent job ID string.
+
+        Raises:
+            ValueError: If agents API is not set.
+        """
+        if not self._agents_api:
+            raise ValueError("Agents API not set. Use client.agents.run_async() instead.")
+
+        # Run using the version ID directly
+        return self._agents_api.run_async(agent_id=str(self.id), **inputs)
