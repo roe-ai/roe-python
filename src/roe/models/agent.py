@@ -37,7 +37,7 @@ class BaseAgent(BaseModel):
         ..., description="Whether to disable job cache fetching"
     )
     cache_failed_jobs: bool = Field(..., description="Whether to cache failed jobs")
-    organization: UUID = Field(..., description="Organization ID that owns this agent")
+    organization_id: UUID = Field(..., description="Organization ID that owns this agent")
     engine_class_id: str = Field(..., description="Engine class identifier")
     current_version_id: UUID | None = Field(
         default=None, description="UUID of current agent version"
@@ -132,7 +132,7 @@ class AgentVersion(BaseModel):
         ..., description="List of input definitions for this version"
     )
     engine_config: dict[str, str] = Field(..., description="Engine configuration")
-    organization: UUID = Field(..., description="Organization ID (from base agent)")
+    organization_id: UUID = Field(..., description="Organization ID (from base agent)")
     readonly: bool = Field(..., description="Whether this version is readonly")
     base_agent: "BaseAgent" = Field(
         ..., description="The base agent this version belongs to"

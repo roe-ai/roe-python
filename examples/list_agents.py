@@ -26,7 +26,7 @@ def main():
 
     # Initialize the client
     try:
-        client = RoeClient(api_key=API_KEY, organization_id=ORGANIZATION_ID)
+        client = RoeClient(api_key=API_KEY, organization_id=ORGANIZATION_ID, base_url="http://localhost:8000/api/")
     except ValueError as e:
         print(f"Configuration error: {e}")
         print("Please set ROE_API_KEY and ROE_ORGANIZATION_ID environment variables")

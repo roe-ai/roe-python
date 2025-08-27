@@ -50,7 +50,7 @@ def main():
         print(f"🤖 Agent: {agent.name}")
         print(f"   ID: {agent.id}")
         print(f"   Engine: {agent.engine_name} ({agent.engine_class_id})")
-        print(f"   Organization: {agent.organization}")
+        print(f"   Organization: {agent.organization_id}")
         print()
 
         print("📊 Statistics:")
