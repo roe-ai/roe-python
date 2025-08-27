@@ -1,27 +1,11 @@
 # Roe AI Python SDK
 
-A Python SDK for interacting with the Roe AI API, providing simple and intuitive access to AI agent capabilities.
-
-## Features
-
-- **Simple API**: Clean, intuitive interface for running AI agents
-- **Dynamic Input Support**: Automatically handles different input types (text, files, numbers)
-- **Flexible File Handling**: Upload files via paths, file objects, or explicit FileUpload objects
-- **Organization Management**: Built-in organization context for all API calls
-- **Type Safety**: Full type hints and Pydantic models for data validation
-- **Error Handling**: Comprehensive exception hierarchy for different API errors
-- **Pagination Support**: Easy iteration through large result sets
+A Python SDK for interacting with the Roe AI API.
 
 ## Installation
 
 ```bash
-pip install roe-python
-```
-
-For development with examples:
-
-```bash
-pip install roe-python[examples]
+pip install roe-ai
 ```
 
 ## Quick Start
@@ -287,7 +271,7 @@ Main client for interacting with the Roe AI API.
 
 ## Examples
 
-See the [examples/](examples/) directory for focused, single-purpose examples:
+See the [examples/](examples/) directory:
 
 - `list_agents.py` - List base agents with pagination
 - `get_agent.py` - Get a specific agent by ID
@@ -296,51 +280,12 @@ See the [examples/](examples/) directory for focused, single-purpose examples:
 - `agent_versions.py` - Work with agent versions
 - `file_upload_methods.py` - Compare all file upload approaches
 
-Each example is independently configurable and runnable.
-
-## Development
-
-### Setup
-
-```bash
-# Clone the repository
-git clone https://github.com/roe-ai/roe-python.git
-cd roe-python
-
-# Install with development dependencies
-pip install -e ".[dev]"
-```
-
-### Testing
-
-```bash
-# Run tests
-pytest
-
-# Run with coverage
-pytest --cov=roe
-
-# Type checking
-mypy src/roe
-```
-
-### Code Formatting
-
-```bash
-# Format code
-black src/ examples/ tests/
-isort src/ examples/ tests/
-
-# Lint
-ruff check src/ examples/ tests/
-```
-
 ## Support
 
-- **Documentation**: https://docs.roe-ai.com
+- **Documentation**: https://docs.roe-ai.com/introduction
 - **Issues**: https://github.com/roe-ai/roe-python/issues
 - **Email**: support@roe-ai.com
 
 ## License
 
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is licensed under the Apache 2.0 License - see the [LICENSE](LICENSE) file for details.
