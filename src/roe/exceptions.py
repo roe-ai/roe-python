@@ -20,31 +20,37 @@ class RoeAPIException(Exception):
 
 class BadRequestError(RoeAPIException):
     """400 Bad Request - Invalid input data."""
+
     pass
 
 
 class AuthenticationError(RoeAPIException):
     """401 Unauthorized - Invalid or missing API key."""
+
     pass
 
 
 class InsufficientCreditsError(RoeAPIException):
     """402 Payment Required - Insufficient credits."""
+
     pass
 
 
 class ForbiddenError(RoeAPIException):
     """403 Forbidden - Access denied or organization access forbidden."""
+
     pass
 
 
 class NotFoundError(RoeAPIException):
     """404 Not Found - Resource not found."""
+
     pass
 
 
 class ServerError(RoeAPIException):
     """500+ Server Error - Internal server errors."""
+
     pass
 
 

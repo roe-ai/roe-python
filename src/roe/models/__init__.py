@@ -11,7 +11,7 @@ __all__ = [
     "AgentInputDefinition",
     "FileUpload",
     "AgentDatum",
-    "ErrorResponse", 
+    "ErrorResponse",
     "PaginatedResponse",
     "UserInfo",
 ]
