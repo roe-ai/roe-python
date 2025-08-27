@@ -1,10 +1,24 @@
 """Response models for API endpoints."""
 
-from typing import Generic, TypeVar
+from datetime import datetime
+from typing import Any, Generic, TypeVar
+from uuid import UUID
 
 from pydantic import BaseModel, Field
 
 T = TypeVar("T")
+
+
+class JobStatus:
+    """Constants for agent job status codes."""
+
+    PENDING = 0
+    STARTED = 1
+    RETRY = 2
+    SUCCESS = 3
+    FAILURE = 4
+    CANCELLED = 5
+    CACHED = 6
 
 
 class ErrorResponse(BaseModel):
@@ -45,3 +59,30 @@ class PaginatedResponse(BaseModel, Generic[T]):
     def has_previous(self) -> bool:
         """Check if there's a previous page."""
         return self.previous is not None
+
+
+class AgentJobStatus(BaseModel):
+    """Agent job status response model."""
+
+    id: UUID = Field(..., description="Agent job ID")
+    status: int | None = Field(
+        ...,
+        description="Current status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)",
+    )
+    created_at: datetime | None = Field(..., description="When the job was created")
+    last_updated_at: datetime | None = Field(
+        ..., description="When the job was last updated"
+    )
+
+
+class AgentJobResult(BaseModel):
+    """Agent job result response model."""
+
+    agent_id: UUID = Field(..., description="The ID of the base agent")
+    agent_version_id: UUID = Field(..., description="The ID of the agent version")
+    inputs: list[Any] = Field(..., description="The input data provided to the agent")
+    input_tokens: int | None = Field(..., description="Number of input tokens used")
+    output_tokens: int | None = Field(
+        ..., description="Number of output tokens generated"
+    )
+    outputs: list[AgentDatum] = Field(..., description="The output data from the agent")
