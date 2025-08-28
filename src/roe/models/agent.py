@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
+    from roe.models.job import Job
 from roe.models.responses import AgentDatum
 from roe.models.user import UserInfo
 
@@ -37,7 +38,9 @@ class BaseAgent(BaseModel):
         ..., description="Whether to disable job cache fetching"
     )
     cache_failed_jobs: bool = Field(..., description="Whether to cache failed jobs")
-    organization_id: UUID = Field(..., description="Organization ID that owns this agent")
+    organization_id: UUID = Field(
+        ..., description="Organization ID that owns this agent"
+    )
     engine_class_id: str = Field(..., description="Engine class identifier")
     current_version_id: UUID | None = Field(
         default=None, description="UUID of current agent version"
@@ -77,7 +80,7 @@ class BaseAgent(BaseModel):
 
         return self._agents_api.run(agent_id=str(self.id), **inputs)
 
-    def run_async(self, **inputs) -> str:
+    def run_async(self, **inputs) -> Job:
         """Run the agent asynchronously and return job ID.
 
         Uses the agent's current version for execution.
@@ -86,13 +89,15 @@ class BaseAgent(BaseModel):
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
-            Agent job ID string.
+            Job instance.
 
         Raises:
             ValueError: If agents API is not set.
         """
         if not self._agents_api:
-            raise ValueError("Agents API not set. Use client.agents.run_async() instead.")
+            raise ValueError(
+                "Agents API not set. Use client.agents.run_async() instead."
+            )
 
         return self._agents_api.run_async(agent_id=str(self.id), **inputs)
 
@@ -185,20 +190,22 @@ class AgentVersion(BaseModel):
         # Run using the version ID directly
         return self._agents_api.run(agent_id=str(self.id), **inputs)
 
-    def run_async(self, **inputs) -> str:
+    def run_async(self, **inputs) -> Job:
         """Run this specific version of the agent asynchronously and return job ID.
 
         Args:
             **inputs: Dynamic inputs based on this version's input definitions.
 
         Returns:
-            Agent job ID string.
+            Job instance.
 
         Raises:
             ValueError: If agents API is not set.
         """
         if not self._agents_api:
-            raise ValueError("Agents API not set. Use client.agents.run_async() instead.")
+            raise ValueError(
+                "Agents API not set. Use client.agents.run_async() instead."
+            )
 
         # Run using the version ID directly
         return self._agents_api.run_async(agent_id=str(self.id), **inputs)

@@ -1,15 +1,14 @@
 """Agents API implementation."""
 
-import time
 from typing import Any
 
 from roe.config import RoeConfig
 from roe.models.agent import AgentVersion, BaseAgent
+from roe.models.job import Job, JobBatch
 from roe.models.responses import (
     AgentDatum,
     AgentJobResult,
     AgentJobStatus,
-    JobStatus,
     PaginatedResponse,
 )
 from roe.utils.http_client import RoeHTTPClient
@@ -181,8 +180,8 @@ class AgentsAPI:
 
         return [AgentDatum(**datum) for datum in response_data]
 
-    def run_async(self, agent_id: str, **inputs: Any) -> str:
-        """Run an agent asynchronously and return job ID.
+    def run_async(self, agent_id: str, **inputs: Any) -> "Job":
+        """Run an agent asynchronously and return a Job object.
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
@@ -195,29 +194,35 @@ class AgentsAPI:
                      - UUID strings: Roe file references
 
         Returns:
-            Agent job ID string.
+            Job instance for tracking and waiting on the execution.
 
         Examples:
             # With file path
-            job_id = agents.run_async(
+            job = agents.run_async(
                 agent_id="uuid",
                 document="path/to/file.pdf",
                 prompt="Analyze this document"
             )
+            result = job.wait()
 
             # With Roe file ID
-            job_id = agents.run_async(
+            job = agents.run_async(
                 agent_id="uuid",
                 document="3c90c3cc-0d44-4b50-8888-8dd25736052a",
                 prompt="Analyze this document"
             )
+
+            # Check status before waiting
+            status = job.get_status()
+            if status.status == JobStatus.SUCCESS:
+                result = job.get_result()
         """
         job_id = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/async/",
             inputs=inputs,
         )
 
-        return job_id
+        return Job(self, job_id)
 
     def get_job_status(self, job_id: str) -> AgentJobStatus:
         """Get the status of an agent job.
@@ -243,41 +248,56 @@ class AgentsAPI:
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
         return AgentJobResult(**response_data)
 
-    def wait_for_job_completion(
-        self, job_id: str, poll_interval: float = 5.0, timeout: float | None = None
-    ) -> AgentJobResult:
-        """Wait for a job to complete and return its result.
+    def run_async_many(
+        self, agent_id: str, inputs_list: list[dict[str, Any]]
+    ) -> "JobBatch":
+        """Run an agent asynchronously with multiple inputs and return a JobBatch.
 
         Args:
-            job_id: Agent job UUID.
-            poll_interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. None means no timeout.
+            agent_id: Agent UUID to run (can be base agent or version ID).
+            inputs_list: List of input dictionaries, each containing dynamic inputs
+                        based on agent configuration. Can include files, text, numbers, etc.
+                        Files can be provided as:
+                        - File paths (strings): Will be uploaded
+                        - File objects: Will be uploaded
+                        - FileUpload objects: Explicit control
+                        - UUID strings: Roe file references
 
         Returns:
-            AgentJobResult when the job completes successfully.
+            JobBatch instance for tracking and waiting on all executions.
 
-        Raises:
-            TimeoutError: If the job doesn't complete within the timeout.
-            RuntimeError: If the job fails or is cancelled.
+        Examples:
+            # With multiple file paths
+            batch = agents.run_async_many(
+                agent_id="uuid",
+                inputs_list=[
+                    {"document": "file1.pdf", "prompt": "Analyze this document"},
+                    {"document": "file2.pdf", "prompt": "Analyze this document"},
+                    {"document": "file3.pdf", "prompt": "Analyze this document"}
+                ]
+            )
+            results = batch.wait()
+
+            # With mixed input types
+            batch = agents.run_async_many(
+                agent_id="uuid",
+                inputs_list=[
+                    {"text": "Hello world", "count": 5},
+                    {"text": "Goodbye world", "count": 3}
+                ]
+            )
+
+            # Wait for all jobs to complete
+            results = batch.wait()
+
+            # Or access individual jobs
+            first_job = batch.jobs[0]
+            first_result = first_job.wait()
         """
-        start_time = time.time()
 
-        while True:
-            status = self.get_job_status(job_id)
+        job_ids = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/{agent_id}/run/async/many/",
+            inputs={"inputs": inputs_list},
+        )
 
-            if status.status == JobStatus.SUCCESS:
-                return self.get_job_result(job_id)
-            elif status.status == JobStatus.FAILURE:
-                raise RuntimeError(f"Job {job_id} failed")
-            elif status.status == JobStatus.CANCELLED:
-                raise RuntimeError(f"Job {job_id} was cancelled")
-            elif status.status == JobStatus.CACHED:
-                # Cached results are also successful
-                return self.get_job_result(job_id)
-
-            if timeout and (time.time() - start_time) > timeout:
-                raise TimeoutError(
-                    f"Job {job_id} did not complete within {timeout} seconds"
-                )
-
-            time.sleep(poll_interval)
+        return JobBatch(self, job_ids)
