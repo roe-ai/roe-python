@@ -201,12 +201,12 @@ class AgentsAPI:
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
         return AgentJobResult(**response_data)
 
-    def run_many(self, agent_id: str, inputs_list: list[dict[str, Any]]) -> "JobBatch":
+    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]]) -> "JobBatch":
         """Run an agent with multiple inputs and return a JobBatch.
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
-            inputs_list: List of input dictionaries, each containing dynamic inputs
+            batch_inputs: List of input dictionaries, each containing dynamic inputs
                         based on agent configuration. Can include files, text, numbers, etc.
                         Files can be provided as:
                         - File paths (strings): Will be uploaded
@@ -221,7 +221,7 @@ class AgentsAPI:
             # With multiple file paths
             batch = agents.run_many(
                 agent_id="uuid",
-                inputs_list=[
+                batch_inputs=[
                     {"document": "file1.pdf", "prompt": "Analyze this document"},
                     {"document": "file2.pdf", "prompt": "Analyze this document"},
                     {"document": "file3.pdf", "prompt": "Analyze this document"}
@@ -232,7 +232,7 @@ class AgentsAPI:
             # With mixed input types
             batch = agents.run_many(
                 agent_id="uuid",
-                inputs_list=[
+                batch_inputs=[
                     {"text": "Hello world", "count": 5},
                     {"text": "Goodbye world", "count": 3}
                 ]
@@ -248,7 +248,7 @@ class AgentsAPI:
 
         response_data = self.http_client.post(
             url=f"/v1/agents/run/{agent_id}/async/many/",
-            json_data={"inputs": inputs_list},
+            json_data={"inputs": batch_inputs},
         )
 
         return JobBatch(self, response_data)

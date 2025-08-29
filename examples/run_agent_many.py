@@ -18,7 +18,7 @@ def main():
     client = RoeClient(base_url="http://localhost:8000/api/")
 
     # Batch inputs
-    inputs_list = [
+    batch_inputs = [
         {"text": "The quick brown fox jumps over the lazy dog.", "task": "sentiment"},
         {"text": "I absolutely love this product!", "task": "sentiment"},
         {"text": "This is terrible and I want my money back.", "task": "sentiment"},
@@ -26,7 +26,7 @@ def main():
     ]
 
     # Run agent with multiple inputs
-    batch = client.agents.run_many(agent_id=AGENT_ID, inputs_list=inputs_list)
+    batch = client.agents.run_many(agent_id=AGENT_ID, batch_inputs=batch_inputs)
 
     # Wait for all jobs to complete
     results = batch.wait()
