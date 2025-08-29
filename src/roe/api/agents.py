@@ -6,7 +6,6 @@ from roe.config import RoeConfig
 from roe.models.agent import AgentVersion, BaseAgent
 from roe.models.job import Job, JobBatch
 from roe.models.responses import (
-    AgentDatum,
     AgentJobResult,
     AgentJobStatus,
     PaginatedResponse,
@@ -134,54 +133,8 @@ class AgentsAPI:
         version.set_agents_api(self)
         return version
 
-    def run(self, agent_id: str, **inputs: Any) -> list[AgentDatum]:
-        """Run an agent with the provided inputs.
-
-        Args:
-            agent_id: Agent UUID to run (can be base agent or version ID).
-            **inputs: Dynamic inputs based on agent configuration.
-                     Can include files, text, numbers, etc.
-                     Files can be provided as:
-                     - File paths (strings): Will be uploaded
-                     - File objects: Will be uploaded
-                     - FileUpload objects: Explicit control
-                     - UUID strings: Roe file references
-
-        Returns:
-            List of agent execution results.
-
-        Examples:
-            # With file path
-            result = agents.run(
-                agent_id="uuid",
-                document="path/to/file.pdf",
-                prompt="Analyze this document"
-            )
-
-            # With Roe file ID
-            result = agents.run(
-                agent_id="uuid",
-                document="3c90c3cc-0d44-4b50-8888-8dd25736052a",
-                prompt="Analyze this document"
-            )
-
-            # With file object
-            with open("file.pdf", "rb") as f:
-                result = agents.run(
-                    agent_id="uuid",
-                    document=f,
-                    prompt="Analyze this document"
-                )
-        """
-        response_data = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/",
-            inputs=inputs,
-        )
-
-        return [AgentDatum(**datum) for datum in response_data]
-
-    def run_async(self, agent_id: str, **inputs: Any) -> "Job":
-        """Run an agent asynchronously and return a Job object.
+    def run(self, agent_id: str, **inputs: Any) -> "Job":
+        """Run an agent and return a Job object.
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
@@ -198,7 +151,7 @@ class AgentsAPI:
 
         Examples:
             # With file path
-            job = agents.run_async(
+            job = agents.run(
                 agent_id="uuid",
                 document="path/to/file.pdf",
                 prompt="Analyze this document"
@@ -206,7 +159,7 @@ class AgentsAPI:
             result = job.wait()
 
             # With Roe file ID
-            job = agents.run_async(
+            job = agents.run(
                 agent_id="uuid",
                 document="3c90c3cc-0d44-4b50-8888-8dd25736052a",
                 prompt="Analyze this document"
@@ -248,10 +201,8 @@ class AgentsAPI:
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
         return AgentJobResult(**response_data)
 
-    def run_async_many(
-        self, agent_id: str, inputs_list: list[dict[str, Any]]
-    ) -> "JobBatch":
-        """Run an agent asynchronously with multiple inputs and return a JobBatch.
+    def run_many(self, agent_id: str, inputs_list: list[dict[str, Any]]) -> "JobBatch":
+        """Run an agent with multiple inputs and return a JobBatch.
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
@@ -268,7 +219,7 @@ class AgentsAPI:
 
         Examples:
             # With multiple file paths
-            batch = agents.run_async_many(
+            batch = agents.run_many(
                 agent_id="uuid",
                 inputs_list=[
                     {"document": "file1.pdf", "prompt": "Analyze this document"},
@@ -279,7 +230,7 @@ class AgentsAPI:
             results = batch.wait()
 
             # With mixed input types
-            batch = agents.run_async_many(
+            batch = agents.run_many(
                 agent_id="uuid",
                 inputs_list=[
                     {"text": "Hello world", "count": 5},
@@ -295,9 +246,9 @@ class AgentsAPI:
             first_result = first_job.wait()
         """
 
-        job_ids = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/{agent_id}/run/async/many/",
-            inputs={"inputs": inputs_list},
+        response_data = self.http_client.post(
+            url=f"/v1/agents/run/{agent_id}/async/many/",
+            json_data={"inputs": inputs_list},
         )
 
-        return JobBatch(self, job_ids)
+        return JobBatch(self, response_data)

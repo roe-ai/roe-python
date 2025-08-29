@@ -1,6 +1,5 @@
 """Response models for API endpoints."""
 
-from datetime import datetime
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
@@ -64,14 +63,13 @@ class PaginatedResponse(BaseModel, Generic[T]):
 class AgentJobStatus(BaseModel):
     """Agent job status response model."""
 
-    id: UUID = Field(..., description="Agent job ID")
-    status: int | None = Field(
+    status: int = Field(
         ...,
         description="Current status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)",
     )
-    created_at: datetime | None = Field(..., description="When the job was created")
-    last_updated_at: datetime | None = Field(
-        ..., description="When the job was last updated"
+    timestamp: float = Field(..., description="Unix timestamp in seconds")
+    error_message: str | None = Field(
+        default=None, description="Error message if status is RETRY or FAILURE"
     )
 
 

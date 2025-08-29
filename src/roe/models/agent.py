@@ -9,7 +9,6 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
     from roe.models.job import Job
-from roe.models.responses import AgentDatum
 from roe.models.user import UserInfo
 
 
@@ -61,7 +60,7 @@ class BaseAgent(BaseModel):
         """Set the agents API reference for running."""
         self._agents_api = agents_api
 
-    def run(self, **inputs) -> list["AgentDatum"]:
+    def run(self, **inputs) -> "Job":
         """Run the agent with the provided inputs.
 
         Uses the agent's current version for execution.
@@ -70,7 +69,7 @@ class BaseAgent(BaseModel):
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
-            List of AgentDatum results.
+            Job instance for tracking and waiting on the execution.
 
         Raises:
             ValueError: If agents API is not set.
@@ -79,27 +78,6 @@ class BaseAgent(BaseModel):
             raise ValueError("Agents API not set. Use client.agents.run() instead.")
 
         return self._agents_api.run(agent_id=str(self.id), **inputs)
-
-    def run_async(self, **inputs) -> Job:
-        """Run the agent asynchronously and return job ID.
-
-        Uses the agent's current version for execution.
-
-        Args:
-            **inputs: Dynamic inputs based on agent configuration.
-
-        Returns:
-            Job instance.
-
-        Raises:
-            ValueError: If agents API is not set.
-        """
-        if not self._agents_api:
-            raise ValueError(
-                "Agents API not set. Use client.agents.run_async() instead."
-            )
-
-        return self._agents_api.run_async(agent_id=str(self.id), **inputs)
 
     def list_versions(self) -> list["AgentVersion"]:
         """List all versions of this base agent.
@@ -172,14 +150,14 @@ class AgentVersion(BaseModel):
         """Set the agents API reference for running."""
         self._agents_api = agents_api
 
-    def run(self, **inputs) -> list["AgentDatum"]:
+    def run(self, **inputs) -> "Job":
         """Run this specific version of the agent.
 
         Args:
             **inputs: Dynamic inputs based on this version's input definitions.
 
         Returns:
-            List of AgentDatum results.
+            Job instance for tracking and waiting on the execution.
 
         Raises:
             ValueError: If agents API is not set.
@@ -189,23 +167,3 @@ class AgentVersion(BaseModel):
 
         # Run using the version ID directly
         return self._agents_api.run(agent_id=str(self.id), **inputs)
-
-    def run_async(self, **inputs) -> Job:
-        """Run this specific version of the agent asynchronously and return job ID.
-
-        Args:
-            **inputs: Dynamic inputs based on this version's input definitions.
-
-        Returns:
-            Job instance.
-
-        Raises:
-            ValueError: If agents API is not set.
-        """
-        if not self._agents_api:
-            raise ValueError(
-                "Agents API not set. Use client.agents.run_async() instead."
-            )
-
-        # Run using the version ID directly
-        return self._agents_api.run_async(agent_id=str(self.id), **inputs)
