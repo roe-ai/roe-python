@@ -7,7 +7,9 @@ from roe.models.agent import AgentVersion, BaseAgent
 from roe.models.job import Job, JobBatch
 from roe.models.responses import (
     AgentJobResult,
+    AgentJobResultBatch,
     AgentJobStatus,
+    AgentJobStatusBatch,
     PaginatedResponse,
 )
 from roe.utils.http_client import RoeHTTPClient
@@ -200,6 +202,34 @@ class AgentsAPI:
         """
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
         return AgentJobResult(**response_data)
+
+    def get_job_status_many(self, job_ids: list[str]) -> list[AgentJobStatusBatch]:
+        """Get the status of multiple agent jobs.
+
+        Args:
+            job_ids: List of agent job UUIDs.
+
+        Returns:
+            List of AgentJobStatusBatch instances in the same order as job_ids.
+        """
+        response_data = self.http_client.post(
+            "/v1/agents/jobs/statuses/", json_data={"job_ids": job_ids}
+        )
+        return [AgentJobStatusBatch(**status_data) for status_data in response_data]
+
+    def get_job_result_many(self, job_ids: list[str]) -> list[AgentJobResultBatch]:
+        """Get the results of multiple agent jobs.
+
+        Args:
+            job_ids: List of agent job UUIDs.
+
+        Returns:
+            List of AgentJobResultBatch instances in the same order as job_ids.
+        """
+        response_data = self.http_client.post(
+            "/v1/agents/jobs/results/", json_data={"job_ids": job_ids}
+        )
+        return [AgentJobResultBatch(**result_data) for result_data in response_data]
 
     def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]]) -> "JobBatch":
         """Run an agent with multiple inputs and return a JobBatch.

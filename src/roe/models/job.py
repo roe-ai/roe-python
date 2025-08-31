@@ -3,6 +3,7 @@
 import time
 from typing import TYPE_CHECKING
 
+from roe.exceptions import NotFoundError
 from roe.models.responses import AgentJobResult, AgentJobStatus, JobStatus
 
 if TYPE_CHECKING:
@@ -131,6 +132,8 @@ class JobBatch:
         """
         self.agents_api = agents_api
         self._job_ids = job_ids
+        self._completed_jobs: dict[str, AgentJobResult] = {}
+        self._job_statuses: dict[str, int] = {}
 
     @property
     def job_ids(self) -> list[str]:
@@ -184,35 +187,74 @@ class JobBatch:
             results = batch.wait(interval=2.0, timeout=300)
         """
         start_time = time.time()
-        completed_jobs = {}
 
-        while len(completed_jobs) < len(self._job_ids):
-            for job_id in self._job_ids:
-                if job_id in completed_jobs:
-                    continue
+        while len(self._completed_jobs) < len(self._job_ids):
+            pending_job_ids = [
+                job_id for job_id in self._job_ids if job_id not in self._completed_jobs
+            ]
 
-                status = self.agents_api.get_job_status(job_id)
+            if not pending_job_ids:
+                break
 
-                if status.status in (
+            status_batch = self.agents_api.get_job_status_many(pending_job_ids)
+
+            # Find jobs that moved to terminal states
+            completed_in_this_batch = []
+            for status_item in status_batch:
+                job_id = status_item.id
+                if status_item.status in (
                     JobStatus.SUCCESS,
                     JobStatus.FAILURE,
                     JobStatus.CANCELLED,
                     JobStatus.CACHED,
                 ):
-                    # Get result regardless of success/failure - let user check individual job status if needed
-                    completed_jobs[job_id] = self.agents_api.get_job_result(job_id)
+                    completed_in_this_batch.append(job_id)
 
-            if len(completed_jobs) < len(self._job_ids):
+                # Update status cache (only if status is not None)
+                if status_item.status is not None:
+                    self._job_statuses[job_id] = status_item.status
+
+            if completed_in_this_batch:
+                result_batch = self.agents_api.get_job_result_many(
+                    completed_in_this_batch
+                )
+
+                for result_item in result_batch:
+                    job_id = result_item.id
+
+                    if (
+                        result_item.agent_id is None
+                        or result_item.agent_version_id is None
+                    ):
+                        raise NotFoundError(
+                            f"Job {job_id} not found or has been deleted"
+                        )
+
+                    job_result = AgentJobResult(
+                        agent_id=result_item.agent_id,
+                        agent_version_id=result_item.agent_version_id,
+                        inputs=result_item.inputs or [],
+                        input_tokens=result_item.input_tokens,
+                        output_tokens=result_item.output_tokens,
+                        outputs=result_item.result
+                        if isinstance(result_item.result, list)
+                        else [],
+                    )
+
+                    self._completed_jobs[job_id] = job_result
+
+            if len(self._completed_jobs) < len(self._job_ids):
                 if timeout and (time.time() - start_time) > timeout:
-                    remaining_jobs = set(self._job_ids) - set(completed_jobs.keys())
+                    remaining_jobs = set(self._job_ids) - set(
+                        self._completed_jobs.keys()
+                    )
                     raise TimeoutError(
                         f"Jobs {remaining_jobs} did not complete within {timeout} seconds"
                     )
 
                 time.sleep(interval)
 
-        # Return results in the same order as job_ids
-        return [completed_jobs[job_id] for job_id in self._job_ids]
+        return [self._completed_jobs[job_id] for job_id in self._job_ids]
 
     def get_status(self) -> dict[str, int]:
         """Get the current status of all jobs in the batch.
@@ -230,8 +272,22 @@ class JobBatch:
                 if status_code == JobStatus.SUCCESS:
                     print(f"Job {job_id} completed successfully")
         """
+        # Return cached status for completed jobs, query for others
         status_map = {}
+        jobs_to_query = []
+
         for job_id in self._job_ids:
-            status = self.agents_api.get_job_status(job_id)
-            status_map[job_id] = status.status
+            if job_id in self._job_statuses:
+                status_map[job_id] = self._job_statuses[job_id]
+            else:
+                jobs_to_query.append(job_id)
+
+        # Query only jobs we don't have cached status for
+        if jobs_to_query:
+            status_batch = self.agents_api.get_job_status_many(jobs_to_query)
+            for status_item in status_batch:
+                if status_item.status is not None:
+                    status_map[status_item.id] = status_item.status
+                    self._job_statuses[status_item.id] = status_item.status
+
         return status_map

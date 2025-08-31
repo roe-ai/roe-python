@@ -18,11 +18,17 @@ def main():
     client = RoeClient(base_url="http://localhost:8000/api/")
 
     # Batch inputs
+    # batch_inputs = [
+    #     {"text": "The quick brown fox jumps over the lazy dog.", "task": "sentiment"},
+    #     {"text": "I absolutely love this product!", "task": "sentiment"},
+    #     {"text": "This is terrible and I want my money back.", "task": "sentiment"},
+    #     {"text": "The weather is okay today.", "task": "sentiment"},
+    # ]
     batch_inputs = [
-        {"text": "The quick brown fox jumps over the lazy dog.", "task": "sentiment"},
-        {"text": "I absolutely love this product!", "task": "sentiment"},
-        {"text": "This is terrible and I want my money back.", "task": "sentiment"},
-        {"text": "The weather is okay today.", "task": "sentiment"},
+        {"text": "The quick brown fox jumps over the lazy dog."},
+        {"text": "I absolutely love this product!"},
+        {"text": "This is terrible and I want my money back."},
+        {"text": "The weather is okay today."},
     ]
 
     # Run agent with multiple inputs
