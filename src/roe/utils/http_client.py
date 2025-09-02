@@ -131,7 +131,7 @@ class RoeHTTPClient:
     def post(
         self,
         url: str,
-        json_data: dict[str, Any] | None = None,
+        json_data: dict[str, Any] | list[Any] | None = None,
         form_data: dict[str, Any] | None = None,
         files: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
