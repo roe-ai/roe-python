@@ -147,7 +147,7 @@ class AgentsAPI:
         version.set_agents_api(self)
         return version
 
-    def run(self, agent_id: str, **inputs: Any) -> "Job":
+    def run(self, agent_id: str, **inputs: Any) -> Job:
         """Run an agent and return a Job object.
 
         Args:
