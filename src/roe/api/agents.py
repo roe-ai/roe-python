@@ -19,6 +19,8 @@ from roe.utils.pagination import PaginationHelper
 class AgentsAPI:
     """API for managing and running agents."""
 
+    _MAX_BATCH_SIZE = 1000
+
     def __init__(self, config: RoeConfig, http_client: RoeHTTPClient):
         """Initialize the agents API.
 
@@ -28,6 +30,16 @@ class AgentsAPI:
         """
         self.config = config
         self.http_client = http_client
+
+    def _iter_chunks(self, items, chunk_size: int):
+        """Yield successive chunks from a list.
+
+        Args:
+            items: List of items to chunk.
+            chunk_size: Maximum number of items per chunk.
+        """
+        for i in range(0, len(items), chunk_size):
+            yield items[i : i + chunk_size]
 
     def list_base_agents(
         self,
@@ -212,10 +224,17 @@ class AgentsAPI:
         Returns:
             List of AgentJobStatusBatch instances in the same order as job_ids.
         """
-        response_data = self.http_client.post(
-            "/v1/agents/jobs/statuses/", json_data={"job_ids": job_ids}
-        )
-        return [AgentJobStatusBatch(**status_data) for status_data in response_data]
+        results: list[AgentJobStatusBatch] = []
+        for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
+            if not chunk:
+                continue
+            response_data = self.http_client.post(
+                "/v1/agents/jobs/statuses/", json_data={"job_ids": chunk}
+            )
+            results.extend(
+                AgentJobStatusBatch(**status_data) for status_data in response_data
+            )
+        return results
 
     def get_job_result_many(self, job_ids: list[str]) -> list[AgentJobResultBatch]:
         """Get the results of multiple agent jobs.
@@ -226,12 +245,19 @@ class AgentsAPI:
         Returns:
             List of AgentJobResultBatch instances in the same order as job_ids.
         """
-        response_data = self.http_client.post(
-            "/v1/agents/jobs/results/", json_data={"job_ids": job_ids}
-        )
-        return [AgentJobResultBatch(**result_data) for result_data in response_data]
+        results: list[AgentJobResultBatch] = []
+        for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
+            if not chunk:
+                continue
+            response_data = self.http_client.post(
+                "/v1/agents/jobs/results/", json_data={"job_ids": chunk}
+            )
+            results.extend(
+                AgentJobResultBatch(**result_data) for result_data in response_data
+            )
+        return results
 
-    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]]) -> "JobBatch":
+    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]]) -> JobBatch:
         """Run an agent with multiple inputs and return a JobBatch.
 
         Args:
@@ -275,10 +301,14 @@ class AgentsAPI:
             first_job = batch.jobs[0]
             first_result = first_job.wait()
         """
+        all_job_ids: list[str] = []
+        for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
+            if not chunk:
+                continue
+            response_data = self.http_client.post(
+                url=f"/v1/agents/run/{agent_id}/async/many/",
+                json_data={"inputs": chunk},
+            )
+            all_job_ids.extend(response_data)
 
-        response_data = self.http_client.post(
-            url=f"/v1/agents/run/{agent_id}/async/many/",
-            json_data={"inputs": batch_inputs},
-        )
-
-        return JobBatch(self, response_data)
+        return JobBatch(self, all_job_ids)
