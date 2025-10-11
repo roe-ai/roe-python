@@ -167,7 +167,6 @@ class RoeHTTPClient:
         url: str,
         inputs: dict[str, Any],
         params: dict[str, Any] | None = None,
-        timeout_seconds: int | None = None,
     ) -> Any:
         """Make a POST request with dynamic inputs (handles files automatically).
 
@@ -175,15 +174,11 @@ class RoeHTTPClient:
             url: Request URL (relative to base URL).
             inputs: Dynamic input values.
             params: Query parameters.
-            timeout_seconds: Optional timeout in seconds for job execution.
 
         Returns:
             Parsed JSON response.
         """
         form_data, files = self._process_inputs(inputs)
-        
-        if timeout_seconds is not None:
-            form_data["timeout_seconds"] = str(timeout_seconds)
 
         return self.post(
             url=url,

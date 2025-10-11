@@ -13,12 +13,13 @@ if TYPE_CHECKING:
 class Job:
     """Represents a single agent job for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_id: str):
+    def __init__(self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None):
         """Initialize a Job instance.
 
         Args:
             agents_api: AgentsAPI instance for making requests.
             job_id: Agent job UUID.
+            timeout_seconds: Maximum time in seconds to wait for job completion. Defaults to 7200 (2 hours).
 
         Examples:
             # Typically created by run_async
@@ -27,6 +28,7 @@ class Job:
         """
         self.agents_api = agents_api
         self._job_id = job_id
+        self._timeout_seconds = timeout_seconds if timeout_seconds is not None else 7200
 
     @property
     def id(self) -> str:
@@ -44,7 +46,8 @@ class Job:
 
         Args:
             interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. None means no timeout.
+            timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
+                    specified when creating the job (default: 7200 seconds).
 
         Returns:
             AgentJobResult when the job completes successfully.
@@ -54,12 +57,14 @@ class Job:
             RuntimeError: If the job fails or is cancelled.
 
         Examples:
-            # Basic usage
+            # Basic usage - uses default timeout of 7200 seconds
             result = job.wait()
 
             # With custom interval and timeout
             result = job.wait(interval=2.0, timeout=300)
         """
+        # Use provided timeout or fall back to instance timeout
+        effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
         while True:
@@ -74,9 +79,9 @@ class Job:
                 # Return result regardless of success/failure - let user check status if needed
                 return self.get_result()
 
-            if timeout and (time.time() - start_time) > timeout:
+            if (time.time() - start_time) > effective_timeout:
                 raise TimeoutError(
-                    f"Job {self._job_id} did not complete within {timeout} seconds"
+                    f"Job {self._job_id} did not complete within {effective_timeout} seconds"
                 )
 
             time.sleep(interval)
@@ -118,12 +123,13 @@ class Job:
 class JobBatch:
     """Represents a batch of agent jobs for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_ids: list[str]):
+    def __init__(self, agents_api: "AgentsAPI", job_ids: list[str], timeout_seconds: int | None = None):
         """Initialize a JobBatch instance.
 
         Args:
             agents_api: AgentsAPI instance for making requests.
             job_ids: List of agent job UUIDs.
+            timeout_seconds: Maximum time in seconds to wait for jobs completion. Defaults to 7200 (2 hours).
 
         Examples:
             # Typically created by run_async_many
@@ -134,6 +140,7 @@ class JobBatch:
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
+        self._timeout_seconds = timeout_seconds if timeout_seconds is not None else 7200
 
     @property
     def job_ids(self) -> list[str]:
@@ -161,7 +168,7 @@ class JobBatch:
             # Or wait for all
             all_results = batch.wait()
         """
-        return [Job(self.agents_api, job_id) for job_id in self._job_ids]
+        return [Job(self.agents_api, job_id, self._timeout_seconds) for job_id in self._job_ids]
 
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
@@ -170,7 +177,8 @@ class JobBatch:
 
         Args:
             interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. None means no timeout.
+            timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
+                    specified when creating the batch (default: 7200 seconds).
 
         Returns:
             List of AgentJobResult instances in the same order as job_ids.
@@ -180,12 +188,14 @@ class JobBatch:
             RuntimeError: If any job fails or is cancelled.
 
         Examples:
-            # Basic usage - wait for all jobs to complete
+            # Basic usage - wait for all jobs to complete with default timeout
             results = batch.wait()
 
             # With custom interval and timeout
             results = batch.wait(interval=2.0, timeout=300)
         """
+        # Use provided timeout or fall back to instance timeout
+        effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
         while len(self._completed_jobs) < len(self._job_ids):
@@ -244,12 +254,12 @@ class JobBatch:
                     self._completed_jobs[job_id] = job_result
 
             if len(self._completed_jobs) < len(self._job_ids):
-                if timeout and (time.time() - start_time) > timeout:
+                if (time.time() - start_time) > effective_timeout:
                     remaining_jobs = set(self._job_ids) - set(
                         self._completed_jobs.keys()
                     )
                     raise TimeoutError(
-                        f"Jobs {remaining_jobs} did not complete within {timeout} seconds"
+                        f"Jobs {remaining_jobs} did not complete within {effective_timeout} seconds"
                     )
 
                 time.sleep(interval)

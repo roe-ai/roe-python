@@ -152,8 +152,9 @@ class AgentsAPI:
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
-            timeout_seconds: Maximum execution time in seconds before job is force-terminated.
-                           If None, uses backend default (7200 seconds).
+            timeout_seconds: Maximum time in seconds to wait for job completion.
+                           Defaults to 7200 seconds (2 hours). This is a client-side timeout
+                           that prevents the SDK from waiting indefinitely for stuck jobs.
             **inputs: Dynamic inputs based on agent configuration.
                      Can include files, text, numbers, etc.
                      Files can be provided as:
@@ -174,7 +175,7 @@ class AgentsAPI:
             )
             result = job.wait()
 
-            # With custom timeout
+            # With custom timeout (5 minutes)
             job = agents.run(
                 agent_id="uuid",
                 timeout_seconds=300,
@@ -197,10 +198,9 @@ class AgentsAPI:
         job_id = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/async/",
             inputs=inputs,
-            timeout_seconds=timeout_seconds,
         )
 
-        return Job(self, job_id)
+        return Job(self, job_id, timeout_seconds)
 
     def get_job_status(self, job_id: str) -> AgentJobStatus:
         """Get the status of an agent job.
@@ -280,8 +280,9 @@ class AgentsAPI:
                         - File objects: Will be uploaded
                         - FileUpload objects: Explicit control
                         - UUID strings: Roe file references
-            timeout_seconds: Maximum execution time in seconds before jobs are force-terminated.
-                           If None, uses backend default (7200 seconds).
+            timeout_seconds: Maximum time in seconds to wait for jobs completion.
+                           Defaults to 7200 seconds (2 hours). This is a client-side timeout
+                           that prevents the SDK from waiting indefinitely for stuck jobs.
 
         Returns:
             JobBatch instance for tracking and waiting on all executions.
@@ -298,7 +299,7 @@ class AgentsAPI:
             )
             results = batch.wait()
 
-            # With custom timeout
+            # With custom timeout (5 minutes)
             batch = agents.run_many(
                 agent_id="uuid",
                 batch_inputs=[
@@ -328,12 +329,10 @@ class AgentsAPI:
             if not chunk:
                 continue
             json_data = {"inputs": chunk}
-            if timeout_seconds is not None:
-                json_data["timeout_seconds"] = timeout_seconds
             response_data = self.http_client.post(
                 url=f"/v1/agents/run/{agent_id}/async/many/",
                 json_data=json_data,
             )
             all_job_ids.extend(response_data)
 
-        return JobBatch(self, all_job_ids)
+        return JobBatch(self, all_job_ids, timeout_seconds)
