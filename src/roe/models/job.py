@@ -20,6 +20,10 @@ class Job:
             agents_api: AgentsAPI instance for making requests.
             job_id: Agent job UUID.
             timeout_seconds: Maximum time in seconds to wait for job completion. Defaults to 7200 (2 hours).
+                           Must be positive if provided.
+
+        Raises:
+            ValueError: If timeout_seconds is not positive.
 
         Examples:
             # Typically created by run_async
@@ -28,7 +32,15 @@ class Job:
         """
         self.agents_api = agents_api
         self._job_id = job_id
-        self._timeout_seconds = timeout_seconds if timeout_seconds is not None else 7200
+        
+        # Set default timeout
+        if timeout_seconds is None:
+            self._timeout_seconds = 7200  # 2 hours default
+        else:
+            # Validate timeout is positive
+            if timeout_seconds <= 0:
+                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+            self._timeout_seconds = timeout_seconds
 
     @property
     def id(self) -> str:
@@ -39,6 +51,15 @@ class Job:
         """
         return self._job_id
 
+    @property
+    def timeout_seconds(self) -> int:
+        """Get the configured timeout in seconds.
+
+        Returns:
+            Timeout value in seconds.
+        """
+        return self._timeout_seconds
+
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
     ) -> AgentJobResult:
@@ -48,13 +69,14 @@ class Job:
             interval: Time in seconds between status checks (default: 5.0).
             timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
                     specified when creating the job (default: 7200 seconds).
+                    Must be positive if provided.
 
         Returns:
             AgentJobResult when the job completes successfully.
 
         Raises:
             TimeoutError: If the job doesn't complete within the timeout.
-            RuntimeError: If the job fails or is cancelled.
+            ValueError: If timeout is not positive.
 
         Examples:
             # Basic usage - uses default timeout of 7200 seconds
@@ -64,6 +86,9 @@ class Job:
             result = job.wait(interval=2.0, timeout=300)
         """
         # Use provided timeout or fall back to instance timeout
+        if timeout is not None and timeout <= 0:
+            raise ValueError(f"timeout must be positive, got {timeout}")
+        
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
@@ -130,6 +155,10 @@ class JobBatch:
             agents_api: AgentsAPI instance for making requests.
             job_ids: List of agent job UUIDs.
             timeout_seconds: Maximum time in seconds to wait for jobs completion. Defaults to 7200 (2 hours).
+                           Must be positive if provided.
+
+        Raises:
+            ValueError: If timeout_seconds is not positive.
 
         Examples:
             # Typically created by run_async_many
@@ -140,7 +169,15 @@ class JobBatch:
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
-        self._timeout_seconds = timeout_seconds if timeout_seconds is not None else 7200
+        
+        # Set default timeout
+        if timeout_seconds is None:
+            self._timeout_seconds = 7200  # 2 hours default
+        else:
+            # Validate timeout is positive
+            if timeout_seconds <= 0:
+                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+            self._timeout_seconds = timeout_seconds
 
     @property
     def job_ids(self) -> list[str]:
@@ -150,6 +187,15 @@ class JobBatch:
             List of agent job UUID strings.
         """
         return self._job_ids.copy()
+
+    @property
+    def timeout_seconds(self) -> int:
+        """Get the configured timeout in seconds.
+
+        Returns:
+            Timeout value in seconds.
+        """
+        return self._timeout_seconds
 
     @property
     def jobs(self) -> list[Job]:
@@ -179,13 +225,14 @@ class JobBatch:
             interval: Time in seconds between status checks (default: 5.0).
             timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
                     specified when creating the batch (default: 7200 seconds).
+                    Must be positive if provided.
 
         Returns:
             List of AgentJobResult instances in the same order as job_ids.
 
         Raises:
             TimeoutError: If jobs don't complete within the timeout.
-            RuntimeError: If any job fails or is cancelled.
+            ValueError: If timeout is not positive.
 
         Examples:
             # Basic usage - wait for all jobs to complete with default timeout
@@ -195,6 +242,9 @@ class JobBatch:
             results = batch.wait(interval=2.0, timeout=300)
         """
         # Use provided timeout or fall back to instance timeout
+        if timeout is not None and timeout <= 0:
+            raise ValueError(f"timeout must be positive, got {timeout}")
+        
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 

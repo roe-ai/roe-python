@@ -80,6 +80,40 @@ job = client.agents.run(
 )
 ```
 
+### Timeout Configuration
+
+Prevent jobs from getting stuck by setting custom timeouts (defaults to 7200 seconds / 2 hours):
+
+```python
+# Single job with 10-minute timeout
+job = client.agents.run(
+    agent_id="agent-uuid",
+    timeout_seconds=600,  # 10 minutes
+    document="contract.pdf"
+)
+
+try:
+    result = job.wait()
+    print("Job completed successfully")
+except TimeoutError:
+    print("Job exceeded timeout - may be stuck")
+
+# Batch jobs with custom timeout
+batch = client.agents.run_many(
+    agent_id="agent-uuid",
+    batch_inputs=[
+        {"document": "file1.pdf"},
+        {"document": "file2.pdf"},
+    ],
+    timeout_seconds=900  # 15 minutes for all jobs
+)
+
+try:
+    results = batch.wait()
+except TimeoutError:
+    print("Some jobs did not complete in time")
+```
+
 ## Examples
 
 For detailed examples, see the [examples/](examples/) directory:
@@ -87,6 +121,7 @@ For detailed examples, see the [examples/](examples/) directory:
 - `run_agent_simple.py` - Basic agent execution
 - `run_agent_with_file.py` - File upload handling
 - `run_agent_many.py` - Batch processing
+- `run_agent_with_timeout.py` - Timeout configuration and handling
 - `list_agents.py` - List available agents
 - `get_agent.py` - Get agent details
 - `agent_versions.py` - Work with agent versions
