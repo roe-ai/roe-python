@@ -147,11 +147,14 @@ class AgentsAPI:
         version.set_agents_api(self)
         return version
 
-    def run(self, agent_id: str, **inputs: Any) -> Job:
+    def run(self, agent_id: str, timeout_seconds: int | None = None, **inputs: Any) -> Job:
         """Run an agent and return a Job object.
 
         Args:
             agent_id: Agent UUID to run (can be base agent or version ID).
+            timeout_seconds: Maximum time in seconds to wait for job completion.
+                           Defaults to 7200 seconds (2 hours). This is a client-side timeout
+                           that prevents the SDK from waiting indefinitely for stuck jobs.
             **inputs: Dynamic inputs based on agent configuration.
                      Can include files, text, numbers, etc.
                      Files can be provided as:
@@ -172,6 +175,14 @@ class AgentsAPI:
             )
             result = job.wait()
 
+            # With custom timeout (5 minutes)
+            job = agents.run(
+                agent_id="uuid",
+                timeout_seconds=300,
+                document="path/to/file.pdf",
+                prompt="Analyze this document"
+            )
+
             # With Roe file ID
             job = agents.run(
                 agent_id="uuid",
@@ -189,7 +200,7 @@ class AgentsAPI:
             inputs=inputs,
         )
 
-        return Job(self, job_id)
+        return Job(self, job_id, timeout_seconds)
 
     def get_job_status(self, job_id: str) -> AgentJobStatus:
         """Get the status of an agent job.
@@ -257,7 +268,7 @@ class AgentsAPI:
             )
         return results
 
-    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]]) -> JobBatch:
+    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]], timeout_seconds: int | None = None) -> JobBatch:
         """Run an agent with multiple inputs and return a JobBatch.
 
         Args:
@@ -269,6 +280,9 @@ class AgentsAPI:
                         - File objects: Will be uploaded
                         - FileUpload objects: Explicit control
                         - UUID strings: Roe file references
+            timeout_seconds: Maximum time in seconds to wait for jobs completion.
+                           Defaults to 7200 seconds (2 hours). This is a client-side timeout
+                           that prevents the SDK from waiting indefinitely for stuck jobs.
 
         Returns:
             JobBatch instance for tracking and waiting on all executions.
@@ -284,6 +298,15 @@ class AgentsAPI:
                 ]
             )
             results = batch.wait()
+
+            # With custom timeout (5 minutes)
+            batch = agents.run_many(
+                agent_id="uuid",
+                batch_inputs=[
+                    {"document": "file1.pdf", "prompt": "Analyze this document"}
+                ],
+                timeout_seconds=300
+            )
 
             # With mixed input types
             batch = agents.run_many(
@@ -305,10 +328,11 @@ class AgentsAPI:
         for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
             if not chunk:
                 continue
+            json_data = {"inputs": chunk}
             response_data = self.http_client.post(
                 url=f"/v1/agents/run/{agent_id}/async/many/",
-                json_data={"inputs": chunk},
+                json_data=json_data,
             )
             all_job_ids.extend(response_data)
 
-        return JobBatch(self, all_job_ids)
+        return JobBatch(self, all_job_ids, timeout_seconds)
