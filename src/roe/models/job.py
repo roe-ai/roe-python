@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 class Job:
     """Represents a single agent job for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None):
+    def __init__(
+        self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None
+    ):
         """Initialize a Job instance.
 
         Args:
@@ -32,14 +34,16 @@ class Job:
         """
         self.agents_api = agents_api
         self._job_id = job_id
-        
+
         # Set default timeout
         if timeout_seconds is None:
             self._timeout_seconds = 7200  # 2 hours default
         else:
             # Validate timeout is positive
             if timeout_seconds <= 0:
-                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+                raise ValueError(
+                    f"timeout_seconds must be positive, got {timeout_seconds}"
+                )
             self._timeout_seconds = timeout_seconds
 
     @property
@@ -88,7 +92,7 @@ class Job:
         # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
-        
+
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
@@ -148,7 +152,12 @@ class Job:
 class JobBatch:
     """Represents a batch of agent jobs for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_ids: list[str], timeout_seconds: int | None = None):
+    def __init__(
+        self,
+        agents_api: "AgentsAPI",
+        job_ids: list[str],
+        timeout_seconds: int | None = None,
+    ):
         """Initialize a JobBatch instance.
 
         Args:
@@ -169,14 +178,16 @@ class JobBatch:
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
-        
+
         # Set default timeout
         if timeout_seconds is None:
             self._timeout_seconds = 7200  # 2 hours default
         else:
             # Validate timeout is positive
             if timeout_seconds <= 0:
-                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+                raise ValueError(
+                    f"timeout_seconds must be positive, got {timeout_seconds}"
+                )
             self._timeout_seconds = timeout_seconds
 
     @property
@@ -214,7 +225,10 @@ class JobBatch:
             # Or wait for all
             all_results = batch.wait()
         """
-        return [Job(self.agents_api, job_id, self._timeout_seconds) for job_id in self._job_ids]
+        return [
+            Job(self.agents_api, job_id, self._timeout_seconds)
+            for job_id in self._job_ids
+        ]
 
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
@@ -244,7 +258,7 @@ class JobBatch:
         # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
-        
+
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 

@@ -149,7 +149,9 @@ class AgentsAPI:
         version.set_agents_api(self)
         return version
 
-    def run(self, agent_id: str, timeout_seconds: int | None = None, **inputs: Any) -> Job:
+    def run(
+        self, agent_id: str, timeout_seconds: int | None = None, **inputs: Any
+    ) -> Job:
         """Run an agent and return a Job object.
 
         Args:
@@ -270,7 +272,12 @@ class AgentsAPI:
             )
         return results
 
-    def run_many(self, agent_id: str, batch_inputs: list[dict[str, Any]], timeout_seconds: int | None = None) -> JobBatch:
+    def run_many(
+        self,
+        agent_id: str,
+        batch_inputs: list[dict[str, Any]],
+        timeout_seconds: int | None = None,
+    ) -> JobBatch:
         """Run an agent with multiple inputs and return a JobBatch.
 
         Args:
@@ -553,7 +560,11 @@ class AgentsAPI:
     # Async version execution
 
     def run_version(
-        self, agent_id: str, version_id: str, timeout_seconds: int | None = None, **inputs: Any
+        self,
+        agent_id: str,
+        version_id: str,
+        timeout_seconds: int | None = None,
+        **inputs: Any,
     ) -> Job:
         """Run a specific agent version asynchronously.
 

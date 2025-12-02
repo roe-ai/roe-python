@@ -68,7 +68,7 @@ def example_default_timeout():
     print("Waiting with default 2-hour timeout...")
 
     try:
-        result = job.wait()
+        job.wait()
         print("✓ Job completed successfully!")
 
     except TimeoutError as e:
@@ -128,7 +128,7 @@ def example_override_timeout_in_wait():
     try:
         # But override with shorter 2-minute timeout when waiting
         print("Overriding with 2-minute timeout for this wait...")
-        result = job.wait(timeout=120)  # 2 minutes
+        job.wait(timeout=120)  # 2 minutes
 
         print("✓ Job completed within 2 minutes!")
 
@@ -138,7 +138,7 @@ def example_override_timeout_in_wait():
 
         try:
             # Retry with original timeout
-            result = job.wait(timeout=600)
+            job.wait(timeout=600)
             print("✓ Job completed with longer timeout!")
         except TimeoutError:
             print("✗ Job still didn't complete")
@@ -163,7 +163,7 @@ def example_production_use_case():
     start_time = time.time()
 
     try:
-        result = job.wait()
+        job.wait()
         elapsed = time.time() - start_time
 
         print(f"✓ Job completed in {elapsed:.1f} seconds")
@@ -174,7 +174,7 @@ def example_production_use_case():
         else:
             print("  ⚠ Met SLA but close to timeout - consider optimization")
 
-    except TimeoutError as e:
+    except TimeoutError:
         elapsed = time.time() - start_time
         print(f"✗ Job exceeded {MAX_PROCESSING_TIME}s SLA (took >{elapsed:.1f}s)")
 
@@ -210,11 +210,11 @@ def example_checking_status_manually():
         print(f"  [{elapsed:.1f}s] Status: {status.status}")
 
         if status.status in (2, 6):  # SUCCESS or CACHED
-            result = job.get_result()
-            print(f"✓ Job completed successfully!")
+            job.get_result()
+            print("✓ Job completed successfully!")
             break
         elif status.status in (3, 4):  # FAILURE or CANCELLED
-            print(f"✗ Job failed or was cancelled")
+            print("✗ Job failed or was cancelled")
             break
 
         time.sleep(5)  # Check every 5 seconds
@@ -250,4 +250,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
