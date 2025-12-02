@@ -54,9 +54,10 @@ The following models are available for use in `engine_config["model"]`:
 | GPT-5 Mini | `gpt-5-mini-2025-08-07` |
 | GPT-4.1 | `gpt-4.1-2025-04-14` |
 | GPT-4.1 Mini | `gpt-4.1-mini-2025-04-14` |
-| GPT-4o | `gpt-4o-2024-11-20` |
+| O3 Pro | `o3-pro-2025-06-10` |
 | O3 | `o3-2025-04-16` |
 | O4 Mini | `o4-mini-2025-04-16` |
+| GPT-4o | `gpt-4o-2024-11-20` |
 | Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
 | Claude Sonnet 4 | `claude-sonnet-4-20250514` |
 | Claude 3.7 Sonnet | `claude-3-7-sonnet-20250219` |
@@ -65,8 +66,9 @@ The following models are available for use in `engine_config["model"]`:
 | Claude Opus 4.5 | `claude-opus-4-5-20251101` |
 | Claude Opus 4.1 | `claude-opus-4-1-20250805` |
 | Claude Opus 4 | `claude-opus-4-20250514` |
-| Gemini 2.5 Pro | `gemini-2.5-pro-preview-06-05` |
-| Gemini 2.5 Flash | `gemini-2.5-flash-preview-05-20` |
+| Gemini 3 Pro | `gemini-3-pro-preview` |
+| Gemini 2.5 Pro | `gemini-2.5-pro` |
+| Gemini 2.5 Flash | `gemini-2.5-flash` |
 
 ## Engine Classes
 
