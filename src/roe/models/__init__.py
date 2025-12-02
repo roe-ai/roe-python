@@ -3,7 +3,7 @@
 from .agent import AgentInputDefinition, AgentVersion, BaseAgent
 from .file import FileUpload
 from .job import Job, JobBatch
-from .responses import AgentDatum, ErrorResponse, PaginatedResponse
+from .responses import AgentDatum, ErrorResponse, JobDataDeleteResponse, PaginatedResponse
 from .user import UserInfo
 
 __all__ = [
@@ -15,6 +15,7 @@ __all__ = [
     "JobBatch",
     "AgentDatum",
     "ErrorResponse",
+    "JobDataDeleteResponse",
     "PaginatedResponse",
     "UserInfo",
 ]

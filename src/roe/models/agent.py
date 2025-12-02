@@ -1,7 +1,7 @@
 """Agent-related models."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -21,7 +21,7 @@ class AgentInputDefinition(BaseModel):
     )
     description: str = Field(..., description="Description of what this input is for")
     example: str = Field(default="", description="An example value for this input")
-    accepts_multiple_files: bool = Field(
+    accepts_multiple_files: bool | None = Field(
         default=False, description="Whether this input accepts multiple files"
     )
 
@@ -44,11 +44,11 @@ class BaseAgent(BaseModel):
     current_version_id: UUID | None = Field(
         default=None, description="UUID of current agent version"
     )
-    job_count: int = Field(..., description="Total number of jobs run")
+    job_count: int = Field(default=0, description="Total number of jobs run")
     most_recent_job: datetime | None = Field(
         default=None, description="Most recent job timestamp"
     )
-    engine_name: str = Field(..., description="Engine display name")
+    engine_name: str = Field(default="", description="Engine display name")
 
     # Reference to the agents API for running
     _agents_api: "AgentsAPI | None" = None
@@ -133,7 +133,7 @@ class AgentVersion(BaseModel):
     input_definitions: list[AgentInputDefinition] = Field(
         ..., description="List of input definitions for this version"
     )
-    engine_config: dict[str, str] = Field(..., description="Engine configuration")
+    engine_config: dict[str, Any] = Field(..., description="Engine configuration")
     organization_id: UUID = Field(..., description="Organization ID (from base agent)")
     readonly: bool = Field(..., description="Whether this version is readonly")
     base_agent: "BaseAgent" = Field(

@@ -129,3 +129,19 @@ class AgentJobResultBatch(BaseModel):
     output_tokens: int | None = Field(
         default=None, description="Number of output tokens generated"
     )
+
+
+class JobDataDeleteResponse(BaseModel):
+    """Response model for job data deletion."""
+
+    status: str = Field(
+        ..., description="Overall status: 'success' or 'partial_success'"
+    )
+    deleted_count: int = Field(..., description="Number of files successfully deleted")
+    failed_count: int = Field(..., description="Number of files that failed to delete")
+    outputs_sanitized: bool = Field(
+        ..., description="Whether outputs were successfully sanitized"
+    )
+    errors: list[str] | None = Field(
+        default=None, description="List of errors encountered during deletion"
+    )

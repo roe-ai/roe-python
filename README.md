@@ -34,7 +34,7 @@ print(f"Found {agents.count} agents")
 # Run an agent
 job = client.agents.run(
     agent_id="your-agent-uuid",
-    prompt="Hello world"
+    text="Hello world"
 )
 result = job.wait()
 
@@ -43,93 +43,307 @@ for output in result.outputs:
     print(f"{output.key}: {output.value}")
 ```
 
-### Batch Processing
+## Supported Models
+
+The following models are available for use in `engine_config["model"]`:
+
+| Model Name | Copy |
+|------------|------|
+| GPT-4.1 | `gpt-4.1-2025-04-14` |
+| GPT-4.1 Mini | `gpt-4.1-mini-2025-04-14` |
+| GPT-4o | `gpt-4o-2024-08-06` |
+| GPT-4o Mini | `gpt-4o-mini-2024-07-18` |
+| Claude Sonnet 4 | `claude-sonnet-4-20250514` |
+| Claude Opus 4 | `claude-opus-4-20250514` |
+| Claude 3.5 Sonnet | `claude-3-5-sonnet-20241022` |
+| Claude 3.5 Haiku | `claude-3-5-haiku-20241022` |
+| Gemini 2.0 Flash | `gemini-2.0-flash` |
+| Gemini 2.5 Pro | `gemini-2.5-pro-preview-06-05` |
+| Gemini 2.5 Flash | `gemini-2.5-flash-preview-05-20` |
+
+## Engine Classes
+
+Available engine classes for `engine_class_id`:
+
+| Engine | Copy | Description |
+|--------|------|-------------|
+| Multimodal Extraction | `MultimodalExtractionEngine` | Extract data from text, images, PDFs |
+| PDF Extraction | `PDFExtractionEngine` | Process PDF documents |
+| Image Extraction | `ImageExtractionEngine` | Analyze images |
+| Web Insights | `URLWebsiteExtractionEngine` | Crawl and analyze websites |
+| Interactive Web | `InteractiveWebExtractionEngine` | Browser automation |
+| Web Agent | `WebEngine` | Autonomous web browsing |
+
+## Agent Management
+
+### Create Agent
 
 ```python
-# Run multiple jobs
-batch = client.agents.run_many(
-    agent_id="agent-uuid",
-    inputs_list=[
-        {"prompt": "Analyze sentiment: I love this!"},
-        {"prompt": "Analyze sentiment: This is terrible."},
-        {"prompt": "Analyze sentiment: It's okay."},
-    ]
+agent = client.agents.create_agent(
+    name="My Agent",
+    engine_class_id="MultimodalExtractionEngine",
+    input_definitions=[
+        {"key": "document", "data_type": "application/pdf", "description": "PDF to analyze"}
+    ],
+    engine_config={
+        "model": "gpt-4.1-2025-04-14",
+        "instruction": "Extract key information from the document",
+        "output_schema": {
+            "type": "object",
+            "properties": {
+                "summary": {"type": "string", "description": "Document summary"}
+            }
+        }
+    }
 )
-
-# Wait for all to complete
-results = batch.wait()
-for result in results:
-    print(result.outputs)
+print(f"Created: {agent.id}")
 ```
 
-### File Uploads
+### Update Agent
 
 ```python
-# File path (auto-upload)
-job = client.agents.run(
+client.agents.update_agent(
     agent_id="agent-uuid",
-    document="path/to/file.pdf",
-    prompt="Analyze this document"
-)
-
-# Existing Roe file ID
-job = client.agents.run(
-    agent_id="agent-uuid",
-    document="file-uuid-here",
-    prompt="Analyze this document"
+    name="New Name",
+    disable_cache=True
 )
 ```
 
-### Timeout Configuration
-
-Prevent jobs from getting stuck by setting custom timeouts (defaults to 7200 seconds / 2 hours):
+### Duplicate Agent
 
 ```python
-# Single job with 10-minute timeout
-job = client.agents.run(
+new_version = client.agents.duplicate_agent(agent_id="agent-uuid")
+print(f"New agent: {new_version.base_agent.id}")
+```
+
+### Delete Agent
+
+```python
+client.agents.delete_agent(agent_id="agent-uuid")
+```
+
+## Version Management
+
+### Create Version
+
+```python
+version = client.agents.create_version(
     agent_id="agent-uuid",
-    timeout_seconds=600,  # 10 minutes
-    document="contract.pdf"
+    version_name="v2",
+    description="Improved extraction",
+    input_definitions=[
+        {"key": "document", "data_type": "application/pdf", "description": "PDF"}
+    ],
+    engine_config={
+        "model": "gpt-4.1-2025-04-14",
+        "instruction": "New instructions"
+    }
 )
+```
 
-try:
-    result = job.wait()
-    print("Job completed successfully")
-except TimeoutError:
-    print("Job exceeded timeout - may be stuck")
+### Update Version
 
-# Batch jobs with custom timeout
+```python
+client.agents.update_version(
+    agent_id="agent-uuid",
+    version_id="version-uuid",
+    version_name="v2-updated",
+    description="New description"
+)
+```
+
+### Delete Version
+
+```python
+client.agents.delete_version(agent_id="agent-uuid", version_id="version-uuid")
+```
+
+## Running Agents
+
+### Async Execution (Recommended)
+
+```python
+# Start job
+job = client.agents.run(agent_id="agent-uuid", document="file.pdf")
+
+# Wait for result
+result = job.wait()
+
+# Process outputs
+for output in result.outputs:
+    print(f"{output.key}: {output.value}")
+```
+
+### Sync Execution
+
+```python
+outputs = client.agents.run_sync(agent_id="agent-uuid", document="file.pdf")
+for output in outputs:
+    print(f"{output.key}: {output.value}")
+```
+
+### Run Specific Version
+
+```python
+# Async
+job = client.agents.run_version(
+    agent_id="agent-uuid",
+    version_id="version-uuid",
+    document="file.pdf"
+)
+result = job.wait()
+
+# Sync
+outputs = client.agents.run_version_sync(
+    agent_id="agent-uuid",
+    version_id="version-uuid",
+    document="file.pdf"
+)
+```
+
+## Batch Processing
+
+```python
 batch = client.agents.run_many(
     agent_id="agent-uuid",
     batch_inputs=[
         {"document": "file1.pdf"},
         {"document": "file2.pdf"},
+        {"document": "file3.pdf"},
+    ]
+)
+
+# Wait for all jobs
+results = batch.wait()
+for result in results:
+    print(f"Outputs: {len(result.outputs)}")
+```
+
+## File Uploads
+
+```python
+# File path (auto-upload)
+job = client.agents.run(agent_id="agent-uuid", document="path/to/file.pdf")
+
+# Existing Roe file ID
+job = client.agents.run(agent_id="agent-uuid", document="file-uuid-here")
+```
+
+## Web Insights Example
+
+```python
+agent = client.agents.create_agent(
+    name="Web Analyzer",
+    engine_class_id="URLWebsiteExtractionEngine",
+    input_definitions=[
+        {"key": "url", "data_type": "text/plain", "description": "URL to analyze"}
     ],
-    timeout_seconds=900  # 15 minutes for all jobs
+    engine_config={
+        "url": "${url}",
+        "model": "gpt-4.1-2025-04-14",
+        "instruction": "Analyze this website",
+        "vision_mode": False,
+        "crawl_config": {
+            "save_html": True,
+            "save_markdown": True,
+            "save_screenshot": True,
+            "crawling_only": False,
+            "min_wait_time_sec": 0
+        },
+        "output_schema": {
+            "type": "object",
+            "properties": {
+                "company": {"type": "string"},
+                "description": {"type": "string"}
+            }
+        }
+    }
+)
+
+job = client.agents.run(agent_id=str(agent.id), url="https://apple.com")
+result = job.wait()
+```
+
+## Download References
+
+Reference files (screenshots, HTML, markdown) from web crawling jobs:
+
+```python
+import json
+
+# Get job result
+result = job.wait()
+
+# Parse output for reference URLs
+for output in result.outputs:
+    parsed = json.loads(output.value)
+    if "references" in parsed:
+        for ref_url in parsed["references"]:
+            # Extract resource_id from URL
+            resource_id = ref_url.split("/references/")[-1].rstrip("/")
+
+            # Download file
+            content = client.agents.download_reference(
+                job_id=str(job.id),
+                resource_id=resource_id
+            )
+
+            with open(f"downloaded_{resource_id}", "wb") as f:
+                f.write(content)
+```
+
+## Delete Job Data
+
+```python
+result = client.agents.delete_job_data(job_id="job-uuid")
+print(f"Deleted {result.deleted_count} files")
+```
+
+## Timeout Configuration
+
+```python
+# Single job with 10-minute timeout
+job = client.agents.run(
+    agent_id="agent-uuid",
+    timeout_seconds=600,
+    document="file.pdf"
 )
 
 try:
-    results = batch.wait()
+    result = job.wait()
 except TimeoutError:
-    print("Some jobs did not complete in time")
+    print("Job exceeded timeout")
+
+# Batch with custom timeout
+batch = client.agents.run_many(
+    agent_id="agent-uuid",
+    batch_inputs=[{"document": "file1.pdf"}],
+    timeout_seconds=900
+)
 ```
 
 ## Examples
 
-For detailed examples, see the [examples/](examples/) directory:
+See the [examples/](examples/) directory:
 
 - `run_agent_simple.py` - Basic agent execution
 - `run_agent_with_file.py` - File upload handling
 - `run_agent_many.py` - Batch processing
-- `run_agent_with_timeout.py` - Timeout configuration and handling
+- `run_agent_with_timeout.py` - Timeout configuration
+- `run_sync.py` - Synchronous execution
 - `list_agents.py` - List available agents
 - `get_agent.py` - Get agent details
-- `agent_versions.py` - Work with agent versions
-- `file_upload_methods.py` - Different file upload methods
+- `create_agent.py` - Create agents
+- `manage_agent.py` - Update, duplicate, delete agents
+- `agent_versions.py` - Work with versions
+- `manage_versions.py` - Version CRUD
+- `file_upload_methods.py` - File upload options
+- `download_references.py` - Download reference files
+- `delete_job_data.py` - Delete job data
 
 ## Configuration
 
-The client can be configured via environment variables or constructor parameters:
+Environment variables:
 
 - `ROE_API_KEY` - Your API key (required)
 - `ROE_ORGANIZATION_ID` - Your organization ID (required)

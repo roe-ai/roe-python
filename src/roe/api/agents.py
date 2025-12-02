@@ -6,10 +6,12 @@ from roe.config import RoeConfig
 from roe.models.agent import AgentVersion, BaseAgent
 from roe.models.job import Job, JobBatch
 from roe.models.responses import (
+    AgentDatum,
     AgentJobResult,
     AgentJobResultBatch,
     AgentJobStatus,
     AgentJobStatusBatch,
+    JobDataDeleteResponse,
     PaginatedResponse,
 )
 from roe.utils.http_client import RoeHTTPClient
@@ -336,3 +338,279 @@ class AgentsAPI:
             all_job_ids.extend(response_data)
 
         return JobBatch(self, all_job_ids, timeout_seconds)
+
+    # Agent CRUD Operations
+
+    def create_agent(
+        self,
+        name: str,
+        engine_class_id: str,
+        input_definitions: list[dict[str, Any]] | None = None,
+        engine_config: dict[str, Any] | None = None,
+        version_name: str | None = None,
+        description: str | None = None,
+    ) -> BaseAgent:
+        """Create a new agent.
+
+        Args:
+            name: Name of the agent.
+            engine_class_id: Engine class ID (e.g., "TextExtractionEngine").
+            input_definitions: List of input definitions for the agent.
+            engine_config: Engine configuration (model, instruction, output_schema, etc.).
+            version_name: Name for the first version (defaults to "version 1").
+            description: Description of the first version.
+
+        Returns:
+            Created BaseAgent instance.
+        """
+        json_data: dict[str, Any] = {
+            "name": name,
+            "engine_class_id": engine_class_id,
+            "organization_id": self.config.organization_id,
+            "input_definitions": input_definitions or [],
+            "engine_config": engine_config or {},
+        }
+
+        if version_name is not None:
+            json_data["version_name"] = version_name
+        if description is not None:
+            json_data["description"] = description
+
+        response_data = self.http_client.post("/v1/agents/", json_data=json_data)
+        base_agent = BaseAgent(**response_data)
+        base_agent.set_agents_api(self)
+        return base_agent
+
+    def update_agent(
+        self,
+        agent_id: str,
+        name: str | None = None,
+        disable_cache: bool | None = None,
+        cache_failed_jobs: bool | None = None,
+    ) -> BaseAgent:
+        """Update a base agent.
+
+        Args:
+            agent_id: Base agent UUID.
+            name: New name for the agent.
+            disable_cache: Whether to disable job cache fetching.
+            cache_failed_jobs: Whether to cache failed jobs.
+
+        Returns:
+            Updated BaseAgent instance.
+        """
+        json_data: dict[str, Any] = {}
+
+        if name is not None:
+            json_data["name"] = name
+        if disable_cache is not None:
+            json_data["disable_cache"] = disable_cache
+        if cache_failed_jobs is not None:
+            json_data["cache_failed_jobs"] = cache_failed_jobs
+
+        response_data = self.http_client.put(
+            f"/v1/agents/{agent_id}/", json_data=json_data
+        )
+        base_agent = BaseAgent(**response_data)
+        base_agent.set_agents_api(self)
+        return base_agent
+
+    def delete_agent(self, agent_id: str) -> None:
+        """Delete a base agent and all its versions.
+
+        Args:
+            agent_id: Base agent UUID.
+        """
+        self.http_client.delete(f"/v1/agents/{agent_id}/")
+
+    def duplicate_agent(self, agent_id: str) -> AgentVersion:
+        """Duplicate an agent.
+
+        Creates a new agent with the same configuration as the current version.
+
+        Args:
+            agent_id: Base agent UUID to duplicate.
+
+        Returns:
+            AgentVersion of the new duplicated agent.
+        """
+        response_data = self.http_client.post(f"/v1/agents/{agent_id}/duplicate/")
+        version = AgentVersion(**response_data)
+        version.set_agents_api(self)
+        return version
+
+    # Version CRUD Operations
+
+    def create_version(
+        self,
+        agent_id: str,
+        input_definitions: list[dict[str, Any]] | None = None,
+        engine_config: dict[str, Any] | None = None,
+        version_name: str | None = None,
+        description: str | None = None,
+    ) -> AgentVersion:
+        """Create a new version of an agent.
+
+        Args:
+            agent_id: Base agent UUID.
+            input_definitions: List of input definitions for the version.
+            engine_config: Engine configuration (model, instruction, output_schema, etc.).
+            version_name: Name for the version.
+            description: Description of the version.
+
+        Returns:
+            Created AgentVersion instance.
+        """
+        json_data: dict[str, Any] = {
+            "input_definitions": input_definitions or [],
+            "engine_config": engine_config or {},
+        }
+
+        if version_name is not None:
+            json_data["version_name"] = version_name
+        if description is not None:
+            json_data["description"] = description
+
+        response_data = self.http_client.post(
+            f"/v1/agents/{agent_id}/versions/", json_data=json_data
+        )
+        # The create endpoint returns minimal data, so fetch the full version
+        version_id = response_data["id"]
+        return self.get_version(agent_id, version_id)
+
+    def update_version(
+        self,
+        agent_id: str,
+        version_id: str,
+        version_name: str | None = None,
+        description: str | None = None,
+    ) -> None:
+        """Update an agent version.
+
+        Args:
+            agent_id: Base agent UUID.
+            version_id: Version UUID.
+            version_name: New version name.
+            description: New description.
+        """
+        json_data: dict[str, Any] = {}
+
+        if version_name is not None:
+            json_data["version_name"] = version_name
+        if description is not None:
+            json_data["description"] = description
+
+        self.http_client.put(
+            f"/v1/agents/{agent_id}/versions/{version_id}/", json_data=json_data
+        )
+
+    def delete_version(self, agent_id: str, version_id: str) -> None:
+        """Delete an agent version.
+
+        Args:
+            agent_id: Base agent UUID.
+            version_id: Version UUID to delete.
+        """
+        self.http_client.delete(f"/v1/agents/{agent_id}/versions/{version_id}/")
+
+    # Synchronous Execution
+
+    def run_sync(self, agent_id: str, **inputs: Any) -> list[AgentDatum]:
+        """Run an agent synchronously and return results directly.
+
+        Args:
+            agent_id: Agent UUID to run (base agent ID - uses current version).
+            **inputs: Dynamic inputs based on agent configuration.
+
+        Returns:
+            List of AgentDatum outputs.
+        """
+        response_data = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/run/{agent_id}/",
+            inputs=inputs,
+        )
+        return [AgentDatum(**datum) for datum in response_data]
+
+    def run_version_sync(
+        self, agent_id: str, version_id: str, **inputs: Any
+    ) -> list[AgentDatum]:
+        """Run a specific agent version synchronously.
+
+        Args:
+            agent_id: Base agent UUID.
+            version_id: Version UUID to run.
+            **inputs: Dynamic inputs based on agent configuration.
+
+        Returns:
+            List of AgentDatum outputs.
+        """
+        response_data = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/run/{agent_id}/versions/{version_id}/",
+            inputs=inputs,
+        )
+        return [AgentDatum(**datum) for datum in response_data]
+
+    # =========================================================================
+    # Async Version Execution
+    # =========================================================================
+
+    def run_version(
+        self, agent_id: str, version_id: str, timeout_seconds: int | None = None, **inputs: Any
+    ) -> Job:
+        """Run a specific agent version asynchronously.
+
+        Args:
+            agent_id: Base agent UUID.
+            version_id: Version UUID to run.
+            timeout_seconds: Maximum time in seconds to wait for job completion.
+            **inputs: Dynamic inputs based on agent configuration.
+
+        Returns:
+            Job instance for tracking and waiting on the execution.
+        """
+        job_id = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/run/{agent_id}/versions/{version_id}/async/",
+            inputs=inputs,
+        )
+        return Job(self, job_id, timeout_seconds)
+
+    # =========================================================================
+    # Reference & Data Management
+    # =========================================================================
+
+    def download_reference(
+        self, job_id: str, resource_id: str, as_attachment: bool = False
+    ) -> bytes:
+        """Download a reference file from an agent job.
+
+        Args:
+            job_id: Agent job UUID.
+            resource_id: Resource identifier (filename).
+            as_attachment: Whether to download as attachment.
+
+        Returns:
+            Raw bytes of the file content.
+        """
+        params = {}
+        if as_attachment:
+            params["download"] = "true"
+
+        return self.http_client.get_bytes(
+            f"/v1/agents/jobs/{job_id}/references/{resource_id}/",
+            params=params if params else None,
+        )
+
+    def delete_job_data(self, job_id: str) -> JobDataDeleteResponse:
+        """Delete persisted data for an agent job.
+
+        Deletes uploaded input files and sanitizes stored outputs.
+        Only works for jobs in terminal states (SUCCESS, FAILURE, CANCELLED).
+
+        Args:
+            job_id: Agent job UUID.
+
+        Returns:
+            JobDataDeleteResponse with deletion status.
+        """
+        response_data = self.http_client.post(f"/v1/agents/jobs/{job_id}/delete-data/")
+        return JobDataDeleteResponse(**response_data)
