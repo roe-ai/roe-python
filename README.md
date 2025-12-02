@@ -47,17 +47,24 @@ for output in result.outputs:
 
 The following models are available for use in `engine_config["model"]`:
 
-| Model Name | Copy |
-|------------|------|
+| Model Name | model |
+|------------|-------|
+| GPT-5.1 | `gpt-5.1-2025-11-13` |
+| GPT-5 | `gpt-5-2025-08-07` |
+| GPT-5 Mini | `gpt-5-mini-2025-08-07` |
 | GPT-4.1 | `gpt-4.1-2025-04-14` |
 | GPT-4.1 Mini | `gpt-4.1-mini-2025-04-14` |
-| GPT-4o | `gpt-4o-2024-08-06` |
-| GPT-4o Mini | `gpt-4o-mini-2024-07-18` |
+| GPT-4o | `gpt-4o-2024-11-20` |
+| O3 | `o3-2025-04-16` |
+| O4 Mini | `o4-mini-2025-04-16` |
+| Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
 | Claude Sonnet 4 | `claude-sonnet-4-20250514` |
-| Claude Opus 4 | `claude-opus-4-20250514` |
-| Claude 3.5 Sonnet | `claude-3-5-sonnet-20241022` |
+| Claude 3.7 Sonnet | `claude-3-7-sonnet-20250219` |
+| Claude Haiku 4.5 | `claude-haiku-4-5-20251001` |
 | Claude 3.5 Haiku | `claude-3-5-haiku-20241022` |
-| Gemini 2.0 Flash | `gemini-2.0-flash` |
+| Claude Opus 4.5 | `claude-opus-4-5-20251101` |
+| Claude Opus 4.1 | `claude-opus-4-1-20250805` |
+| Claude Opus 4 | `claude-opus-4-20250514` |
 | Gemini 2.5 Pro | `gemini-2.5-pro-preview-06-05` |
 | Gemini 2.5 Flash | `gemini-2.5-flash-preview-05-20` |
 
@@ -65,14 +72,20 @@ The following models are available for use in `engine_config["model"]`:
 
 Available engine classes for `engine_class_id`:
 
-| Engine | Copy | Description |
-|--------|------|-------------|
-| Multimodal Extraction | `MultimodalExtractionEngine` | Extract data from text, images, PDFs |
-| PDF Extraction | `PDFExtractionEngine` | Process PDF documents |
-| Image Extraction | `ImageExtractionEngine` | Analyze images |
-| Web Insights | `URLWebsiteExtractionEngine` | Crawl and analyze websites |
-| Interactive Web | `InteractiveWebExtractionEngine` | Browser automation |
-| Web Agent | `WebEngine` | Autonomous web browsing |
+| Engine | engine_class_id | Description |
+|--------|-----------------|-------------|
+| Document Insights | `PDFExtractionEngine` | Extract insights and structured information from documents |
+| Document Segmentation | `PDFPageSelectionEngine` | Parse page filter criteria and output page ranges |
+| Interactive Web Insight | `InteractiveWebExtractionEngine` | Navigate websites and extract structured data interactively |
+| LinkedIn Crawler | `LinkedInScraperEngine` | Scrape LinkedIn profiles |
+| Maps Search | `GoogleMapsEntityExtractionEngine` | Search Google Maps via fuzzy address name |
+| Merchant Risk Analysis | `MerchantRiskAnalysisEngine` | Assess merchant compliance and risk factors |
+| Multimodal Extraction | `MultimodalExtractionEngine` | Process multiple media types for data extraction |
+| Perplexity Search | `PerplexitySearchEngine` | Web research via Perplexity |
+| Product Policy Compliance | `ProductPolicyEngine` | Analyze product listings for policy compliance violations |
+| Social Media Crawler | `SocialScraperEngine` | Scrape social media profile data and recent posts |
+| Web Insights | `URLWebsiteExtractionEngine` | Extract insights and structured information from URLs |
+| Web Search | `URLFinderEngine` | Search for most relevant URLs
 
 ## Agent Management
 

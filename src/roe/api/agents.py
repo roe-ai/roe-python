@@ -339,7 +339,7 @@ class AgentsAPI:
 
         return JobBatch(self, all_job_ids, timeout_seconds)
 
-    # Agent CRUD Operations
+    # Agent CRUD operations
 
     def create_agent(
         self,
@@ -439,7 +439,7 @@ class AgentsAPI:
         version.set_agents_api(self)
         return version
 
-    # Version CRUD Operations
+    # Version CRUD operations
 
     def create_version(
         self,
@@ -513,7 +513,7 @@ class AgentsAPI:
         """
         self.http_client.delete(f"/v1/agents/{agent_id}/versions/{version_id}/")
 
-    # Synchronous Execution
+    # Synchronous execution
 
     def run_sync(self, agent_id: str, **inputs: Any) -> list[AgentDatum]:
         """Run an agent synchronously and return results directly.
@@ -550,9 +550,7 @@ class AgentsAPI:
         )
         return [AgentDatum(**datum) for datum in response_data]
 
-    # =========================================================================
-    # Async Version Execution
-    # =========================================================================
+    # Async version execution
 
     def run_version(
         self, agent_id: str, version_id: str, timeout_seconds: int | None = None, **inputs: Any
@@ -574,9 +572,7 @@ class AgentsAPI:
         )
         return Job(self, job_id, timeout_seconds)
 
-    # =========================================================================
-    # Reference & Data Management
-    # =========================================================================
+    # Reference and data management
 
     def download_reference(
         self, job_id: str, resource_id: str, as_attachment: bool = False
