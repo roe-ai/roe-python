@@ -5,7 +5,7 @@ A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 ## Installation
 
 ```bash
-pip install roe-ai
+uv add roe-ai
 ```
 
 ## Quick Start
@@ -45,12 +45,10 @@ agent = client.agents.create_agent(
     engine_class_id="MultimodalExtractionEngine",
     input_definitions=[
         {"key": "text", "data_type": "text/plain", "description": "Item description"},
-        {"key": "images", "data_type": "image/*", "description": "Product images"},
     ],
     engine_config={
         "model": "gpt-4.1-2025-04-14",
         "text": "${text}",
-        "images": "${images}",
         "instruction": "Analyze this product listing. Is it counterfeit?",
         "output_schema": {
             "type": "object",
@@ -65,8 +63,7 @@ agent = client.agents.create_agent(
 
 job = client.agents.run(
     agent_id=str(agent.id),
-    text="Authentic Louis Vuitton bag, brand new, $50",
-    images="https://example.com/product-image.jpg"
+    text="Authentic Louis Vuitton bag, brand new, $50"
 )
 result = job.wait()
 ```
