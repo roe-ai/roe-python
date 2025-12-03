@@ -6,7 +6,6 @@ This example demonstrates how to download reference files from job results.
 Reference files include screenshots, HTML, and markdown from web crawling jobs.
 """
 
-import json
 import os
 
 from roe import RoeClient
@@ -26,39 +25,30 @@ def main():
     result = job.wait()
     print(f"Job completed: {job.id}")
 
-    # References are typically stored in the output JSON with URLs
-    # Parse the output to find reference URLs
-    for output in result.outputs:
-        try:
-            parsed = json.loads(output.value)
-            if "references" in parsed:
-                print(f"Found {len(parsed['references'])} references")
+    # Use the get_references() helper to extract all reference URLs
+    references = result.get_references()
+    print(f"Found {len(references)} references")
 
-                for ref_url in parsed["references"]:
-                    # Extract resource_id from URL
-                    # URL format: .../references/RESOURCE_ID/
-                    resource_id = ref_url.split("/references/")[-1].rstrip("/")
+    # Download each reference file
+    for ref in references:
+        content = client.agents.download_reference(
+            job_id=str(job.id),
+            resource_id=ref.resource_id,
+        )
 
-                    # Download the reference file
-                    content = client.agents.download_reference(
-                        job_id=str(job.id),
-                        resource_id=resource_id,
-                    )
-
-                    # Save to file
-                    filename = f"downloaded_{resource_id}"
-                    with open(filename, "wb") as f:
-                        f.write(content)
-                    print(f"Saved: {filename} ({len(content)} bytes)")
-        except (json.JSONDecodeError, KeyError):
-            pass
+        # Save to file
+        filename = f"downloaded_{ref.resource_id}"
+        with open(filename, "wb") as f:
+            f.write(content)
+        print(f"Saved: {filename} ({len(content)} bytes)")
 
     # You can also download with the attachment flag for proper Content-Disposition
-    # content = client.agents.download_reference(
-    #     job_id=str(job.id),
-    #     resource_id="resource-uuid.html",
-    #     as_attachment=True,
-    # )
+    # for ref in references:
+    #     content = client.agents.download_reference(
+    #         job_id=str(job.id),
+    #         resource_id=ref.resource_id,
+    #         as_attachment=True,
+    #     )
 
 
 if __name__ == "__main__":
