@@ -1,13 +1,11 @@
 # Roe AI Python SDK
 
-A Python SDK for the Roe AI API.
+A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
 ## Installation
 
 ```bash
 pip install roe-ai
-# or
-uv add roe-ai
 ```
 
 ## Quick Start
@@ -28,212 +26,199 @@ for output in result.outputs:
     print(f"{output.key}: {output.value}")
 ```
 
-Or use environment variables:
+Or set environment variables:
 
 ```bash
 export ROE_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
-```python
-client = RoeClient()  # Reads from environment
-```
+## Agent Examples
 
-## Running Agents
+### Multimodal Extraction
 
-### Async (Recommended)
-
-```python
-job = client.agents.run(agent_id="agent-uuid", text="Hello world")
-result = job.wait()
-```
-
-### Sync
-
-```python
-outputs = client.agents.run_sync(agent_id="agent-uuid", text="Hello world")
-```
-
-### With Files
-
-```python
-# Local file path - automatically uploaded
-job = client.agents.run(agent_id="agent-uuid", document="path/to/file.pdf")
-
-# Existing Roe file ID
-job = client.agents.run(agent_id="agent-uuid", document="file-uuid")
-```
-
-### Batch Processing
-
-```python
-batch = client.agents.run_many(
-    agent_id="agent-uuid",
-    batch_inputs=[
-        {"document": "file1.pdf"},
-        {"document": "file2.pdf"},
-        {"document": "file3.pdf"},
-    ]
-)
-results = batch.wait()
-```
-
-## Creating Agents
-
-### Text Extraction Agent
+Extract structured data from text and images:
 
 ```python
 agent = client.agents.create_agent(
-    name="Text Analyzer",
+    name="Listing Analyzer",
     engine_class_id="MultimodalExtractionEngine",
     input_definitions=[
-        {"key": "text", "data_type": "text/plain", "description": "Text to analyze"}
+        {"key": "text", "data_type": "text/plain", "description": "Item description"},
+        {"key": "images", "data_type": "image/*", "description": "Product images"},
     ],
     engine_config={
         "model": "gpt-4.1-2025-04-14",
         "text": "${text}",
-        "instruction": "Summarize the key points.",
+        "images": "${images}",
+        "instruction": "Analyze this product listing. Is it counterfeit?",
         "output_schema": {
             "type": "object",
             "properties": {
-                "summary": {"type": "string", "description": "Summary"}
+                "is_counterfeit": {"type": "boolean", "description": "Whether likely counterfeit"},
+                "confidence": {"type": "number", "description": "Confidence score 0-1"},
+                "reasoning": {"type": "string", "description": "Explanation"},
             }
         }
     }
 )
 
-job = client.agents.run(agent_id=str(agent.id), text="Your text here...")
+job = client.agents.run(
+    agent_id=str(agent.id),
+    text="Authentic Louis Vuitton bag, brand new, $50",
+    images="https://example.com/product-image.jpg"
+)
+result = job.wait()
 ```
 
-### Document Extraction Agent
+### Document Insights
+
+Extract structured information from PDFs:
 
 ```python
 agent = client.agents.create_agent(
-    name="PDF Analyzer",
+    name="Resume Parser",
     engine_class_id="PDFExtractionEngine",
     input_definitions=[
-        {"key": "pdf_files", "data_type": "application/pdf", "description": "PDF to analyze"}
+        {"key": "pdf_files", "data_type": "application/pdf", "description": "Resume PDF"},
     ],
     engine_config={
         "model": "gpt-4.1-2025-04-14",
         "pdf_files": "${pdf_files}",
-        "instructions": "Extract the main topics from this document.",
+        "instructions": "Extract candidate information from this resume.",
         "output_schema": {
             "type": "object",
             "properties": {
-                "topics": {"type": "array", "items": {"type": "string"}}
+                "name": {"type": "string"},
+                "email": {"type": "string"},
+                "skills": {"type": "array", "items": {"type": "string"}},
             }
         }
     }
 )
 
-job = client.agents.run(agent_id=str(agent.id), pdf_files="document.pdf")
+job = client.agents.run(agent_id=str(agent.id), pdf_files="resume.pdf")
+result = job.wait()
 ```
 
-### Web Insights Agent
+### Web Insights
+
+Extract data from websites with automatic screenshot/HTML/markdown capture:
 
 ```python
 agent = client.agents.create_agent(
-    name="Web Analyzer",
+    name="Company Analyzer",
     engine_class_id="URLWebsiteExtractionEngine",
     input_definitions=[
-        {"key": "url", "data_type": "text/plain", "description": "URL to analyze"}
+        {"key": "url", "data_type": "text/plain", "description": "Website URL"},
     ],
     engine_config={
         "url": "${url}",
         "model": "gpt-4.1-2025-04-14",
-        "instruction": "Extract company information.",
+        "instruction": "Extract company information from this website.",
         "vision_mode": False,
         "crawl_config": {
             "save_html": True,
             "save_markdown": True,
-            "save_screenshot": True
+            "save_screenshot": True,
         },
         "output_schema": {
             "type": "object",
             "properties": {
                 "company_name": {"type": "string"},
-                "description": {"type": "string"}
+                "description": {"type": "string"},
+                "products": {"type": "array", "items": {"type": "string"}},
             }
         }
     }
 )
 
-job = client.agents.run(agent_id=str(agent.id), url="https://example.com")
+# Run the agent
+job = client.agents.run(agent_id=str(agent.id), url="https://www.roe-ai.com/")
+result = job.wait()
+
+# Download saved references (screenshots, HTML, markdown)
+for ref in result.get_references():
+    content = client.agents.download_reference(str(job.id), ref.resource_id)
+    with open(ref.resource_id, "wb") as f:
+        f.write(content)
 ```
 
-### Perplexity Search Agent
+### Interactive Web
+
+Navigate websites and perform actions:
 
 ```python
 agent = client.agents.create_agent(
-    name="Web Search",
-    engine_class_id="PerplexitySearchEngine",
+    name="Meeting Booker",
+    engine_class_id="InteractiveWebExtractionEngine",
     input_definitions=[
-        {"key": "prompt", "data_type": "text/plain", "description": "Search query"}
+        {"key": "url", "data_type": "text/plain", "description": "Website URL"},
+        {"key": "action", "data_type": "text/plain", "description": "Action to perform"},
     ],
     engine_config={
-        "prompt": "${prompt}"
-    }
-)
-
-job = client.agents.run(agent_id=str(agent.id), prompt="What is the capital of France?")
-```
-
-### Maps Search Agent
-
-```python
-agent = client.agents.create_agent(
-    name="Location Finder",
-    engine_class_id="GoogleMapsEntityExtractionEngine",
-    input_definitions=[
-        {"key": "address", "data_type": "text/plain", "description": "Address to search"}
-    ],
-    engine_config={
-        "address": "${address}",
-        "instruction": "Get business details.",
-        "model": "gpt-4.1-2025-04-14",
+        "url": "${url}",
+        "action": "${action}",
         "output_schema": {
             "type": "object",
             "properties": {
-                "name": {"type": "string"},
-                "full_address": {"type": "string"}
+                "calendar_link": {"type": "string", "description": "Booking link found"},
+                "steps_taken": {"type": "array", "items": {"type": "string"}},
             }
         }
     }
 )
 
-job = client.agents.run(agent_id=str(agent.id), address="Apple Park, Cupertino, CA")
+job = client.agents.run(
+    agent_id=str(agent.id),
+    url="https://www.roe-ai.com/",
+    action="Find the founder's calendar link to book a meeting"
+)
+result = job.wait()
+```
+
+## Running Agents
+
+```python
+# Async (recommended)
+job = client.agents.run(agent_id="uuid", text="input")
+result = job.wait()
+
+# Sync
+outputs = client.agents.run_sync(agent_id="uuid", text="input")
+
+# With files (auto-uploaded)
+job = client.agents.run(agent_id="uuid", document="file.pdf")
+
+# Batch processing
+batch = client.agents.run_many(
+    agent_id="uuid",
+    batch_inputs=[{"text": "input1"}, {"text": "input2"}]
+)
+results = batch.wait()
 ```
 
 ## Agent Management
 
 ```python
-# List agents
-agents = client.agents.list_base_agents(page=1, page_size=10)
+# List / Get
+agents = client.agents.list_base_agents()
+agent = client.agents.get_base_agent("uuid")
 
-# Get agent
-agent = client.agents.get_base_agent(agent_id="agent-uuid")
+# Update / Delete
+client.agents.update_agent("uuid", name="New Name")
+client.agents.delete_agent("uuid")
 
-# Update agent
-client.agents.update_agent(agent_id="agent-uuid", name="New Name")
-
-# Duplicate agent
-new_agent = client.agents.duplicate_agent(agent_id="agent-uuid")
-
-# Delete agent
-client.agents.delete_agent(agent_id="agent-uuid")
+# Duplicate
+new_agent = client.agents.duplicate_agent("uuid")
 ```
 
 ## Version Management
 
 ```python
-# List versions
-versions = client.agents.list_versions(agent_id="agent-uuid")
+versions = client.agents.list_versions("agent-uuid")
+current = client.agents.get_current_version("agent-uuid")
 
-# Get current version
-current = client.agents.get_current_version(agent_id="agent-uuid")
-
-# Create new version
 version = client.agents.create_version(
     agent_id="agent-uuid",
     version_name="v2",
@@ -241,57 +226,13 @@ version = client.agents.create_version(
     engine_config={...}
 )
 
-# Run specific version
-job = client.agents.run_version(
-    agent_id="agent-uuid",
-    version_id="version-uuid",
-    text="Input"
-)
-
-# Delete version
-client.agents.delete_version(agent_id="agent-uuid", version_id="version-uuid")
-```
-
-## Job Management
-
-```python
-# Get job status
-status = client.agents.get_job_status(job_id="job-uuid")
-
-# Get job result
-result = client.agents.get_job_result(job_id="job-uuid")
-
-# Batch status/results
-statuses = client.agents.get_job_status_many(job_ids=["job-1", "job-2"])
-results = client.agents.get_job_result_many(job_ids=["job-1", "job-2"])
-```
-
-## Download References
-
-Web crawling jobs can save screenshots, HTML, and markdown. Download them:
-
-```python
-import json
-
-result = job.wait()
-
-for output in result.outputs:
-    data = json.loads(output.value)
-    if "references" in data:
-        for ref_url in data["references"]:
-            resource_id = ref_url.split("/references/")[-1].rstrip("/")
-            content = client.agents.download_reference(
-                job_id=str(job.id),
-                resource_id=resource_id
-            )
-            with open(f"{resource_id}", "wb") as f:
-                f.write(content)
+job = client.agents.run_version("agent-uuid", "version-uuid", text="input")
 ```
 
 ## Supported Models
 
-| Model | `model` value |
-|-------|---------------|
+| Model | Value |
+|-------|-------|
 | GPT-5.1 | `gpt-5.1-2025-11-13` |
 | GPT-5 | `gpt-5-2025-08-07` |
 | GPT-5 Mini | `gpt-5-mini-2025-08-07` |
@@ -315,31 +256,23 @@ for output in result.outputs:
 
 ## Engine Classes
 
-| Engine | `engine_class_id` | Description |
-|--------|-------------------|-------------|
-| Multimodal Extraction | `MultimodalExtractionEngine` | Extract data from text and images |
-| Document Insights | `PDFExtractionEngine` | Extract insights from PDFs |
-| Document Segmentation | `PDFPageSelectionEngine` | Select pages from PDFs by description |
-| Web Insights | `URLWebsiteExtractionEngine` | Extract data from websites |
-| Interactive Web | `InteractiveWebExtractionEngine` | Navigate and interact with websites |
-| Web Search | `URLFinderEngine` | Find relevant URLs |
-| Perplexity Search | `PerplexitySearchEngine` | Web research via Perplexity |
-| Maps Search | `GoogleMapsEntityExtractionEngine` | Search Google Maps locations |
-| Merchant Risk | `MerchantRiskAnalysisEngine` | Assess merchant risk |
-| Product Policy | `ProductPolicyEngine` | Check product policy compliance |
-| LinkedIn Crawler | `LinkedInScraperEngine` | Scrape LinkedIn profiles |
-| Social Media | `SocialScraperEngine` | Scrape social media profiles |
-
-## Configuration
-
-| Environment Variable | Description |
-|---------------------|-------------|
-| `ROE_API_KEY` | API key (required) |
-| `ROE_ORGANIZATION_ID` | Organization ID (required) |
-| `ROE_BASE_URL` | API base URL (optional) |
+| Engine | ID |
+|--------|----|
+| Multimodal Extraction | `MultimodalExtractionEngine` |
+| Document Insights | `PDFExtractionEngine` |
+| Document Segmentation | `PDFPageSelectionEngine` |
+| Web Insights | `URLWebsiteExtractionEngine` |
+| Interactive Web | `InteractiveWebExtractionEngine` |
+| Web Search | `URLFinderEngine` |
+| Perplexity Search | `PerplexitySearchEngine` |
+| Maps Search | `GoogleMapsEntityExtractionEngine` |
+| Merchant Risk | `MerchantRiskAnalysisEngine` |
+| Product Policy | `ProductPolicyEngine` |
+| LinkedIn Crawler | `LinkedInScraperEngine` |
+| Social Media | `SocialScraperEngine` |
 
 ## Links
 
-- [Examples](examples/)
+- [Roe AI](https://www.roe-ai.com/)
 - [API Documentation](https://docs.roe-ai.com)
-- [Issues](https://github.com/roe-ai/roe-python/issues)
+- [Examples](examples/)

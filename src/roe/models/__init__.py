@@ -8,6 +8,7 @@ from .responses import (
     ErrorResponse,
     JobDataDeleteResponse,
     PaginatedResponse,
+    Reference,
 )
 from .user import UserInfo
 
@@ -22,5 +23,6 @@ __all__ = [
     "ErrorResponse",
     "JobDataDeleteResponse",
     "PaginatedResponse",
+    "Reference",
     "UserInfo",
 ]
