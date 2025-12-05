@@ -97,7 +97,7 @@ class Job:
         start_time = time.time()
 
         while True:
-            status = self.get_status()
+            status = self.retrieve_status()
 
             if status.status in (
                 JobStatus.SUCCESS,
@@ -106,7 +106,7 @@ class Job:
                 JobStatus.CACHED,
             ):
                 # Return result regardless of success/failure - let user check status if needed
-                return self.get_result()
+                return self.retrieve_result()
 
             if (time.time() - start_time) > effective_timeout:
                 raise TimeoutError(
@@ -115,21 +115,21 @@ class Job:
 
             time.sleep(interval)
 
-    def get_status(self) -> AgentJobStatus:
-        """Get the current status of the job.
+    def retrieve_status(self) -> AgentJobStatus:
+        """Retrieve the current status of the job.
 
         Returns:
             AgentJobStatus instance with current job status.
 
         Examples:
-            status = job.get_status()
+            status = job.retrieve_status()
             if status.status == JobStatus.SUCCESS:
-                result = job.get_result()
+                result = job.retrieve_result()
         """
-        return self.agents_api.jobs.get_status(self._job_id)
+        return self.agents_api.jobs.retrieve_status(self._job_id)
 
-    def get_result(self) -> AgentJobResult:
-        """Get the result of the job.
+    def retrieve_result(self) -> AgentJobResult:
+        """Retrieve the result of the job.
 
         Returns:
             AgentJobResult instance.
@@ -139,14 +139,14 @@ class Job:
             For completed jobs only, use wait() which handles status checking.
 
         Examples:
-            # Get result (may fail if job not complete)
+            # Retrieve result (may fail if job not complete)
             try:
-                result = job.get_result()
+                result = job.retrieve_result()
             except Exception:
                 # Job may not be complete yet
                 result = job.wait()  # Wait for completion
         """
-        return self.agents_api.jobs.get_result(self._job_id)
+        return self.agents_api.jobs.retrieve_result(self._job_id)
 
 
 class JobBatch:
@@ -270,7 +270,7 @@ class JobBatch:
             if not pending_job_ids:
                 break
 
-            status_batch = self.agents_api.jobs.get_status_many(pending_job_ids)
+            status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
             # Find jobs that moved to terminal states
             completed_in_this_batch = []
@@ -289,7 +289,7 @@ class JobBatch:
                     self._job_statuses[job_id] = status_item.status
 
             if completed_in_this_batch:
-                result_batch = self.agents_api.jobs.get_result_many(
+                result_batch = self.agents_api.jobs.retrieve_result_many(
                     completed_in_this_batch
                 )
 
@@ -330,15 +330,15 @@ class JobBatch:
 
         return [self._completed_jobs[job_id] for job_id in self._job_ids]
 
-    def get_status(self) -> dict[str, int]:
-        """Get the current status of all jobs in the batch.
+    def retrieve_status(self) -> dict[str, int]:
+        """Retrieve the current status of all jobs in the batch.
 
         Returns:
             Dictionary mapping job IDs to their current status codes.
             Status codes: 0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED
 
         Examples:
-            status_map = batch.get_status()
+            status_map = batch.retrieve_status()
             print(f"Batch status: {status_map}")
 
             # Check individual statuses
@@ -358,7 +358,7 @@ class JobBatch:
 
         # Query only jobs we don't have cached status for
         if jobs_to_query:
-            status_batch = self.agents_api.jobs.get_status_many(jobs_to_query)
+            status_batch = self.agents_api.jobs.retrieve_status_many(jobs_to_query)
             for status_item in status_batch:
                 if status_item.status is not None:
                     status_map[status_item.id] = status_item.status

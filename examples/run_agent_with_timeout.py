@@ -204,13 +204,13 @@ def example_checking_status_manually():
     timeout = 60  # Check for 1 minute
 
     while (time.time() - start_time) < timeout:
-        status = job.get_status()
+        status = job.retrieve_status()
         elapsed = time.time() - start_time
 
         print(f"  [{elapsed:.1f}s] Status: {status.status}")
 
         if status.status in (2, 6):  # SUCCESS or CACHED
-            job.get_result()
+            job.retrieve_result()
             print("✓ Job completed successfully!")
             break
         elif status.status in (3, 4):  # FAILURE or CANCELLED

@@ -186,8 +186,8 @@ class AgentJobsAPI:
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
-    def get_status(self, job_id: str) -> AgentJobStatus:
-        """Get the status of an agent job.
+    def retrieve_status(self, job_id: str) -> AgentJobStatus:
+        """Retrieve the status of an agent job.
 
         Args:
             job_id: Agent job UUID.
@@ -198,8 +198,8 @@ class AgentJobsAPI:
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/status/")
         return AgentJobStatus(**response_data)
 
-    def get_result(self, job_id: str) -> AgentJobResult:
-        """Get the result of an agent job.
+    def retrieve_result(self, job_id: str) -> AgentJobResult:
+        """Retrieve the result of an agent job.
 
         Args:
             job_id: Agent job UUID.
@@ -210,8 +210,8 @@ class AgentJobsAPI:
         response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
         return AgentJobResult(**response_data)
 
-    def get_status_many(self, job_ids: list[str]) -> list[AgentJobStatusBatch]:
-        """Get the status of multiple agent jobs.
+    def retrieve_status_many(self, job_ids: list[str]) -> list[AgentJobStatusBatch]:
+        """Retrieve the status of multiple agent jobs.
 
         Args:
             job_ids: List of agent job UUIDs.
@@ -231,8 +231,8 @@ class AgentJobsAPI:
             )
         return results
 
-    def get_result_many(self, job_ids: list[str]) -> list[AgentJobResultBatch]:
-        """Get the results of multiple agent jobs.
+    def retrieve_result_many(self, job_ids: list[str]) -> list[AgentJobResultBatch]:
+        """Retrieve the results of multiple agent jobs.
 
         Args:
             job_ids: List of agent job UUIDs.
@@ -328,8 +328,8 @@ class AgentsAPI:
             AgentJobsAPI instance.
 
         Examples:
-            status = client.agents.jobs.get_status("job-uuid")
-            result = client.agents.jobs.get_result("job-uuid")
+            status = client.agents.jobs.retrieve_status("job-uuid")
+            result = client.agents.jobs.retrieve_result("job-uuid")
         """
         return self._jobs
 

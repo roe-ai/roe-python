@@ -213,9 +213,12 @@ new_agent = client.agents.duplicate("uuid")
 ## Version Management
 
 ```python
+# List and retrieve versions
 versions = client.agents.versions.list("agent-uuid")
 current = client.agents.versions.retrieve_current("agent-uuid")
+version = client.agents.versions.retrieve("agent-uuid", "version-uuid")
 
+# Create, update, delete versions
 version = client.agents.versions.create(
     agent_id="agent-uuid",
     version_name="v2",
@@ -223,7 +226,30 @@ version = client.agents.versions.create(
     engine_config={...}
 )
 
+client.agents.versions.update("agent-uuid", "version-uuid", version_name="v2-updated")
+client.agents.versions.delete("agent-uuid", "version-uuid")
+
+# Run specific versions
 job = client.agents.run_version("agent-uuid", "version-uuid", text="input")
+result = job.wait()
+```
+
+## Job Management
+
+```python
+# Retrieve job status and results
+status = client.agents.jobs.retrieve_status(job_id)
+result = client.agents.jobs.retrieve_result(job_id)
+
+# Batch operations
+statuses = client.agents.jobs.retrieve_status_many([job_id1, job_id2])
+results = client.agents.jobs.retrieve_result_many([job_id1, job_id2])
+
+# Download references from jobs (screenshots, HTML, markdown)
+content = client.agents.jobs.download_reference(job_id, resource_id)
+
+# Delete job data
+client.agents.jobs.delete_data(job_id)
 ```
 
 ## Supported Models
