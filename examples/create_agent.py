@@ -12,7 +12,7 @@ def main():
     client = RoeClient()
 
     # Create a multimodal extraction agent
-    agent = client.agents.create_agent(
+    agent = client.agents.create(
         name="Document Summarizer",
         engine_class_id="MultimodalExtractionEngine",
         input_definitions=[

@@ -126,7 +126,7 @@ class Job:
             if status.status == JobStatus.SUCCESS:
                 result = job.get_result()
         """
-        return self.agents_api.get_job_status(self._job_id)
+        return self.agents_api.jobs.get_status(self._job_id)
 
     def get_result(self) -> AgentJobResult:
         """Get the result of the job.
@@ -146,7 +146,7 @@ class Job:
                 # Job may not be complete yet
                 result = job.wait()  # Wait for completion
         """
-        return self.agents_api.get_job_result(self._job_id)
+        return self.agents_api.jobs.get_result(self._job_id)
 
 
 class JobBatch:
@@ -270,7 +270,7 @@ class JobBatch:
             if not pending_job_ids:
                 break
 
-            status_batch = self.agents_api.get_job_status_many(pending_job_ids)
+            status_batch = self.agents_api.jobs.get_status_many(pending_job_ids)
 
             # Find jobs that moved to terminal states
             completed_in_this_batch = []
@@ -289,7 +289,7 @@ class JobBatch:
                     self._job_statuses[job_id] = status_item.status
 
             if completed_in_this_batch:
-                result_batch = self.agents_api.get_job_result_many(
+                result_batch = self.agents_api.jobs.get_result_many(
                     completed_in_this_batch
                 )
 
@@ -358,7 +358,7 @@ class JobBatch:
 
         # Query only jobs we don't have cached status for
         if jobs_to_query:
-            status_batch = self.agents_api.get_job_status_many(jobs_to_query)
+            status_batch = self.agents_api.jobs.get_status_many(jobs_to_query)
             for status_item in status_batch:
                 if status_item.status is not None:
                     status_map[status_item.id] = status_item.status

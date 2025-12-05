@@ -13,7 +13,7 @@ def main():
     client = RoeClient()
 
     # List agents
-    response = client.agents.list_base_agents(page_size=5)
+    response = client.agents.list(page_size=5)
 
     # Display results
     print(f"Found {response.count} agents:")

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-Manage Agent Example
+Update Agent Example
 
 This example demonstrates how to update, duplicate, and delete agents.
 """
@@ -16,7 +16,7 @@ def main():
     client = RoeClient()
 
     # Update agent settings
-    updated = client.agents.update_agent(
+    updated = client.agents.update(
         agent_id=AGENT_ID,
         name="Renamed Agent",
         disable_cache=False,
@@ -24,13 +24,13 @@ def main():
     )
     print(f"Updated agent: {updated.name}")
 
-    # Duplicate an agent
-    new_version = client.agents.duplicate_agent(agent_id=AGENT_ID)
-    print(f"Duplicated agent, new version ID: {new_version.id}")
-    print(f"New agent name: {new_version.base_agent.name}")
+    # Duplicate an agent (creates a new agent with different ID)
+    new_agent = client.agents.duplicate(agent_id=AGENT_ID)
+    print(f"Duplicated agent, new agent ID: {new_agent.id}")
+    print(f"New agent name: {new_agent.name}")
 
     # Delete an agent (uncomment to use)
-    # client.agents.delete_agent(agent_id="agent-to-delete-uuid")
+    # client.agents.delete(agent_id="agent-to-delete-uuid")
     # print("Agent deleted")
 
 

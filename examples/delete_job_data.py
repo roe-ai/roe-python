@@ -17,7 +17,7 @@ def main():
 
     # Delete job data (inputs and sanitize outputs)
     # Only works for completed, failed, or cancelled jobs
-    result = client.agents.delete_job_data(job_id=JOB_ID)
+    result = client.agents.jobs.delete_data(job_id=JOB_ID)
 
     print(f"Status: {result.status}")
     print(f"Files deleted: {result.deleted_count}")

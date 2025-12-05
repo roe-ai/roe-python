@@ -16,7 +16,7 @@ def main():
     client = RoeClient()
 
     # Create a new version with updated config
-    version = client.agents.create_version(
+    version = client.agents.versions.create(
         agent_id=AGENT_ID,
         version_name="v2",
         description="Improved extraction with better prompts",
@@ -37,7 +37,7 @@ def main():
     print(f"Version ID: {version.id}")
 
     # Update version metadata
-    client.agents.update_version(
+    client.agents.versions.update(
         agent_id=AGENT_ID,
         version_id=str(version.id),
         version_name="v2-final",
@@ -46,13 +46,13 @@ def main():
     print("Version updated")
 
     # List all versions
-    versions = client.agents.list_versions(AGENT_ID)
+    versions = client.agents.versions.list(AGENT_ID)
     print(f"\nAll versions ({len(versions)}):")
     for v in versions:
         print(f"  - {v.version_name}: {v.description or 'No description'}")
 
     # Delete a version (uncomment to use)
-    # client.agents.delete_version(agent_id=AGENT_ID, version_id="version-uuid")
+    # client.agents.versions.delete(agent_id=AGENT_ID, version_id="version-uuid")
     # print("Version deleted")
 
 

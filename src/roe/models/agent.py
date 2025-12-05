@@ -80,7 +80,7 @@ class BaseAgent(BaseModel):
         return self._agents_api.run(agent_id=str(self.id), **inputs)
 
     def list_versions(self) -> list["AgentVersion"]:
-        """List all versions of this base agent.
+        """List all versions of this agent.
 
         Returns:
             List of AgentVersion objects.
@@ -90,10 +90,10 @@ class BaseAgent(BaseModel):
         """
         if not self._agents_api:
             raise ValueError(
-                "Agents API not set. Use client.agents.list_versions() instead."
+                "Agents API not set. Use client.agents.versions.list() instead."
             )
 
-        return self._agents_api.list_versions(str(self.id))
+        return self._agents_api.versions.list(str(self.id))
 
     def get_current_version(self) -> "AgentVersion | None":
         """Get the current version of this agent.
@@ -106,13 +106,15 @@ class BaseAgent(BaseModel):
         """
         if not self._agents_api:
             raise ValueError(
-                "Agents API not set. Use client.agents.get_current_version() instead."
+                "Agents API not set. Use client.agents.versions.retrieve_current() instead."
             )
 
         if not self.current_version_id:
             return None
 
-        return self._agents_api.get_version(str(self.id), str(self.current_version_id))
+        return self._agents_api.versions.retrieve(
+            str(self.id), str(self.current_version_id)
+        )
 
 
 class AgentVersion(BaseModel):

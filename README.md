@@ -40,7 +40,7 @@ export ROE_ORGANIZATION_ID="your-org-uuid"
 Extract structured data from text and images:
 
 ```python
-agent = client.agents.create_agent(
+agent = client.agents.create(
     name="Listing Analyzer",
     engine_class_id="MultimodalExtractionEngine",
     input_definitions=[
@@ -73,7 +73,7 @@ result = job.wait()
 Extract structured information from PDFs:
 
 ```python
-agent = client.agents.create_agent(
+agent = client.agents.create(
     name="Resume Parser",
     engine_class_id="PDFExtractionEngine",
     input_definitions=[
@@ -103,7 +103,7 @@ result = job.wait()
 Extract data from websites with automatic screenshot/HTML/markdown capture:
 
 ```python
-agent = client.agents.create_agent(
+agent = client.agents.create(
     name="Company Analyzer",
     engine_class_id="URLWebsiteExtractionEngine",
     input_definitions=[
@@ -136,7 +136,7 @@ result = job.wait()
 
 # Download saved references (screenshots, HTML, markdown)
 for ref in result.get_references():
-    content = client.agents.download_reference(str(job.id), ref.resource_id)
+    content = client.agents.jobs.download_reference(str(job.id), ref.resource_id)
     with open(ref.resource_id, "wb") as f:
         f.write(content)
 ```
@@ -146,7 +146,7 @@ for ref in result.get_references():
 Navigate websites and perform actions:
 
 ```python
-agent = client.agents.create_agent(
+agent = client.agents.create(
     name="Meeting Booker",
     engine_class_id="InteractiveWebExtractionEngine",
     input_definitions=[
@@ -198,25 +198,25 @@ results = batch.wait()
 ## Agent Management
 
 ```python
-# List / Get
-agents = client.agents.list_base_agents()
-agent = client.agents.get_base_agent("uuid")
+# List / Retrieve
+agents = client.agents.list()
+agent = client.agents.retrieve("uuid")
 
 # Update / Delete
-client.agents.update_agent("uuid", name="New Name")
-client.agents.delete_agent("uuid")
+client.agents.update("uuid", name="New Name")
+client.agents.delete("uuid")
 
 # Duplicate
-new_agent = client.agents.duplicate_agent("uuid")
+new_agent = client.agents.duplicate("uuid")
 ```
 
 ## Version Management
 
 ```python
-versions = client.agents.list_versions("agent-uuid")
-current = client.agents.get_current_version("agent-uuid")
+versions = client.agents.versions.list("agent-uuid")
+current = client.agents.versions.retrieve_current("agent-uuid")
 
-version = client.agents.create_version(
+version = client.agents.versions.create(
     agent_id="agent-uuid",
     version_name="v2",
     input_definitions=[...],

@@ -31,7 +31,7 @@ def main():
 
     # Download each reference file
     for ref in references:
-        content = client.agents.download_reference(
+        content = client.agents.jobs.download_reference(
             job_id=str(job.id),
             resource_id=ref.resource_id,
         )
@@ -44,7 +44,7 @@ def main():
 
     # You can also download with the attachment flag for proper Content-Disposition
     # for ref in references:
-    #     content = client.agents.download_reference(
+    #     content = client.agents.jobs.download_reference(
     #         job_id=str(job.id),
     #         resource_id=ref.resource_id,
     #         as_attachment=True,
