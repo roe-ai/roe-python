@@ -13,7 +13,9 @@ if TYPE_CHECKING:
 class Job:
     """Represents a single agent job for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None):
+    def __init__(
+        self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None
+    ):
         """Initialize a Job instance.
 
         Args:
@@ -32,14 +34,16 @@ class Job:
         """
         self.agents_api = agents_api
         self._job_id = job_id
-        
+
         # Set default timeout
         if timeout_seconds is None:
             self._timeout_seconds = 7200  # 2 hours default
         else:
             # Validate timeout is positive
             if timeout_seconds <= 0:
-                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+                raise ValueError(
+                    f"timeout_seconds must be positive, got {timeout_seconds}"
+                )
             self._timeout_seconds = timeout_seconds
 
     @property
@@ -88,12 +92,12 @@ class Job:
         # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
-        
+
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
         while True:
-            status = self.get_status()
+            status = self.retrieve_status()
 
             if status.status in (
                 JobStatus.SUCCESS,
@@ -102,7 +106,7 @@ class Job:
                 JobStatus.CACHED,
             ):
                 # Return result regardless of success/failure - let user check status if needed
-                return self.get_result()
+                return self.retrieve_result()
 
             if (time.time() - start_time) > effective_timeout:
                 raise TimeoutError(
@@ -111,21 +115,21 @@ class Job:
 
             time.sleep(interval)
 
-    def get_status(self) -> AgentJobStatus:
-        """Get the current status of the job.
+    def retrieve_status(self) -> AgentJobStatus:
+        """Retrieve the current status of the job.
 
         Returns:
             AgentJobStatus instance with current job status.
 
         Examples:
-            status = job.get_status()
+            status = job.retrieve_status()
             if status.status == JobStatus.SUCCESS:
-                result = job.get_result()
+                result = job.retrieve_result()
         """
-        return self.agents_api.get_job_status(self._job_id)
+        return self.agents_api.jobs.retrieve_status(self._job_id)
 
-    def get_result(self) -> AgentJobResult:
-        """Get the result of the job.
+    def retrieve_result(self) -> AgentJobResult:
+        """Retrieve the result of the job.
 
         Returns:
             AgentJobResult instance.
@@ -135,20 +139,25 @@ class Job:
             For completed jobs only, use wait() which handles status checking.
 
         Examples:
-            # Get result (may fail if job not complete)
+            # Retrieve result (may fail if job not complete)
             try:
-                result = job.get_result()
+                result = job.retrieve_result()
             except Exception:
                 # Job may not be complete yet
                 result = job.wait()  # Wait for completion
         """
-        return self.agents_api.get_job_result(self._job_id)
+        return self.agents_api.jobs.retrieve_result(self._job_id)
 
 
 class JobBatch:
     """Represents a batch of agent jobs for tracking and waiting."""
 
-    def __init__(self, agents_api: "AgentsAPI", job_ids: list[str], timeout_seconds: int | None = None):
+    def __init__(
+        self,
+        agents_api: "AgentsAPI",
+        job_ids: list[str],
+        timeout_seconds: int | None = None,
+    ):
         """Initialize a JobBatch instance.
 
         Args:
@@ -169,14 +178,16 @@ class JobBatch:
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
-        
+
         # Set default timeout
         if timeout_seconds is None:
             self._timeout_seconds = 7200  # 2 hours default
         else:
             # Validate timeout is positive
             if timeout_seconds <= 0:
-                raise ValueError(f"timeout_seconds must be positive, got {timeout_seconds}")
+                raise ValueError(
+                    f"timeout_seconds must be positive, got {timeout_seconds}"
+                )
             self._timeout_seconds = timeout_seconds
 
     @property
@@ -214,7 +225,10 @@ class JobBatch:
             # Or wait for all
             all_results = batch.wait()
         """
-        return [Job(self.agents_api, job_id, self._timeout_seconds) for job_id in self._job_ids]
+        return [
+            Job(self.agents_api, job_id, self._timeout_seconds)
+            for job_id in self._job_ids
+        ]
 
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
@@ -244,7 +258,7 @@ class JobBatch:
         # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
-        
+
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
@@ -256,7 +270,7 @@ class JobBatch:
             if not pending_job_ids:
                 break
 
-            status_batch = self.agents_api.get_job_status_many(pending_job_ids)
+            status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
             # Find jobs that moved to terminal states
             completed_in_this_batch = []
@@ -275,7 +289,7 @@ class JobBatch:
                     self._job_statuses[job_id] = status_item.status
 
             if completed_in_this_batch:
-                result_batch = self.agents_api.get_job_result_many(
+                result_batch = self.agents_api.jobs.retrieve_result_many(
                     completed_in_this_batch
                 )
 
@@ -316,15 +330,15 @@ class JobBatch:
 
         return [self._completed_jobs[job_id] for job_id in self._job_ids]
 
-    def get_status(self) -> dict[str, int]:
-        """Get the current status of all jobs in the batch.
+    def retrieve_status(self) -> dict[str, int]:
+        """Retrieve the current status of all jobs in the batch.
 
         Returns:
             Dictionary mapping job IDs to their current status codes.
             Status codes: 0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED
 
         Examples:
-            status_map = batch.get_status()
+            status_map = batch.retrieve_status()
             print(f"Batch status: {status_map}")
 
             # Check individual statuses
@@ -344,7 +358,7 @@ class JobBatch:
 
         # Query only jobs we don't have cached status for
         if jobs_to_query:
-            status_batch = self.agents_api.get_job_status_many(jobs_to_query)
+            status_batch = self.agents_api.jobs.retrieve_status_many(jobs_to_query)
             for status_item in status_batch:
                 if status_item.status is not None:
                     status_map[status_item.id] = status_item.status

@@ -18,13 +18,13 @@ def main():
     client = RoeClient()
 
     # List versions
-    versions = client.agents.list_versions(AGENT_ID)
+    versions = client.agents.versions.list(AGENT_ID)
     print(f"Found {len(versions)} versions:")
     for version in versions:
         print(f"- {version.version_name} (ID: {version.id})")
 
     # Get current version with input definitions
-    current = client.agents.get_current_version(AGENT_ID)
+    current = client.agents.versions.retrieve_current(AGENT_ID)
     print(f"\nCurrent version: {current.version_name}")
     print("Input definitions:")
     for input_def in current.input_definitions:

@@ -1,5 +1,6 @@
 """Response models for API endpoints."""
 
+import json
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
@@ -73,6 +74,19 @@ class AgentJobStatus(BaseModel):
     )
 
 
+class Reference(BaseModel):
+    """Reference file from a job output (screenshot, HTML, markdown, video,etc.)."""
+
+    url: str = Field(..., description="Full reference URL")
+    resource_id: str = Field(..., description="Resource ID for downloading")
+
+    @classmethod
+    def from_url(cls, url: str) -> "Reference":
+        """Create a Reference from a URL, extracting the resource_id."""
+        resource_id = url.split("/references/")[-1].rstrip("/")
+        return cls(url=url, resource_id=resource_id)
+
+
 class AgentJobResult(BaseModel):
     """Agent job result response model."""
 
@@ -84,6 +98,34 @@ class AgentJobResult(BaseModel):
         ..., description="Number of output tokens generated"
     )
     outputs: list[AgentDatum] = Field(..., description="The output data from the agent")
+
+    def get_references(self) -> list[Reference]:
+        """Extract all reference files from job outputs.
+
+        Parses output values as JSON and extracts any reference URLs.
+        Useful for downloading screenshots, HTML, or markdown from web crawling jobs.
+
+        Returns:
+            List of Reference objects with url and resource_id.
+
+        Example:
+            result = job.wait()
+            for ref in result.get_references():
+                content = client.agents.download_reference(job_id, ref.resource_id)
+                with open(ref.resource_id, "wb") as f:
+                    f.write(content)
+        """
+        references = []
+        for output in self.outputs:
+            try:
+                data = json.loads(output.value)
+                if isinstance(data, dict) and "references" in data:
+                    for ref_url in data["references"]:
+                        if isinstance(ref_url, str) and "/references/" in ref_url:
+                            references.append(Reference.from_url(ref_url))
+            except (json.JSONDecodeError, TypeError):
+                continue
+        return references
 
 
 class AgentJobStatusBatch(BaseModel):
@@ -128,4 +170,20 @@ class AgentJobResultBatch(BaseModel):
     )
     output_tokens: int | None = Field(
         default=None, description="Number of output tokens generated"
+    )
+
+
+class JobDataDeleteResponse(BaseModel):
+    """Response model for job data deletion."""
+
+    status: str = Field(
+        ..., description="Overall status: 'success' or 'partial_success'"
+    )
+    deleted_count: int = Field(..., description="Number of files successfully deleted")
+    failed_count: int = Field(..., description="Number of files that failed to delete")
+    outputs_sanitized: bool = Field(
+        ..., description="Whether outputs were successfully sanitized"
+    )
+    errors: list[str] | None = Field(
+        default=None, description="List of errors encountered during deletion"
     )

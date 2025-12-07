@@ -17,9 +17,11 @@ def main():
     # Initialize client
     client = RoeClient()
 
-    # Run agent
+    # Run agent with dynamic inputs
+    # Input keys depend on your agent's input_definitions (e.g., "text", "document", "url")
     job = client.agents.run(
-        agent_id=AGENT_ID, prompt="Hello, please analyze this text.", temperature=0.7
+        agent_id=AGENT_ID,
+        text="Hello, please analyze this text.",
     )
 
     # Wait for result

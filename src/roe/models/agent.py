@@ -1,7 +1,7 @@
 """Agent-related models."""
 
 from datetime import datetime
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
 from pydantic import BaseModel, Field
@@ -21,7 +21,7 @@ class AgentInputDefinition(BaseModel):
     )
     description: str = Field(..., description="Description of what this input is for")
     example: str = Field(default="", description="An example value for this input")
-    accepts_multiple_files: bool = Field(
+    accepts_multiple_files: bool | None = Field(
         default=False, description="Whether this input accepts multiple files"
     )
 
@@ -44,11 +44,11 @@ class BaseAgent(BaseModel):
     current_version_id: UUID | None = Field(
         default=None, description="UUID of current agent version"
     )
-    job_count: int = Field(..., description="Total number of jobs run")
+    job_count: int = Field(default=0, description="Total number of jobs run")
     most_recent_job: datetime | None = Field(
         default=None, description="Most recent job timestamp"
     )
-    engine_name: str = Field(..., description="Engine display name")
+    engine_name: str = Field(default="", description="Engine display name")
 
     # Reference to the agents API for running
     _agents_api: "AgentsAPI | None" = None
@@ -80,7 +80,7 @@ class BaseAgent(BaseModel):
         return self._agents_api.run(agent_id=str(self.id), **inputs)
 
     def list_versions(self) -> list["AgentVersion"]:
-        """List all versions of this base agent.
+        """List all versions of this agent.
 
         Returns:
             List of AgentVersion objects.
@@ -90,10 +90,10 @@ class BaseAgent(BaseModel):
         """
         if not self._agents_api:
             raise ValueError(
-                "Agents API not set. Use client.agents.list_versions() instead."
+                "Agents API not set. Use client.agents.versions.list() instead."
             )
 
-        return self._agents_api.list_versions(str(self.id))
+        return self._agents_api.versions.list(str(self.id))
 
     def get_current_version(self) -> "AgentVersion | None":
         """Get the current version of this agent.
@@ -106,13 +106,15 @@ class BaseAgent(BaseModel):
         """
         if not self._agents_api:
             raise ValueError(
-                "Agents API not set. Use client.agents.get_current_version() instead."
+                "Agents API not set. Use client.agents.versions.retrieve_current() instead."
             )
 
         if not self.current_version_id:
             return None
 
-        return self._agents_api.get_version(str(self.id), str(self.current_version_id))
+        return self._agents_api.versions.retrieve(
+            str(self.id), str(self.current_version_id)
+        )
 
 
 class AgentVersion(BaseModel):
@@ -133,7 +135,7 @@ class AgentVersion(BaseModel):
     input_definitions: list[AgentInputDefinition] = Field(
         ..., description="List of input definitions for this version"
     )
-    engine_config: dict[str, str] = Field(..., description="Engine configuration")
+    engine_config: dict[str, Any] = Field(..., description="Engine configuration")
     organization_id: UUID = Field(..., description="Organization ID (from base agent)")
     readonly: bool = Field(..., description="Whether this version is readonly")
     base_agent: "BaseAgent" = Field(

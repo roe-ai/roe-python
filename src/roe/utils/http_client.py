@@ -186,3 +186,83 @@ class RoeHTTPClient:
             files=files,
             params=params,
         )
+
+    def put(
+        self,
+        url: str,
+        json_data: dict[str, Any] | None = None,
+        params: dict[str, Any] | None = None,
+    ) -> Any:
+        """Make a PUT request.
+
+        Args:
+            url: Request URL (relative to base URL).
+            json_data: JSON data to send.
+            params: Query parameters.
+
+        Returns:
+            Parsed JSON response.
+        """
+        kwargs = {}
+        if json_data:
+            kwargs["json"] = json_data
+        if params:
+            kwargs["params"] = params
+
+        response = self.client.put(url, **kwargs)
+        return self._handle_response(response)
+
+    def delete(self, url: str, params: dict[str, Any] | None = None) -> None:
+        """Make a DELETE request.
+
+        Args:
+            url: Request URL (relative to base URL).
+            params: Query parameters.
+
+        Returns:
+            None on success (204 response).
+
+        Raises:
+            RoeAPIException: For API errors.
+        """
+        response = self.client.delete(url, params=params)
+        if response.status_code == 204:
+            return None
+        if response.is_success:
+            return None
+        # Handle error
+        self._handle_response(response)
+
+    def get_bytes(self, url: str, params: dict[str, Any] | None = None) -> bytes:
+        """Make a GET request and return raw bytes.
+
+        Args:
+            url: Request URL (relative to base URL).
+            params: Query parameters.
+
+        Returns:
+            Raw bytes from response.
+
+        Raises:
+            RoeAPIException: For API errors.
+        """
+        response = self.client.get(url, params=params)
+        if response.is_success:
+            return response.content
+
+        # Handle error using standard handler
+        exception_class = get_exception_for_status_code(response.status_code)
+        try:
+            error_data = response.json()
+            message = error_data.get("detail", f"HTTP {response.status_code}")
+            raise exception_class(
+                message=message,
+                status_code=response.status_code,
+                response=error_data,
+            )
+        except (ValueError, KeyError):
+            raise exception_class(
+                message=f"HTTP {response.status_code}: {response.text}",
+                status_code=response.status_code,
+                response=None,
+            )

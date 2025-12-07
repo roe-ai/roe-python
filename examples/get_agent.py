@@ -18,7 +18,7 @@ def main():
     client = RoeClient()
 
     # Get agent
-    agent = client.agents.get_base_agent(AGENT_ID)
+    agent = client.agents.retrieve(AGENT_ID)
 
     # Display details
     print(f"Agent: {agent.name}")
