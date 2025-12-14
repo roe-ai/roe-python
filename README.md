@@ -5,6 +5,12 @@ Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 ## Installation
 
 ```bash
+uv add roe-ai
+```
+
+or
+
+```bash
 pip install roe-ai
 ```
 
