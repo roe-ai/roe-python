@@ -1,5 +1,6 @@
 """Authentication handling for the Roe AI SDK."""
 
+from roe.version import __version__
 from roe.config import RoeConfig
 
 
@@ -22,5 +23,5 @@ class RoeAuth:
         """
         return {
             "Authorization": f"Bearer {self.config.api_key}",
-            "User-Agent": "roe-python/0.1.0",
+            "User-Agent": f"roe-python/{__version__}",
         }

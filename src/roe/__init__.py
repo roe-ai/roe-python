@@ -21,6 +21,7 @@ Basic usage:
     )
 """
 
+from roe.version import __version__
 from roe.client import RoeClient
 from roe.exceptions import (
     AuthenticationError,
@@ -32,8 +33,6 @@ from roe.exceptions import (
     ServerError,
 )
 from roe.models import FileUpload
-
-__version__ = "0.2.0"
 
 __all__ = [
     # Main client

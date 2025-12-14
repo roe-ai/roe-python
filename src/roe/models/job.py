@@ -1,5 +1,6 @@
 """Job and JobBatch models for agent execution tracking."""
 
+import logging
 import time
 from typing import TYPE_CHECKING
 
@@ -8,6 +9,8 @@ from roe.models.responses import AgentJobResult, AgentJobStatus, JobStatus
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
+
+logger = logging.getLogger(__name__)
 
 
 class Job:
@@ -178,6 +181,7 @@ class JobBatch:
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
+        self._deleted_jobs: set[str] = set()  # Track jobs deleted during wait
 
         # Set default timeout
         if timeout_seconds is None:
@@ -262,9 +266,11 @@ class JobBatch:
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
-        while len(self._completed_jobs) < len(self._job_ids):
+        # Count completed + deleted jobs for termination check
+        while len(self._completed_jobs) + len(self._deleted_jobs) < len(self._job_ids):
             pending_job_ids = [
-                job_id for job_id in self._job_ids if job_id not in self._completed_jobs
+                job_id for job_id in self._job_ids
+                if job_id not in self._completed_jobs and job_id not in self._deleted_jobs
             ]
 
             if not pending_job_ids:
@@ -289,9 +295,14 @@ class JobBatch:
                     self._job_statuses[job_id] = status_item.status
 
             if completed_in_this_batch:
-                result_batch = self.agents_api.jobs.retrieve_result_many(
-                    completed_in_this_batch
-                )
+                try:
+                    result_batch = self.agents_api.jobs.retrieve_result_many(
+                        completed_in_this_batch
+                    )
+                except NotFoundError as e:
+                    # Some jobs may have been deleted - continue with remaining
+                    logger.warning(f"Some jobs in batch may have been deleted: {e}")
+                    result_batch = []
 
                 for result_item in result_batch:
                     job_id = result_item.id
@@ -300,9 +311,14 @@ class JobBatch:
                         result_item.agent_id is None
                         or result_item.agent_version_id is None
                     ):
-                        raise NotFoundError(
-                            f"Job {job_id} not found or has been deleted"
+                        # Job was deleted or not found - mark as completed with empty result
+                        # and log a warning instead of raising an error
+                        logger.warning(
+                            f"Job {job_id} not found or has been deleted, skipping"
                         )
+                        # Create a placeholder result for deleted jobs
+                        self._deleted_jobs.add(job_id)
+                        continue
 
                     job_result = AgentJobResult(
                         agent_id=result_item.agent_id,
@@ -317,10 +333,12 @@ class JobBatch:
 
                     self._completed_jobs[job_id] = job_result
 
-            if len(self._completed_jobs) < len(self._job_ids):
+            if len(self._completed_jobs) + len(self._deleted_jobs) < len(self._job_ids):
                 if (time.time() - start_time) > effective_timeout:
-                    remaining_jobs = set(self._job_ids) - set(
-                        self._completed_jobs.keys()
+                    remaining_jobs = (
+                        set(self._job_ids)
+                        - set(self._completed_jobs.keys())
+                        - self._deleted_jobs
                     )
                     raise TimeoutError(
                         f"Jobs {remaining_jobs} did not complete within {effective_timeout} seconds"
@@ -328,7 +346,22 @@ class JobBatch:
 
                 time.sleep(interval)
 
-        return [self._completed_jobs[job_id] for job_id in self._job_ids]
+        # Return results, with None for deleted jobs
+        results: list[AgentJobResult | None] = []
+        for job_id in self._job_ids:
+            if job_id in self._deleted_jobs:
+                results.append(None)
+            else:
+                results.append(self._completed_jobs.get(job_id))
+
+        # Filter out None values if all results are present
+        # But if some jobs were deleted, include them as None
+        if self._deleted_jobs:
+            logger.warning(
+                f"{len(self._deleted_jobs)} job(s) were deleted during wait and returned as None"
+            )
+
+        return [r for r in results if r is not None]  # type: ignore
 
     def retrieve_status(self) -> dict[str, int]:
         """Retrieve the current status of all jobs in the batch.

@@ -6,6 +6,11 @@ from typing import BinaryIO
 
 from pydantic import BaseModel, Field, model_validator
 
+from roe.exceptions import BadRequestError
+
+# Maximum file size: 2GB (aligned with main-roe backend)
+MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
+
 
 class FileUpload(BaseModel):
     """Helper class for explicit file uploads with metadata."""
@@ -22,12 +27,26 @@ class FileUpload(BaseModel):
 
     @model_validator(mode="after")
     def validate_file_source(self):
-        """Ensure exactly one of path or file_obj is provided."""
+        """Ensure exactly one of path or file_obj is provided, and validate file size."""
         if not self.path and not self.file_obj:
             raise ValueError("Either 'path' or 'file_obj' must be provided")
 
         if self.path and self.file_obj:
             raise ValueError("Only one of 'path' or 'file_obj' should be provided")
+
+        # Validate file size if path is provided
+        if self.path:
+            try:
+                file_size = os.path.getsize(self.path)
+                if file_size > MAX_FILE_SIZE:
+                    size_gb = file_size / (1024 * 1024 * 1024)
+                    raise BadRequestError(
+                        message=f"File exceeds maximum size of 2GB: {self.path} ({size_gb:.2f}GB)",
+                        status_code=400,
+                        response=None,
+                    )
+            except OSError as e:
+                raise ValueError(f"Cannot access file: {self.path}") from e
 
         return self
 

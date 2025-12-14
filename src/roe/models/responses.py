@@ -1,6 +1,7 @@
 """Response models for API endpoints."""
 
 import json
+from enum import IntEnum
 from typing import Any, Generic, TypeVar
 from uuid import UUID
 
@@ -9,8 +10,16 @@ from pydantic import BaseModel, Field
 T = TypeVar("T")
 
 
-class JobStatus:
-    """Constants for agent job status codes."""
+class JobStatus(IntEnum):
+    """Status codes for agent jobs.
+
+    Use as:
+        if status == JobStatus.SUCCESS:
+            ...
+
+        if status.is_terminal:
+            ...
+    """
 
     PENDING = 0
     STARTED = 1
@@ -19,6 +28,24 @@ class JobStatus:
     FAILURE = 4
     CANCELLED = 5
     CACHED = 6
+
+    @property
+    def is_terminal(self) -> bool:
+        """Check if this is a terminal (final) status.
+
+        Returns:
+            True if the job has completed (success, failure, cancelled, or cached).
+        """
+        return self in (self.SUCCESS, self.FAILURE, self.CANCELLED, self.CACHED)
+
+    @property
+    def is_success(self) -> bool:
+        """Check if this is a successful status.
+
+        Returns:
+            True if the job completed successfully (success or cached).
+        """
+        return self in (self.SUCCESS, self.CACHED)
 
 
 class ErrorResponse(BaseModel):
