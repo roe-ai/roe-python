@@ -257,6 +257,7 @@ client.agents.jobs.delete_data(job_id)
 | Model | Value |
 |-------|-------|
 | GPT-5.1 | `gpt-5.1-2025-11-13` |
+| GPT-5.2 | `gpt-5.2-2025-12-11` |
 | GPT-5 | `gpt-5-2025-08-07` |
 | GPT-5 Mini | `gpt-5-mini-2025-08-07` |
 | GPT-4.1 | `gpt-4.1-2025-04-14` |
@@ -276,6 +277,7 @@ client.agents.jobs.delete_data(job_id)
 | Gemini 3 Pro | `gemini-3-pro-preview` |
 | Gemini 2.5 Pro | `gemini-2.5-pro` |
 | Gemini 2.5 Flash | `gemini-2.5-flash` |
+| Grok-4 | `grok-4-0709` |
 
 ## Engine Classes
 
