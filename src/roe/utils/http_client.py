@@ -201,7 +201,8 @@ class RoeHTTPClient:
                 response = self.client.get(url, params=params)
                 if not self._should_retry(response.status_code, False) or attempt >= self._max_retries:
                     return self._handle_response(response)
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
+            except httpx.RequestError as e:
+                # Catch all request errors (ConnectError, TimeoutException, etc.)
                 last_exception = e
                 if attempt >= self._max_retries:
                     raise ServerError(
@@ -237,26 +238,59 @@ class RoeHTTPClient:
 
         Returns:
             Parsed JSON response.
+
+        Note:
+            File uploads with retries require files to be seekable (file paths or BytesIO).
+            Raw streams cannot be retried safely.
         """
-        kwargs: dict[str, Any] = {}
-
-        if json_data:
-            kwargs["json"] = json_data
-        elif form_data or files:
-            kwargs["data"] = form_data or {}
-            kwargs["files"] = files or {}
-
-        if params:
-            kwargs["params"] = params
-
         last_exception: Exception | None = None
 
         for attempt in range(self._max_retries + 1):
             try:
+                # Build kwargs fresh for each attempt to handle file replay
+                kwargs: dict[str, Any] = {}
+
+                # Use explicit None check to allow empty dicts/lists
+                if json_data is not None:
+                    kwargs["json"] = json_data
+                elif form_data is not None or files is not None:
+                    kwargs["data"] = form_data or {}
+                    # Rebuild file handles for retry (seek to start if possible)
+                    if files:
+                        rebuilt_files = {}
+                        for key, file_value in files.items():
+                            if hasattr(file_value, "seek"):
+                                # Seekable file - reset to start for retry
+                                file_value.seek(0)
+                                rebuilt_files[key] = file_value
+                            elif isinstance(file_value, tuple) and len(file_value) >= 2:
+                                # (filename, file_obj, ...) tuple
+                                file_obj = file_value[1]
+                                if hasattr(file_obj, "seek"):
+                                    file_obj.seek(0)
+                                rebuilt_files[key] = file_value
+                            else:
+                                # Non-seekable stream - can only use on first attempt
+                                if attempt > 0:
+                                    raise ServerError(
+                                        message=f"Cannot retry request with consumed stream for field '{key}'. "
+                                                f"Use file paths or BytesIO for retry-safe uploads.",
+                                        status_code=None,
+                                        response=None,
+                                    )
+                                rebuilt_files[key] = file_value
+                        kwargs["files"] = rebuilt_files
+                    else:
+                        kwargs["files"] = {}
+
+                if params:
+                    kwargs["params"] = params
+
                 response = self.client.post(url, **kwargs)
                 if not self._should_retry(response.status_code, False) or attempt >= self._max_retries:
                     return self._handle_response(response)
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
+            except httpx.RequestError as e:
+                # Catch all request errors (ConnectError, TimeoutException, etc.)
                 last_exception = e
                 if attempt >= self._max_retries:
                     raise ServerError(
@@ -319,7 +353,8 @@ class RoeHTTPClient:
             Parsed JSON response.
         """
         kwargs: dict[str, Any] = {}
-        if json_data:
+        # Use explicit None check to allow empty dicts
+        if json_data is not None:
             kwargs["json"] = json_data
         if params:
             kwargs["params"] = params
@@ -331,7 +366,8 @@ class RoeHTTPClient:
                 response = self.client.put(url, **kwargs)
                 if not self._should_retry(response.status_code, False) or attempt >= self._max_retries:
                     return self._handle_response(response)
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
+            except httpx.RequestError as e:
+                # Catch all request errors (ConnectError, TimeoutException, etc.)
                 last_exception = e
                 if attempt >= self._max_retries:
                     raise ServerError(
@@ -371,7 +407,8 @@ class RoeHTTPClient:
                 if not self._should_retry(response.status_code, False) or attempt >= self._max_retries:
                     # Handle error
                     self._handle_response(response)
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
+            except httpx.RequestError as e:
+                # Catch all request errors (ConnectError, TimeoutException, etc.)
                 last_exception = e
                 if attempt >= self._max_retries:
                     raise ServerError(
@@ -425,7 +462,8 @@ class RoeHTTPClient:
                             status_code=response.status_code,
                             response=None,
                         )
-            except (httpx.ConnectError, httpx.TimeoutException) as e:
+            except httpx.RequestError as e:
+                # Catch all request errors (ConnectError, TimeoutException, etc.)
                 last_exception = e
                 if attempt >= self._max_retries:
                     raise ServerError(

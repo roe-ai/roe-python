@@ -13,7 +13,23 @@ MAX_FILE_SIZE = 2 * 1024 * 1024 * 1024
 
 
 class FileUpload(BaseModel):
-    """Helper class for explicit file uploads with metadata."""
+    """Helper class for explicit file uploads with metadata.
+
+    Supports context manager protocol for automatic file cleanup:
+
+        with FileUpload(path="file.pdf") as upload:
+            filename, file_obj, mime_type = upload.to_multipart_tuple()
+            # file_obj is automatically closed when exiting the context
+
+    Or manually close opened files:
+
+        upload = FileUpload(path="file.pdf")
+        file_obj = upload.open()
+        try:
+            # use file_obj
+        finally:
+            upload.close()
+    """
 
     path: str | None = Field(default=None, description="File path to upload")
     file_obj: BinaryIO | None = Field(default=None, description="File object to upload")
@@ -22,8 +38,16 @@ class FileUpload(BaseModel):
         default=None, description="MIME type (auto-detected if not provided)"
     )
 
+    # Track opened files for cleanup (not part of pydantic model)
+    _opened_files: list[BinaryIO] = []
+
     class Config:
         arbitrary_types_allowed = True
+
+    def __init__(self, **data):
+        super().__init__(**data)
+        # Initialize tracking list for opened files
+        object.__setattr__(self, "_opened_files", [])
 
     @model_validator(mode="after")
     def validate_file_source(self):
@@ -78,16 +102,43 @@ class FileUpload(BaseModel):
         return guessed_type or "application/octet-stream"
 
     def open(self) -> BinaryIO:
-        """Open the file for reading."""
+        """Open the file for reading.
+
+        Note: If opening from path, the file handle is tracked and can be
+        closed by calling close() or using the context manager.
+        """
         if self.file_obj:
             return self.file_obj
 
         if self.path:
-            return open(self.path, "rb")
+            f = open(self.path, "rb")
+            self._opened_files.append(f)
+            return f
 
         raise ValueError("No file source available")
 
+    def close(self) -> None:
+        """Close all file handles opened by this FileUpload."""
+        for f in self._opened_files:
+            try:
+                f.close()
+            except Exception:
+                pass  # Best effort cleanup
+        self._opened_files.clear()
+
+    def __enter__(self) -> "FileUpload":
+        """Enter context manager."""
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+        """Exit context manager, closing any opened files."""
+        self.close()
+
     def to_multipart_tuple(self) -> tuple[str, BinaryIO, str]:
-        """Convert to tuple format for multipart form data."""
+        """Convert to tuple format for multipart form data.
+
+        Note: The returned file object should be closed after use,
+        either by calling close() or using the context manager.
+        """
         file_obj = self.open()
         return (self.effective_filename, file_obj, self.effective_mime_type)

@@ -41,11 +41,12 @@ class RoeConfig(BaseModel):
             ValueError: If required parameters are missing.
         """
         # Get values from parameters or environment variables
-        api_key = api_key or os.getenv("ROE_API_KEY")
-        organization_id = organization_id or os.getenv("ROE_ORGANIZATION_ID")
-        base_url = base_url or os.getenv("ROE_BASE_URL", "https://api.roe-ai.com")
-        timeout = timeout or float(os.getenv("ROE_TIMEOUT", "60.0"))
-        max_retries = max_retries or int(os.getenv("ROE_MAX_RETRIES", "3"))
+        # Use explicit None checks to allow falsy values like 0
+        api_key = api_key if api_key is not None else os.getenv("ROE_API_KEY")
+        organization_id = organization_id if organization_id is not None else os.getenv("ROE_ORGANIZATION_ID")
+        base_url = base_url if base_url is not None else os.getenv("ROE_BASE_URL", "https://api.roe-ai.com")
+        timeout = timeout if timeout is not None else float(os.getenv("ROE_TIMEOUT", "60.0"))
+        max_retries = max_retries if max_retries is not None else int(os.getenv("ROE_MAX_RETRIES", "3"))
 
         if not api_key:
             raise ValueError(

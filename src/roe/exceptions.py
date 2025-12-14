@@ -48,6 +48,12 @@ class NotFoundError(RoeAPIException):
     pass
 
 
+class RateLimitError(RoeAPIException):
+    """429 Too Many Requests - Rate limit exceeded."""
+
+    pass
+
+
 class ServerError(RoeAPIException):
     """500+ Server Error - Internal server errors."""
 
@@ -62,6 +68,7 @@ def get_exception_for_status_code(status_code: int) -> type[RoeAPIException]:
         402: InsufficientCreditsError,
         403: ForbiddenError,
         404: NotFoundError,
+        429: RateLimitError,
     }
 
     if status_code in exception_map:
