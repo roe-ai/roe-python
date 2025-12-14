@@ -266,6 +266,7 @@ client.agents.jobs.delete_data(job_id)
 | O3 | `o3-2025-04-16` |
 | O4 Mini | `o4-mini-2025-04-16` |
 | GPT-4o | `gpt-4o-2024-11-20` |
+| Grok 4 | `grok-4-0709` |
 | Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
 | Claude Sonnet 4 | `claude-sonnet-4-20250514` |
 | Claude 3.7 Sonnet | `claude-3-7-sonnet-20250219` |
@@ -277,7 +278,6 @@ client.agents.jobs.delete_data(job_id)
 | Gemini 3 Pro | `gemini-3-pro-preview` |
 | Gemini 2.5 Pro | `gemini-2.5-pro` |
 | Gemini 2.5 Flash | `gemini-2.5-flash` |
-| Grok-4 | `grok-4-0709` |
 
 ## Engine Classes
 
