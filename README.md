@@ -29,7 +29,7 @@ for output in result.outputs:
 Or use environment variables:
 
 ```bash
-export ROE_API_KEY="your-api-key"
+export ROE_ORGANIZATION_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
