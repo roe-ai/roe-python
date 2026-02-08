@@ -21,7 +21,10 @@ Basic usage:
     )
 """
 
-from roe.version import __version__
+from importlib.metadata import version as _pkg_version
+
+__version__ = _pkg_version("roe-ai")
+
 from roe.client import RoeClient
 from roe.exceptions import (
     AuthenticationError,
