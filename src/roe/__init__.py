@@ -29,6 +29,7 @@ from roe.exceptions import (
     ForbiddenError,
     InsufficientCreditsError,
     NotFoundError,
+    RateLimitError,
     RoeAPIException,
     ServerError,
 )
@@ -46,5 +47,6 @@ __all__ = [
     "ForbiddenError",
     "InsufficientCreditsError",
     "NotFoundError",
+    "RateLimitError",
     "ServerError",
 ]

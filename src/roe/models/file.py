@@ -38,8 +38,9 @@ class FileUpload(BaseModel):
         default=None, description="MIME type (auto-detected if not provided)"
     )
 
-    # Track opened files for cleanup (not part of pydantic model)
-    _opened_files: list[BinaryIO] = []
+    # Track opened files for cleanup (not part of pydantic model).
+    # No class-level default — initialised per-instance in __init__.
+    _opened_files: list[BinaryIO]
 
     class Config:
         arbitrary_types_allowed = True

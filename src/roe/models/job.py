@@ -236,7 +236,7 @@ class JobBatch:
 
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
-    ) -> list[AgentJobResult]:
+    ) -> list[AgentJobResult | None]:
         """Wait for all jobs in the batch to complete and return their results.
 
         Args:
@@ -246,7 +246,8 @@ class JobBatch:
                     Must be positive if provided.
 
         Returns:
-            List of AgentJobResult instances in the same order as job_ids.
+            List of (AgentJobResult | None) in the same order as job_ids.
+            Deleted or not-found jobs appear as None at their original index.
 
         Raises:
             TimeoutError: If jobs don't complete within the timeout.
@@ -258,6 +259,13 @@ class JobBatch:
 
             # With custom interval and timeout
             results = batch.wait(interval=2.0, timeout=300)
+
+            # Handle deleted jobs
+            for i, result in enumerate(results):
+                if result is None:
+                    print(f"Job {batch.job_ids[i]} was deleted")
+                else:
+                    print(f"Job {batch.job_ids[i]}: {result.outputs}")
         """
         # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
@@ -299,10 +307,23 @@ class JobBatch:
                     result_batch = self.agents_api.jobs.retrieve_result_many(
                         completed_in_this_batch
                     )
-                except NotFoundError as e:
-                    # Some jobs may have been deleted - continue with remaining
-                    logger.warning(f"Some jobs in batch may have been deleted: {e}")
+                except NotFoundError:
+                    # Batch endpoint failed (possibly one deleted job) —
+                    # fall back to fetching each job individually so we
+                    # don't lose the results of the jobs that *did* complete.
+                    logger.warning(
+                        "Batch result retrieval failed; falling back to "
+                        "individual retrieval for %d job(s)",
+                        len(completed_in_this_batch),
+                    )
                     result_batch = []
+                    for jid in completed_in_this_batch:
+                        try:
+                            individual = self.agents_api.jobs.retrieve_result_many([jid])
+                            result_batch.extend(individual)
+                        except NotFoundError:
+                            logger.warning(f"Job {jid} not found — marking as deleted")
+                            self._deleted_jobs.add(jid)
 
                 for result_item in result_batch:
                     job_id = result_item.id
@@ -346,22 +367,21 @@ class JobBatch:
 
                 time.sleep(interval)
 
-        # Return results, with None for deleted jobs
-        results: list[AgentJobResult | None] = []
-        for job_id in self._job_ids:
-            if job_id in self._deleted_jobs:
-                results.append(None)
-            else:
-                results.append(self._completed_jobs.get(job_id))
+        # Build result list preserving index alignment with job_ids.
+        # Deleted / not-found jobs appear as None at their original index.
+        results: list[AgentJobResult | None] = [
+            None if job_id in self._deleted_jobs
+            else self._completed_jobs.get(job_id)
+            for job_id in self._job_ids
+        ]
 
-        # Filter out None values if all results are present
-        # But if some jobs were deleted, include them as None
         if self._deleted_jobs:
             logger.warning(
-                f"{len(self._deleted_jobs)} job(s) were deleted during wait and returned as None"
+                f"{len(self._deleted_jobs)} job(s) were deleted during wait "
+                f"and returned as None at their original indices"
             )
 
-        return [r for r in results if r is not None]  # type: ignore
+        return results
 
     def retrieve_status(self) -> dict[str, int]:
         """Retrieve the current status of all jobs in the batch.
