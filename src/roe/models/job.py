@@ -233,31 +233,49 @@ class JobBatch:
         ]
 
     def wait(
-        self, interval: float = 5.0, timeout: float | None = None
-    ) -> list[AgentJobResult]:
-        """Wait for all jobs in the batch to complete and return their results.
+        self,
+        interval: float = 5.0,
+        timeout: float | None = None,
+        raise_on_timeout: bool = True,
+    ) -> list[AgentJobResult | None]:
+        """Wait for jobs in the batch to complete and return their results.
 
         Args:
             interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
-                    specified when creating the batch (default: 7200 seconds).
-                    Must be positive if provided.
+            timeout: Maximum time in seconds to wait. If None, uses the
+                ``timeout_seconds`` specified when creating the batch
+                (default: 7200 seconds). Must be positive if provided.
+            raise_on_timeout: If ``True`` (default), raises ``TimeoutError``
+                when the timeout is reached and some jobs are still running.
+                If ``False``, returns partial results instead — completed
+                jobs get their ``AgentJobResult``, incomplete jobs are
+                ``None``.
 
         Returns:
-            List of AgentJobResult instances in the same order as job_ids.
+            List of ``AgentJobResult | None`` in the same order as
+            ``job_ids``.  When ``raise_on_timeout=True`` all entries are
+            guaranteed to be non-None (or a ``TimeoutError`` is raised).
+            When ``raise_on_timeout=False``, incomplete jobs are ``None``.
 
         Raises:
-            TimeoutError: If jobs don't complete within the timeout.
+            TimeoutError: If ``raise_on_timeout=True`` and jobs don't
+                complete within the timeout.
             ValueError: If timeout is not positive.
 
         Examples:
-            # Basic usage - wait for all jobs to complete with default timeout
+            # Default — raises on timeout
             results = batch.wait()
 
-            # With custom interval and timeout
-            results = batch.wait(interval=2.0, timeout=300)
+            # Return partial results instead of raising
+            results = batch.wait(raise_on_timeout=False)
+            completed = [r for r in results if r is not None]
+            print(f"{len(completed)} / {len(results)} jobs done")
+
+            # Figure out which are still running
+            for job_id, r in zip(batch.job_ids, results):
+                if r is None:
+                    print(f"{job_id} still in progress")
         """
-        # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
 
@@ -266,7 +284,9 @@ class JobBatch:
 
         while len(self._completed_jobs) < len(self._job_ids):
             pending_job_ids = [
-                job_id for job_id in self._job_ids if job_id not in self._completed_jobs
+                job_id
+                for job_id in self._job_ids
+                if job_id not in self._completed_jobs
             ]
 
             if not pending_job_ids:
@@ -275,7 +295,7 @@ class JobBatch:
             status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
             # Find jobs that moved to terminal states
-            completed_in_this_batch = []
+            completed_in_this_batch: list[str] = []
             for status_item in status_batch:
                 job_id = status_item.id
                 if status_item.status in (
@@ -321,119 +341,15 @@ class JobBatch:
 
             if len(self._completed_jobs) < len(self._job_ids):
                 if (time.time() - start_time) > effective_timeout:
-                    remaining_jobs = set(self._job_ids) - set(
-                        self._completed_jobs.keys()
-                    )
-                    raise TimeoutError(
-                        f"Jobs {remaining_jobs} did not complete within {effective_timeout} seconds"
-                    )
-
-                time.sleep(interval)
-
-        return [self._completed_jobs[job_id] for job_id in self._job_ids]
-
-    def gather(
-        self, interval: float = 5.0, timeout: float | None = None
-    ) -> list[AgentJobResult | None]:
-        """Poll until timeout, then return results for all jobs — never raises on timeout.
-
-        Same polling behaviour as ``wait()``, but instead of raising
-        ``TimeoutError`` when time runs out it returns what it has so far.
-        Completed jobs get their ``AgentJobResult``; jobs still in progress
-        are ``None``.
-
-        Args:
-            interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the
-                ``timeout_seconds`` specified when creating the batch
-                (default: 7200 seconds). Must be positive if provided.
-
-        Returns:
-            List of ``AgentJobResult | None`` in the same order as
-            ``job_ids``.  ``None`` entries correspond to jobs that had
-            not reached a terminal state before the timeout.
-
-        Raises:
-            ValueError: If timeout is not positive.
-
-        Examples:
-            # Fire 1 000 jobs with a 5-minute cap
-            batch = agents.run_many(agent_id, inputs, timeout_seconds=300)
-            results = batch.gather()
-
-            completed = [r for r in results if r is not None]
-            print(f"{len(completed)} / {len(results)} jobs done")
-
-            # Figure out which are still running
-            for job_id, r in zip(batch.job_ids, results):
-                if r is None:
-                    print(f"{job_id} still in progress")
-        """
-        if timeout is not None and timeout <= 0:
-            raise ValueError(f"timeout must be positive, got {timeout}")
-
-        effective_timeout = timeout if timeout is not None else self._timeout_seconds
-        start_time = time.time()
-
-        while len(self._completed_jobs) < len(self._job_ids):
-            pending_job_ids = [
-                job_id
-                for job_id in self._job_ids
-                if job_id not in self._completed_jobs
-            ]
-
-            if not pending_job_ids:
-                break
-
-            status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
-
-            completed_in_this_batch: list[str] = []
-            for status_item in status_batch:
-                job_id = status_item.id
-                if status_item.status in (
-                    JobStatus.SUCCESS,
-                    JobStatus.FAILURE,
-                    JobStatus.CANCELLED,
-                    JobStatus.CACHED,
-                ):
-                    completed_in_this_batch.append(job_id)
-
-                if status_item.status is not None:
-                    self._job_statuses[job_id] = status_item.status
-
-            if completed_in_this_batch:
-                result_batch = self.agents_api.jobs.retrieve_result_many(
-                    completed_in_this_batch
-                )
-
-                for result_item in result_batch:
-                    job_id = result_item.id
-
-                    if (
-                        result_item.agent_id is None
-                        or result_item.agent_version_id is None
-                    ):
-                        raise NotFoundError(
-                            f"Job {job_id} not found or has been deleted"
+                    if raise_on_timeout:
+                        remaining_jobs = set(self._job_ids) - set(
+                            self._completed_jobs.keys()
                         )
-
-                    job_result = AgentJobResult(
-                        agent_id=result_item.agent_id,
-                        agent_version_id=result_item.agent_version_id,
-                        inputs=result_item.inputs or [],
-                        input_tokens=result_item.input_tokens,
-                        output_tokens=result_item.output_tokens,
-                        outputs=result_item.result
-                        if isinstance(result_item.result, list)
-                        else [],
-                    )
-
-                    self._completed_jobs[job_id] = job_result
-
-            # ---- key difference from wait(): break instead of raise ----
-            if len(self._completed_jobs) < len(self._job_ids):
-                if (time.time() - start_time) > effective_timeout:
+                        raise TimeoutError(
+                            f"Jobs {remaining_jobs} did not complete within {effective_timeout} seconds"
+                        )
                     break
+
                 time.sleep(interval)
 
         return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
