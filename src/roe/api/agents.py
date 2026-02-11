@@ -9,11 +9,14 @@ from roe.models.agent import AgentVersion, BaseAgent
 from roe.models.job import Job, JobBatch
 from roe.models.responses import (
     AgentDatum,
+    AgentJobResource,
     AgentJobResult,
     AgentJobResultBatch,
     AgentJobStatus,
     AgentJobStatusBatch,
+    BatchGetResult,
     JobDataDeleteResponse,
+    JobStatus,
     PaginatedResponse,
 )
 from roe.utils.http_client import RoeHTTPClient
@@ -165,7 +168,11 @@ class AgentVersionsAPI:
 
 
 class AgentJobsAPI:
-    """Nested API for agent job operations."""
+    """Nested API for agent job operations.
+
+    V2 canonical endpoints use ``/v2/agents/{agent_id}/jobs/``.
+    Legacy V1 helpers (status, result, statuses, results) remain on ``/v1/``.
+    """
 
     _MAX_BATCH_SIZE = 1000
 
@@ -186,8 +193,33 @@ class AgentJobsAPI:
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
+    # ------------------------------------------------------------------
+    # Retrieve (V2)
+    # ------------------------------------------------------------------
+
+    def retrieve(self, agent_id: str, job_id: str) -> AgentJobResource:
+        """Retrieve the full job resource (status + blob).
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+
+        Returns:
+            AgentJobResource with all fields.
+        """
+        response_data = self.http_client.get(
+            f"/v2/agents/{agent_id}/jobs/{job_id}/"
+        )
+        return AgentJobResource(**response_data)
+
+    # ------------------------------------------------------------------
+    # Lightweight status / result helpers (V1 legacy)
+    # ------------------------------------------------------------------
+
     def retrieve_status(self, job_id: str) -> AgentJobStatus:
         """Retrieve the status of an agent job.
+
+        Uses the lightweight status endpoint (no blob transfer).
 
         Args:
             job_id: Agent job UUID.
@@ -252,6 +284,117 @@ class AgentJobsAPI:
             )
         return results
 
+    # ------------------------------------------------------------------
+    # Wait (V2)
+    # ------------------------------------------------------------------
+
+    def wait(
+        self,
+        agent_id: str,
+        job_id: str,
+        timeout_seconds: int = 7200,
+        poll_interval: float = 3.0,
+    ) -> AgentJobResource:
+        """Server-side wait until job reaches a terminal state.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+            timeout_seconds: Server-side timeout (default 7200).
+            poll_interval: Server-side poll interval (default 3).
+
+        Returns:
+            AgentJobResource in a terminal state.
+        """
+        params: dict[str, str] = {
+            "timeout_seconds": str(timeout_seconds),
+            "poll_interval": str(poll_interval),
+        }
+        response_data = self.http_client.get(
+            f"/v2/agents/{agent_id}/jobs/{job_id}:wait", params=params
+        )
+        return AgentJobResource(**response_data)
+
+    # ------------------------------------------------------------------
+    # List (V1)
+    # ------------------------------------------------------------------
+
+    def list(
+        self,
+        agent_id: str,
+        page: int | None = None,
+        page_size: int | None = None,
+        status_code: int | None = None,
+    ) -> PaginatedResponse[AgentJobResource]:
+        """List jobs for an agent.
+
+        Args:
+            agent_id: Base agent UUID.
+            page: Page number (1-based).
+            page_size: Number of results per page.
+            status_code: Filter by status code.
+
+        Returns:
+            Paginated list of AgentJobResource.
+        """
+        params: dict[str, Any] = {}
+        if page is not None:
+            params["page"] = page
+        if page_size is not None:
+            params["page_size"] = page_size
+        if status_code is not None:
+            params["status_code"] = status_code
+        response_data = self.http_client.get(
+            f"/v1/agents/{agent_id}/jobs/", params=params or None
+        )
+        jobs = [AgentJobResource(**j) for j in response_data.get("results", [])]
+        return PaginatedResponse[AgentJobResource](
+            count=response_data.get("count", len(jobs)),
+            next=response_data.get("next"),
+            previous=response_data.get("previous"),
+            results=jobs,
+        )
+
+    # ------------------------------------------------------------------
+    # Batch get (V2)
+    # ------------------------------------------------------------------
+
+    def batch_get(
+        self,
+        agent_id: str,
+        job_ids: list[str],
+    ) -> BatchGetResult:
+        """Batch retrieve job resources (agent-scoped).
+
+        Args:
+            agent_id: Base agent UUID.
+            job_ids: List of job UUIDs.
+
+        Returns:
+            A ``BatchGetResult`` containing ``results`` (list of
+            ``AgentJobResource``) and ``errors`` (per-ID error entries
+            for missing or inaccessible jobs).
+        """
+        all_results: list[AgentJobResource] = []
+        all_errors: list[dict[str, Any]] = []
+        for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
+            if not chunk:
+                continue
+            body: dict[str, Any] = {"job_ids": chunk}
+            response_data = self.http_client.post(
+                f"/v2/agents/{agent_id}/jobs:batchGet", json_data=body
+            )
+            all_results.extend(
+                AgentJobResource(**item)
+                for item in response_data.get("results", [])
+            )
+            all_errors.extend(response_data.get("errors", []))
+        return BatchGetResult(results=all_results, errors=all_errors)
+
+    # ------------------------------------------------------------------
+    # References (V1)
+    # ------------------------------------------------------------------
+
     def download_reference(
         self, job_id: str, resource_id: str, as_attachment: bool = False
     ) -> bytes:
@@ -274,27 +417,29 @@ class AgentJobsAPI:
             params=params if params else None,
         )
 
-    def cancel(self, job_id: str) -> None:
-        """Cancel a running agent job.
+    # ------------------------------------------------------------------
+    # Purge data (V2)
+    # ------------------------------------------------------------------
+
+    def purge_data(self, agent_id: str, job_id: str) -> JobDataDeleteResponse:
+        """Purge persisted data for an agent job.
 
         Args:
-            job_id: Agent job UUID to cancel.
-        """
-        self.http_client.post(f"/v1/agents/jobs/{job_id}/cancel/")
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
 
-    def cancel_all(self, agent_id: str) -> None:
-        """Cancel all running jobs for a given agent.
-
-        Args:
-            agent_id: Base agent UUID whose running jobs should be cancelled.
+        Returns:
+            JobDataDeleteResponse with deletion status.
         """
-        self.http_client.post(f"/v1/agents/{agent_id}/jobs/cancel-all/")
+        response_data = self.http_client.post(
+            f"/v2/agents/{agent_id}/jobs/{job_id}:purgeData"
+        )
+        return JobDataDeleteResponse(**response_data)
 
     def delete_data(self, job_id: str) -> JobDataDeleteResponse:
         """Delete persisted data for an agent job.
 
-        Deletes uploaded input files and sanitizes stored outputs.
-        Only works for jobs in terminal states (SUCCESS, FAILURE, CANCELLED).
+        .. deprecated:: Prefer :meth:`purge_data`.
 
         Args:
             job_id: Agent job UUID.
@@ -304,6 +449,119 @@ class AgentJobsAPI:
         """
         response_data = self.http_client.post(f"/v1/agents/jobs/{job_id}/delete-data/")
         return JobDataDeleteResponse(**response_data)
+
+    # ------------------------------------------------------------------
+    # Cancel (V2)
+    # ------------------------------------------------------------------
+
+    def cancel(self, agent_id: str, job_id: str) -> dict:
+        """Cancel a running agent job. Idempotent.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+
+        Returns:
+            Dict with cancellation status.
+        """
+        return self.http_client.post(
+            f"/v2/agents/{agent_id}/jobs/{job_id}:cancel"
+        )
+
+    def cancel_all(self, agent_id: str) -> dict:
+        """Cancel all running jobs for an agent.
+
+        Args:
+            agent_id: Base agent UUID.
+
+        Returns:
+            Dict with cancellation summary.
+        """
+        return self.http_client.post(f"/v2/agents/{agent_id}/jobs:cancelAll")
+
+    # ------------------------------------------------------------------
+    # Rerun (V2)
+    # ------------------------------------------------------------------
+
+    def rerun(self, agent_id: str, job_id: str) -> dict:
+        """Re-run a completed or failed job.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+
+        Returns:
+            Dict with the new job information.
+        """
+        return self.http_client.post(
+            f"/v2/agents/{agent_id}/jobs/{job_id}:rerun"
+        )
+
+    # ------------------------------------------------------------------
+    # Delete (V2)
+    # ------------------------------------------------------------------
+
+    def delete(self, agent_id: str, job_id: str) -> None:
+        """Delete an agent job and clean up blob + vector data.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+        """
+        self.http_client.delete(f"/v2/agents/{agent_id}/jobs/{job_id}/")
+
+    # ------------------------------------------------------------------
+    # Update (V2)
+    # ------------------------------------------------------------------
+
+    def update(self, agent_id: str, job_id: str, **fields: Any) -> AgentJobResource:
+        """Update job metadata.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+            **fields: Fields to update.
+
+        Returns:
+            Updated AgentJobResource.
+        """
+        response_data = self.http_client.patch(
+            f"/v2/agents/{agent_id}/jobs/{job_id}/", json_data=fields
+        )
+        return AgentJobResource(**response_data)
+
+    # ------------------------------------------------------------------
+    # Feedback (V2)
+    # ------------------------------------------------------------------
+
+    def retrieve_feedback(self, agent_id: str, job_id: str) -> dict:
+        """Retrieve feedback for an agent job.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+
+        Returns:
+            Dict with feedback data.
+        """
+        return self.http_client.get(
+            f"/v2/agents/{agent_id}/jobs/{job_id}/feedback/"
+        )
+
+    def update_feedback(self, agent_id: str, job_id: str, **fields: Any) -> dict:
+        """Update feedback for an agent job.
+
+        Args:
+            agent_id: Base agent UUID.
+            job_id: Agent job UUID.
+            **fields: Feedback fields to update.
+
+        Returns:
+            Dict with updated feedback data.
+        """
+        return self.http_client.patch(
+            f"/v2/agents/{agent_id}/jobs/{job_id}/feedback/", json_data=fields
+        )
 
 
 class AgentsAPI:
@@ -344,6 +602,7 @@ class AgentsAPI:
             AgentJobsAPI instance.
 
         Examples:
+            resource = client.agents.jobs.retrieve("agent-uuid", "job-uuid")
             status = client.agents.jobs.retrieve_status("job-uuid")
             result = client.agents.jobs.retrieve_result("job-uuid")
         """
@@ -504,6 +763,10 @@ class AgentsAPI:
         base_agent.set_agents_api(self)
         return base_agent
 
+    # ------------------------------------------------------------------
+    # Run
+    # ------------------------------------------------------------------
+
     def run(
         self,
         agent_id: str,
@@ -514,7 +777,7 @@ class AgentsAPI:
         """Run an agent and return a Job object.
 
         Args:
-            agent_id: Agent UUID to run (can be base agent or version ID).
+            agent_id: Base agent UUID.
             timeout_seconds: Maximum time in seconds to wait for job completion.
                            Defaults to 7200 seconds (2 hours).
             metadata: Optional metadata dictionary to attach to the job.
@@ -527,13 +790,19 @@ class AgentsAPI:
             job = client.agents.run(agent_id="uuid", text="Analyze this")
             result = job.wait()
         """
-        job_id = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/async/",
+        response_data = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/{agent_id}/jobs/",
             inputs=inputs,
             metadata=metadata,
         )
 
-        return Job(self, job_id, timeout_seconds)
+        # Extract job ID from the response
+        if isinstance(response_data, dict):
+            job_id = response_data.get("id", response_data)
+        else:
+            job_id = response_data
+
+        return Job(self, str(job_id), agent_id=agent_id, timeout_seconds=timeout_seconds)
 
     def run_many(
         self,
@@ -543,6 +812,8 @@ class AgentsAPI:
         metadata: dict[str, Any] | None = None,
     ) -> JobBatch:
         """Run an agent with multiple inputs and return a JobBatch.
+
+        Creates one job per input set.
 
         Args:
             agent_id: Agent UUID to run.
@@ -554,19 +825,19 @@ class AgentsAPI:
             JobBatch instance for tracking and waiting on all executions.
         """
         all_job_ids: list[str] = []
-        for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
-            if not chunk:
-                continue
-            json_data: dict[str, Any] = {"inputs": chunk}
-            if metadata is not None:
-                json_data["metadata"] = metadata
-            response_data = self.http_client.post(
-                url=f"/v1/agents/run/{agent_id}/async/many/",
-                json_data=json_data,
+        for inputs in batch_inputs:
+            response_data = self.http_client.post_with_dynamic_inputs(
+                url=f"/v1/agents/{agent_id}/jobs/",
+                inputs=inputs,
+                metadata=metadata,
             )
-            all_job_ids.extend(response_data)
+            if isinstance(response_data, dict):
+                job_id = response_data.get("id", response_data)
+            else:
+                job_id = response_data
+            all_job_ids.append(str(job_id))
 
-        return JobBatch(self, all_job_ids, timeout_seconds)
+        return JobBatch(self, all_job_ids, agent_id=agent_id, timeout_seconds=timeout_seconds)
 
     def run_sync(
         self,
@@ -611,12 +882,18 @@ class AgentsAPI:
         Returns:
             Job instance for tracking and waiting on the execution.
         """
-        job_id = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/versions/{version_id}/async/",
+        response_data = self.http_client.post_with_dynamic_inputs(
+            url=f"/v1/agents/{agent_id}/versions/{version_id}/jobs/",
             inputs=inputs,
             metadata=metadata,
         )
-        return Job(self, job_id, timeout_seconds)
+
+        if isinstance(response_data, dict):
+            job_id = response_data.get("id", response_data)
+        else:
+            job_id = response_data
+
+        return Job(self, str(job_id), agent_id=agent_id, timeout_seconds=timeout_seconds)
 
     def run_version_sync(
         self,

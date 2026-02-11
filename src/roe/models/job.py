@@ -1,12 +1,15 @@
 """Job and JobBatch models for agent execution tracking."""
 
-from __future__ import annotations
-
 import time
 from typing import TYPE_CHECKING
 
-from roe.exceptions import NotFoundError
-from roe.models.responses import AgentJobResult, AgentJobStatus, JobStatus
+from roe.exceptions import NotFoundError, RoeAPIException
+from roe.models.responses import (
+    AgentJobResource,
+    AgentJobResult,
+    AgentJobStatus,
+    JobStatus,
+)
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
@@ -16,32 +19,31 @@ class Job:
     """Represents a single agent job for tracking and waiting."""
 
     def __init__(
-        self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None
+        self,
+        agents_api: "AgentsAPI",
+        job_id: str,
+        agent_id: str | None = None,
+        timeout_seconds: int | None = None,
     ):
         """Initialize a Job instance.
 
         Args:
             agents_api: AgentsAPI instance for making requests.
             job_id: Agent job UUID.
-            timeout_seconds: Maximum time in seconds to wait for job completion. Defaults to 7200 (2 hours).
-                           Must be positive if provided.
+            agent_id: Base agent UUID (enables server-side wait).
+            timeout_seconds: Maximum time in seconds to wait for job completion.
+                Defaults to 7200 (2 hours). Must be positive if provided.
 
         Raises:
             ValueError: If timeout_seconds is not positive.
-
-        Examples:
-            # Typically created by run_async
-            job = client.agents.run_async(agent_id, inputs)
-            result = job.wait()
         """
         self.agents_api = agents_api
         self._job_id = job_id
+        self._agent_id = agent_id
 
-        # Set default timeout
         if timeout_seconds is None:
-            self._timeout_seconds = 7200  # 2 hours default
+            self._timeout_seconds = 7200
         else:
-            # Validate timeout is positive
             if timeout_seconds <= 0:
                 raise ValueError(
                     f"timeout_seconds must be positive, got {timeout_seconds}"
@@ -50,20 +52,17 @@ class Job:
 
     @property
     def id(self) -> str:
-        """Get the job ID.
-
-        Returns:
-            Agent job UUID string.
-        """
+        """Get the job ID."""
         return self._job_id
 
     @property
-    def timeout_seconds(self) -> int:
-        """Get the configured timeout in seconds.
+    def agent_id(self) -> str | None:
+        """Get the base agent ID (may be None for legacy jobs)."""
+        return self._agent_id
 
-        Returns:
-            Timeout value in seconds.
-        """
+    @property
+    def timeout_seconds(self) -> int:
+        """Get the configured timeout in seconds."""
         return self._timeout_seconds
 
     def wait(
@@ -71,62 +70,106 @@ class Job:
     ) -> AgentJobResult:
         """Wait for the job to complete and return its result.
 
+        When *agent_id* is available the server-side wait endpoint is
+        used for efficiency.  Otherwise falls back to client-side polling.
+
         Args:
-            interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
-                    specified when creating the job (default: 7200 seconds).
-                    Must be positive if provided.
+            interval: Seconds between status checks (client-side fallback
+                only; default 5.0).
+            timeout: Maximum wait time in seconds.  Falls back to the
+                instance *timeout_seconds*.
 
         Returns:
-            AgentJobResult when the job completes successfully.
+            AgentJobResult when the job reaches a terminal state.
 
         Raises:
-            TimeoutError: If the job doesn't complete within the timeout.
+            TimeoutError: If the job does not complete within the timeout.
             ValueError: If timeout is not positive.
-
-        Examples:
-            # Basic usage - uses default timeout of 7200 seconds
-            result = job.wait()
-
-            # With custom interval and timeout
-            result = job.wait(interval=2.0, timeout=300)
         """
-        # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
 
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
-        start_time = time.time()
 
+        # Prefer server-side wait when agent_id is known
+        if self._agent_id:
+            start_time = time.time()
+            try:
+                resource = self.agents_api.jobs.wait(
+                    agent_id=self._agent_id,
+                    job_id=self._job_id,
+                    timeout_seconds=int(effective_timeout),
+                    poll_interval=interval,
+                )
+                return resource.to_result()
+            except RoeAPIException as e:
+                if e.status_code == 408:
+                    raise TimeoutError(
+                        f"Job {self._job_id} did not complete within {effective_timeout} seconds"
+                    )
+            except Exception:
+                # Fall through to client-side polling on any transport error
+                pass
+
+            elapsed = time.time() - start_time
+            remaining = effective_timeout - elapsed
+            if remaining <= 0:
+                raise TimeoutError(
+                    f"Job {self._job_id} did not complete within {effective_timeout} seconds"
+                )
+            return self._poll_until_done(interval, remaining)
+
+        # Client-side polling fallback
+        return self._poll_until_done(interval, effective_timeout)
+
+    def _poll_until_done(self, interval: float, timeout: float) -> AgentJobResult:
+        """Client-side poll loop used when server-side wait is unavailable."""
+        start_time = time.time()
         while True:
             status = self.retrieve_status()
-
             if status.status in (
                 JobStatus.SUCCESS,
                 JobStatus.FAILURE,
                 JobStatus.CANCELLED,
                 JobStatus.CACHED,
             ):
-                # Return result regardless of success/failure - let user check status if needed
                 return self.retrieve_result()
 
-            if (time.time() - start_time) > effective_timeout:
+            if (time.time() - start_time) > timeout:
                 raise TimeoutError(
-                    f"Job {self._job_id} did not complete within {effective_timeout} seconds"
+                    f"Job {self._job_id} did not complete within {timeout} seconds"
                 )
-
             time.sleep(interval)
+
+    def wait_for_resource(
+        self, interval: float = 5.0, timeout: float | None = None
+    ) -> AgentJobResource:
+        """Like :meth:`wait` but returns the full job resource.
+
+        Requires *agent_id* to be set.
+
+        Args:
+            interval: Poll interval for server-side wait.
+            timeout: Maximum wait time.
+
+        Returns:
+            AgentJobResource in terminal state.
+        """
+        effective_timeout = timeout if timeout is not None else self._timeout_seconds
+        if not self._agent_id:
+            raise ValueError("agent_id is required for wait_for_resource")
+        return self.agents_api.jobs.wait(
+            agent_id=self._agent_id,
+            job_id=self._job_id,
+            timeout_seconds=int(effective_timeout),
+            poll_interval=interval,
+        )
 
     def retrieve_status(self) -> AgentJobStatus:
         """Retrieve the current status of the job.
 
         Returns:
-            AgentJobStatus instance with current job status.
-
-        Examples:
-            status = job.retrieve_status()
-            if status.status == JobStatus.SUCCESS:
-                result = job.retrieve_result()
+            AgentJobStatus instance.
         """
         return self.agents_api.jobs.retrieve_status(self._job_id)
 
@@ -135,18 +178,6 @@ class Job:
 
         Returns:
             AgentJobResult instance.
-
-        Note:
-            This method will return the result regardless of job status.
-            For completed jobs only, use wait() which handles status checking.
-
-        Examples:
-            # Retrieve result (may fail if job not complete)
-            try:
-                result = job.retrieve_result()
-            except Exception:
-                # Job may not be complete yet
-                result = job.wait()  # Wait for completion
         """
         return self.agents_api.jobs.retrieve_result(self._job_id)
 
@@ -158,6 +189,7 @@ class JobBatch:
         self,
         agents_api: "AgentsAPI",
         job_ids: list[str],
+        agent_id: str | None = None,
         timeout_seconds: int | None = None,
     ):
         """Initialize a JobBatch instance.
@@ -165,27 +197,21 @@ class JobBatch:
         Args:
             agents_api: AgentsAPI instance for making requests.
             job_ids: List of agent job UUIDs.
-            timeout_seconds: Maximum time in seconds to wait for jobs completion. Defaults to 7200 (2 hours).
-                           Must be positive if provided.
+            agent_id: Base agent UUID.
+            timeout_seconds: Maximum wait time. Defaults to 7200 (2 hours).
 
         Raises:
             ValueError: If timeout_seconds is not positive.
-
-        Examples:
-            # Typically created by run_async_many
-            batch = client.agents.run_async_many(agent_id, inputs_list)
-            results = batch.wait()
         """
         self.agents_api = agents_api
         self._job_ids = job_ids
+        self._agent_id = agent_id
         self._completed_jobs: dict[str, AgentJobResult] = {}
         self._job_statuses: dict[str, int] = {}
 
-        # Set default timeout
         if timeout_seconds is None:
-            self._timeout_seconds = 7200  # 2 hours default
+            self._timeout_seconds = 7200
         else:
-            # Validate timeout is positive
             if timeout_seconds <= 0:
                 raise ValueError(
                     f"timeout_seconds must be positive, got {timeout_seconds}"
@@ -194,41 +220,29 @@ class JobBatch:
 
     @property
     def job_ids(self) -> list[str]:
-        """Get the list of job IDs.
-
-        Returns:
-            List of agent job UUID strings.
-        """
+        """Get the list of job IDs."""
         return self._job_ids.copy()
 
     @property
-    def timeout_seconds(self) -> int:
-        """Get the configured timeout in seconds.
+    def agent_id(self) -> str | None:
+        """Get the base agent ID."""
+        return self._agent_id
 
-        Returns:
-            Timeout value in seconds.
-        """
+    @property
+    def timeout_seconds(self) -> int:
+        """Get the configured timeout in seconds."""
         return self._timeout_seconds
 
     @property
     def jobs(self) -> list[Job]:
-        """Get individual Job objects for each job in the batch.
-
-        Returns:
-            List of Job instances for individual job operations.
-
-        Examples:
-            batch = client.agents.run_async_many(agent_id, inputs_list)
-
-            # Access individual jobs
-            first_job = batch.jobs[0]
-            first_result = first_job.wait()
-
-            # Or wait for all
-            all_results = batch.wait()
-        """
+        """Get individual Job objects for each job in the batch."""
         return [
-            Job(self.agents_api, job_id, self._timeout_seconds)
+            Job(
+                self.agents_api,
+                job_id,
+                agent_id=self._agent_id,
+                timeout_seconds=self._timeout_seconds,
+            )
             for job_id in self._job_ids
         ]
 
@@ -241,10 +255,8 @@ class JobBatch:
         """Wait for jobs in the batch to complete and return their results.
 
         Args:
-            interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the
-                ``timeout_seconds`` specified when creating the batch
-                (default: 7200 seconds). Must be positive if provided.
+            interval: Time in seconds between status checks (default 5.0).
+            timeout: Maximum wait time.  Falls back to instance timeout.
             raise_on_timeout: If ``True`` (default), raises ``TimeoutError``
                 when the timeout is reached and some jobs are still running.
                 If ``False``, returns partial results instead — completed
@@ -261,20 +273,6 @@ class JobBatch:
             TimeoutError: If ``raise_on_timeout=True`` and jobs don't
                 complete within the timeout.
             ValueError: If timeout is not positive.
-
-        Examples:
-            # Default — raises on timeout
-            results = batch.wait()
-
-            # Return partial results instead of raising
-            results = batch.wait(raise_on_timeout=False)
-            completed = [r for r in results if r is not None]
-            print(f"{len(completed)} / {len(results)} jobs done")
-
-            # Figure out which are still running
-            for job_id, r in zip(batch.job_ids, results):
-                if r is None:
-                    print(f"{job_id} still in progress")
         """
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
@@ -294,7 +292,6 @@ class JobBatch:
 
             status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
-            # Find jobs that moved to terminal states
             completed_in_this_batch: list[str] = []
             for status_item in status_batch:
                 job_id = status_item.id
@@ -305,8 +302,6 @@ class JobBatch:
                     JobStatus.CACHED,
                 ):
                     completed_in_this_batch.append(job_id)
-
-                # Update status cache (only if status is not None)
                 if status_item.status is not None:
                     self._job_statuses[job_id] = status_item.status
 
@@ -359,18 +354,7 @@ class JobBatch:
 
         Returns:
             Dictionary mapping job IDs to their current status codes.
-            Status codes: 0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED
-
-        Examples:
-            status_map = batch.retrieve_status()
-            print(f"Batch status: {status_map}")
-
-            # Check individual statuses
-            for job_id, status_code in status_map.items():
-                if status_code == JobStatus.SUCCESS:
-                    print(f"Job {job_id} completed successfully")
         """
-        # Return cached status for completed jobs, query for others
         status_map = {}
         jobs_to_query = []
 
@@ -380,7 +364,6 @@ class JobBatch:
             else:
                 jobs_to_query.append(job_id)
 
-        # Query only jobs we don't have cached status for
         if jobs_to_query:
             status_batch = self.agents_api.jobs.retrieve_status_many(jobs_to_query)
             for status_item in status_batch:

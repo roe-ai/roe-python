@@ -20,6 +20,13 @@ class JobStatus:
     CANCELLED = 5
     CACHED = 6
 
+    _TERMINAL = {3, 4, 5, 6}
+
+    @classmethod
+    def is_terminal(cls, code: int) -> bool:
+        """Return True if *code* represents a terminal (final) status."""
+        return code in cls._TERMINAL
+
 
 class ErrorResponse(BaseModel):
     """Error response model."""
@@ -90,8 +97,8 @@ class Reference(BaseModel):
 class AgentJobResult(BaseModel):
     """Agent job result response model."""
 
-    agent_id: UUID = Field(..., description="The ID of the base agent")
-    agent_version_id: UUID = Field(..., description="The ID of the agent version")
+    agent_id: UUID | None = Field(default=None, description="The ID of the base agent")
+    agent_version_id: UUID | None = Field(default=None, description="The ID of the agent version")
     inputs: list[Any] = Field(..., description="The input data provided to the agent")
     input_tokens: int | None = Field(..., description="Number of input tokens used")
     output_tokens: int | None = Field(
@@ -182,8 +189,146 @@ class JobDataDeleteResponse(BaseModel):
     deleted_count: int = Field(..., description="Number of files successfully deleted")
     failed_count: int = Field(..., description="Number of files that failed to delete")
     outputs_sanitized: bool = Field(
-        ..., description="Whether outputs were successfully sanitized"
+        default=False,
+        description="Whether outputs were successfully sanitized",
+    )
+    blob_sanitized: bool = Field(
+        default=False,
+        description="Whether blob data was successfully sanitized",
+    )
+    artifacts_deleted_count: int = Field(
+        default=0, description="Number of workflow artifacts deleted"
+    )
+    artifacts_failed_count: int = Field(
+        default=0, description="Number of workflow artifacts that failed to delete"
     )
     errors: list[str] | None = Field(
         default=None, description="List of errors encountered during deletion"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Unified job resource
+# ---------------------------------------------------------------------------
+
+
+class StatusEvent(BaseModel):
+    """A single status-change event in the job lifecycle."""
+
+    timestamp: str = Field(..., description="ISO-8601 timestamp")
+    status_code: int = Field(..., description="Status code at this event")
+    error_message: str | None = Field(default=None)
+    error_details: dict[str, str] | None = Field(default=None)
+    count: int | None = Field(default=None)
+
+
+class AgentJobBlob(BaseModel):
+    """Blob payload attached to a terminal job."""
+
+    agent_job_id: str | None = Field(default=None)
+    inputs: list[Any] | None = Field(default=None)
+    outputs: list[AgentDatum] | None = Field(default=None)
+    corrected_outputs: list[AgentDatum] | None = Field(default=None)
+    logs: list[Any] | None = Field(default=None)
+    trace: Any | None = Field(default=None)
+    usage: Any | None = Field(default=None)
+
+
+class AgentJobResource(BaseModel):
+    """Full representation of an AgentJob including blob and metadata."""
+
+    id: str = Field(..., description="Job UUID")
+    name: str = Field(
+        ...,
+        description="Canonical resource name, e.g. agents/{agent_id}/jobs/{job_id}",
+    )
+    status_code: int = Field(
+        default=0,
+        description="Current status code (0=PENDING … 6=CACHED)",
+    )
+    status_events: list[StatusEvent] = Field(default_factory=list)
+    agent_id: str | None = Field(default=None, description="Base agent UUID")
+    agent_version_id: str | None = Field(default=None, description="Agent version UUID")
+    agent_version_name: str | None = Field(default=None)
+    created_at: str | None = Field(default=None, description="ISO-8601 timestamp")
+    last_updated_at: str | None = Field(default=None)
+    cost: float | None = Field(default=None)
+    input_tokens: int | None = Field(default=None)
+    output_tokens: int | None = Field(default=None)
+    engine_class_id: str | None = Field(default=None)
+    engine_config: dict[str, Any] | None = Field(default=None)
+    job_inputs: list[Any] | None = Field(default=None)
+    metadata: dict[str, Any] | None = Field(default=None)
+    evaluation: Any | None = Field(default=None)
+    blob: AgentJobBlob | None = Field(
+        default=None,
+        description="Blob data (inputs, outputs, logs, trace). Omitted by default in list/batchGet.",
+    )
+    from_cache: bool = Field(
+        default=False,
+        description="Whether this result was served from the job cache.",
+    )
+
+    # Convenience helpers -------------------------------------------------------
+
+    @property
+    def is_terminal(self) -> bool:
+        return JobStatus.is_terminal(self.status_code)
+
+    def get_outputs(self) -> list[AgentDatum]:
+        """Return outputs from blob if present, else empty list."""
+        if self.blob and self.blob.outputs:
+            return self.blob.outputs
+        return []
+
+    def to_result(self) -> "AgentJobResult":
+        """Convert to the legacy ``AgentJobResult`` shape for backward compat."""
+        outputs = self.get_outputs()
+        inputs_data: list[Any] = []
+        if self.blob and self.blob.inputs:
+            inputs_data = self.blob.inputs
+        elif self.job_inputs:
+            inputs_data = self.job_inputs
+
+        return AgentJobResult(
+            agent_id=UUID(self.agent_id) if self.agent_id else None,
+            agent_version_id=UUID(self.agent_version_id) if self.agent_version_id else None,
+            inputs=inputs_data,
+            input_tokens=self.input_tokens,
+            output_tokens=self.output_tokens,
+            outputs=outputs,
+        )
+
+    def get_references(self) -> list[Reference]:
+        """Extract reference files from blob outputs."""
+        refs: list[Reference] = []
+        for output in self.get_outputs():
+            try:
+                data = json.loads(output.value)
+                if isinstance(data, dict) and "references" in data:
+                    for ref_url in data["references"]:
+                        if isinstance(ref_url, str) and "/references/" in ref_url:
+                            refs.append(Reference.from_url(ref_url))
+            except (json.JSONDecodeError, TypeError):
+                continue
+        return refs
+
+
+class BatchGetError(BaseModel):
+    """Per-ID error entry returned by :batchGet for missing or inaccessible jobs."""
+
+    id: str = Field(..., description="Job UUID that could not be retrieved")
+    error: str = Field(..., description="Error code (e.g. 'not_found')")
+
+
+class BatchGetResult(BaseModel):
+    """Structured response from the :batchGet endpoint."""
+
+    results: list[AgentJobResource] = Field(
+        default_factory=list,
+        description="Successfully retrieved job resources",
+    )
+    errors: list[BatchGetError] = Field(
+        default_factory=list,
+        description="Per-ID errors for jobs that could not be retrieved",
     )
