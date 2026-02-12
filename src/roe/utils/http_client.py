@@ -93,6 +93,8 @@ class RoeHTTPClient:
             RoeAPIException: For API errors.
         """
         if response.is_success:
+            if response.status_code == 204 or not response.content:
+                return None
             return response.json()
 
         # Get the appropriate exception class for the status code
