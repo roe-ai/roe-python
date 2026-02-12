@@ -274,6 +274,22 @@ class AgentJobsAPI:
             params=params if params else None,
         )
 
+    def cancel(self, job_id: str) -> None:
+        """Cancel a running agent job.
+
+        Args:
+            job_id: Agent job UUID to cancel.
+        """
+        self.http_client.post(f"/v1/agents/jobs/{job_id}/cancel/")
+
+    def cancel_all(self, agent_id: str) -> None:
+        """Cancel all running jobs for a given agent.
+
+        Args:
+            agent_id: Base agent UUID whose running jobs should be cancelled.
+        """
+        self.http_client.post(f"/v1/agents/{agent_id}/jobs/cancel-all/")
+
     def delete_data(self, job_id: str) -> JobDataDeleteResponse:
         """Delete persisted data for an agent job.
 
