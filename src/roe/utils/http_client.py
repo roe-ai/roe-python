@@ -1,6 +1,7 @@
 """HTTP client wrapper for the Roe AI SDK."""
 
 import io
+import json as _json
 from typing import Any
 
 import httpx
@@ -168,6 +169,7 @@ class RoeHTTPClient:
         self,
         url: str,
         inputs: dict[str, Any],
+        metadata: dict[str, Any] | None = None,
         params: dict[str, Any] | None = None,
     ) -> Any:
         """Make a POST request with dynamic inputs (handles files automatically).
@@ -175,12 +177,16 @@ class RoeHTTPClient:
         Args:
             url: Request URL (relative to base URL).
             inputs: Dynamic input values.
+            metadata: Optional metadata dictionary to attach to the job.
             params: Query parameters.
 
         Returns:
             Parsed JSON response.
         """
         form_data, files = self._process_inputs(inputs)
+
+        if metadata is not None:
+            form_data["metadata"] = _json.dumps(metadata)
 
         return self.post(
             url=url,

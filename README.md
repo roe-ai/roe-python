@@ -195,6 +195,47 @@ batch = client.agents.run_many(
 results = batch.wait()
 ```
 
+## Metadata
+
+You can attach arbitrary metadata to any job when running an agent. Metadata is a dictionary of key-value pairs that gets stored with the job, useful for tracking, filtering, or correlating jobs with your own internal records.
+
+```python
+# Attach metadata to an async job
+job = client.agents.run(
+    agent_id="agent-uuid",
+    metadata={"customer_id": "cust-123", "request_source": "api"},
+    url="https://example.com",
+)
+result = job.wait()
+
+# Attach metadata to a sync job
+outputs = client.agents.run_sync(
+    agent_id="agent-uuid",
+    metadata={"batch": "2026-02-12", "priority": "high"},
+    url="https://example.com",
+)
+
+# Attach metadata to a batch of jobs (applied to all jobs in the batch)
+batch = client.agents.run_many(
+    agent_id="agent-uuid",
+    batch_inputs=[{"url": "https://a.com"}, {"url": "https://b.com"}],
+    metadata={"campaign": "weekly-scan"},
+)
+results = batch.wait()
+
+# Attach metadata when running a specific version
+job = client.agents.run_version(
+    agent_id="agent-uuid",
+    version_id="version-uuid",
+    metadata={"experiment": "v2-prompt"},
+    url="https://example.com",
+)
+
+# Also works directly on agent and version models
+agent = client.agents.retrieve("agent-uuid")
+job = agent.run(metadata={"source": "sdk"}, url="https://example.com")
+```
+
 ## Agent Management
 
 ```python

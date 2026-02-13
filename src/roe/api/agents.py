@@ -505,7 +505,11 @@ class AgentsAPI:
         return base_agent
 
     def run(
-        self, agent_id: str, timeout_seconds: int | None = None, **inputs: Any
+        self,
+        agent_id: str,
+        timeout_seconds: int | None = None,
+        metadata: dict[str, Any] | None = None,
+        **inputs: Any,
     ) -> Job:
         """Run an agent and return a Job object.
 
@@ -513,6 +517,7 @@ class AgentsAPI:
             agent_id: Agent UUID to run (can be base agent or version ID).
             timeout_seconds: Maximum time in seconds to wait for job completion.
                            Defaults to 7200 seconds (2 hours).
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
@@ -525,6 +530,7 @@ class AgentsAPI:
         job_id = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/async/",
             inputs=inputs,
+            metadata=metadata,
         )
 
         return Job(self, job_id, timeout_seconds)
@@ -534,6 +540,7 @@ class AgentsAPI:
         agent_id: str,
         batch_inputs: list[dict[str, Any]],
         timeout_seconds: int | None = None,
+        metadata: dict[str, Any] | None = None,
     ) -> JobBatch:
         """Run an agent with multiple inputs and return a JobBatch.
 
@@ -541,6 +548,7 @@ class AgentsAPI:
             agent_id: Agent UUID to run.
             batch_inputs: List of input dictionaries.
             timeout_seconds: Maximum time in seconds to wait for jobs completion.
+            metadata: Optional metadata dictionary to attach to all jobs in the batch.
 
         Returns:
             JobBatch instance for tracking and waiting on all executions.
@@ -549,7 +557,9 @@ class AgentsAPI:
         for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
             if not chunk:
                 continue
-            json_data = {"inputs": chunk}
+            json_data: dict[str, Any] = {"inputs": chunk}
+            if metadata is not None:
+                json_data["metadata"] = metadata
             response_data = self.http_client.post(
                 url=f"/v1/agents/run/{agent_id}/async/many/",
                 json_data=json_data,
@@ -558,11 +568,17 @@ class AgentsAPI:
 
         return JobBatch(self, all_job_ids, timeout_seconds)
 
-    def run_sync(self, agent_id: str, **inputs: Any) -> list[AgentDatum]:
+    def run_sync(
+        self,
+        agent_id: str,
+        metadata: dict[str, Any] | None = None,
+        **inputs: Any,
+    ) -> list[AgentDatum]:
         """Run an agent synchronously and return results directly.
 
         Args:
             agent_id: Agent UUID to run (uses current version).
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
@@ -571,6 +587,7 @@ class AgentsAPI:
         response_data = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/",
             inputs=inputs,
+            metadata=metadata,
         )
         return [AgentDatum(**datum) for datum in response_data]
 
@@ -579,6 +596,7 @@ class AgentsAPI:
         agent_id: str,
         version_id: str,
         timeout_seconds: int | None = None,
+        metadata: dict[str, Any] | None = None,
         **inputs: Any,
     ) -> Job:
         """Run a specific agent version asynchronously.
@@ -587,6 +605,7 @@ class AgentsAPI:
             agent_id: Base agent UUID.
             version_id: Version UUID to run.
             timeout_seconds: Maximum time in seconds to wait for job completion.
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
@@ -595,17 +614,23 @@ class AgentsAPI:
         job_id = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/versions/{version_id}/async/",
             inputs=inputs,
+            metadata=metadata,
         )
         return Job(self, job_id, timeout_seconds)
 
     def run_version_sync(
-        self, agent_id: str, version_id: str, **inputs: Any
+        self,
+        agent_id: str,
+        version_id: str,
+        metadata: dict[str, Any] | None = None,
+        **inputs: Any,
     ) -> list[AgentDatum]:
         """Run a specific agent version synchronously.
 
         Args:
             agent_id: Base agent UUID.
             version_id: Version UUID to run.
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
@@ -614,5 +639,6 @@ class AgentsAPI:
         response_data = self.http_client.post_with_dynamic_inputs(
             url=f"/v1/agents/run/{agent_id}/versions/{version_id}/",
             inputs=inputs,
+            metadata=metadata,
         )
         return [AgentDatum(**datum) for datum in response_data]
