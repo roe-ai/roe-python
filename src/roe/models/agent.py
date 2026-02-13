@@ -9,6 +9,7 @@ from pydantic import BaseModel, Field
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
     from roe.models.job import Job
+
 from roe.models.user import UserInfo
 
 
@@ -60,12 +61,15 @@ class BaseAgent(BaseModel):
         """Set the agents API reference for running."""
         self._agents_api = agents_api
 
-    def run(self, **inputs) -> "Job":
+    def run(
+        self, metadata: dict[str, Any] | None = None, **inputs: Any
+    ) -> "Job":
         """Run the agent with the provided inputs.
 
         Uses the agent's current version for execution.
 
         Args:
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on agent configuration.
 
         Returns:
@@ -77,7 +81,9 @@ class BaseAgent(BaseModel):
         if not self._agents_api:
             raise ValueError("Agents API not set. Use client.agents.run() instead.")
 
-        return self._agents_api.run(agent_id=str(self.id), **inputs)
+        return self._agents_api.run(
+            agent_id=str(self.id), metadata=metadata, **inputs
+        )
 
     def list_versions(self) -> list["AgentVersion"]:
         """List all versions of this agent.
@@ -152,10 +158,13 @@ class AgentVersion(BaseModel):
         """Set the agents API reference for running."""
         self._agents_api = agents_api
 
-    def run(self, **inputs) -> "Job":
+    def run(
+        self, metadata: dict[str, Any] | None = None, **inputs: Any
+    ) -> "Job":
         """Run this specific version of the agent.
 
         Args:
+            metadata: Optional metadata dictionary to attach to the job.
             **inputs: Dynamic inputs based on this version's input definitions.
 
         Returns:
@@ -168,4 +177,6 @@ class AgentVersion(BaseModel):
             raise ValueError("Agents API not set. Use client.agents.run() instead.")
 
         # Run using the version ID directly
-        return self._agents_api.run(agent_id=str(self.id), **inputs)
+        return self._agents_api.run(
+            agent_id=str(self.id), metadata=metadata, **inputs
+        )
