@@ -45,7 +45,7 @@ class BaseAgent(BaseModel):
     current_version_id: UUID | None = Field(
         default=None, description="UUID of current agent version"
     )
-    job_count: int = Field(default=0, description="Total number of jobs run")
+    job_count: int | None = Field(default=0, description="Total number of jobs run")
     most_recent_job: datetime | None = Field(
         default=None, description="Most recent job timestamp"
     )
