@@ -103,14 +103,23 @@ class RoeHTTPClient:
 
         try:
             error_data = response.json()
-            message = error_data.get("detail", f"HTTP {response.status_code}")
+            if isinstance(error_data, dict):
+                message = error_data.get("detail", f"HTTP {response.status_code}")
+            elif isinstance(error_data, list):
+                # DRF returns a plain list when ValidationError is raised in a view
+                # e.g. ["Worksheet query has been cancelled and cannot be executed"]
+                message = "; ".join(str(e) for e in error_data) if error_data else f"HTTP {response.status_code}"
+                error_data = None
+            else:
+                message = str(error_data) if error_data is not None else f"HTTP {response.status_code}"
+                error_data = None
 
             raise exception_class(
                 message=message,
                 status_code=response.status_code,
                 response=error_data,
             )
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, AttributeError):
             # If we can't parse the error response, use the status text
             raise exception_class(
                 message=f"HTTP {response.status_code}: {response.text}",
@@ -262,13 +271,21 @@ class RoeHTTPClient:
         exception_class = get_exception_for_status_code(response.status_code)
         try:
             error_data = response.json()
-            message = error_data.get("detail", f"HTTP {response.status_code}")
+            if isinstance(error_data, dict):
+                message = error_data.get("detail", f"HTTP {response.status_code}")
+            elif isinstance(error_data, list):
+                message = "; ".join(str(e) for e in error_data) if error_data else f"HTTP {response.status_code}"
+                error_data = None
+            else:
+                message = str(error_data) if error_data is not None else f"HTTP {response.status_code}"
+                error_data = None
+
             raise exception_class(
                 message=message,
                 status_code=response.status_code,
                 response=error_data,
             )
-        except (ValueError, KeyError):
+        except (ValueError, KeyError, AttributeError):
             raise exception_class(
                 message=f"HTTP {response.status_code}: {response.text}",
                 status_code=response.status_code,
