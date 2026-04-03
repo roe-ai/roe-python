@@ -45,7 +45,7 @@ class PolicyVersionsAPI:
         results = response_data.get("results", response_data)
         if isinstance(results, list):
             return [PolicyVersion(**version_data) for version_data in results]
-        return [PolicyVersion(**version_data) for version_data in response_data]
+        return []
 
     def retrieve(self, policy_id: str, version_id: str) -> PolicyVersion:
         """Retrieve a specific version of a policy.
@@ -93,7 +93,9 @@ class PolicyVersionsAPI:
             f"/v1/policies/{policy_id}/versions/", json_data=json_data
         )
         # POST returns partial data; re-fetch to get the full version
-        version_id = response_data["id"]
+        version_id = response_data.get("id")
+        if not version_id:
+            raise ValueError(f"Unexpected response from server: {response_data}")
         return self.retrieve(policy_id, version_id)
 
 
