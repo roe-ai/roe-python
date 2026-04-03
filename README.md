@@ -174,13 +174,13 @@ job = client.agents.run(
 result = job.wait()
 ```
 
-## Rory Agents (Agentic Workflows)
+## Rori Agents (Agentic Workflows)
 
-Rory agents are autonomous investigation agents that follow policies (SOPs), use tools, and produce structured verdicts. Unlike extraction engines which transform data, Rory agents reason over evidence, apply policy rules, and return dispositions. All Rory agents are policy-aware — you define the rules, they run the investigation.
+Rori agents are autonomous investigation agents that follow policies (SOPs), use tools, and produce structured verdicts. Unlike extraction engines which transform data, Rori agents reason over evidence, apply policy rules, and return dispositions. All Rori agents are policy-aware — you define the rules, they run the investigation.
 
 ### Policies
 
-Policies define the rules, instructions, and disposition classifications that Rory agents follow. Creating a policy atomically creates the policy and its first version in one call:
+Policies define the rules, instructions, and disposition classifications that Rori agents follow. Creating a policy atomically creates the policy and its first version in one call:
 
 ```python
 policy = client.policies.create(
@@ -368,7 +368,7 @@ result = job.wait()
 
 ### Agent Configuration Options
 
-All Rory agents accept these options in `engine_config`:
+All Rori agents accept these options in `engine_config`:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
