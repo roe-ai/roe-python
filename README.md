@@ -174,6 +174,230 @@ job = client.agents.run(
 result = job.wait()
 ```
 
+## Rory Agents (Agentic Workflows)
+
+Rory agents are autonomous investigation agents that follow policies (SOPs), use tools, and produce structured verdicts. Unlike extraction engines which transform data, Rory agents reason over evidence, apply policy rules, and return dispositions. All Rory agents are policy-aware — you define the rules, they run the investigation.
+
+### Policies
+
+Policies define the rules, instructions, and disposition classifications that Rory agents follow. Creating a policy atomically creates the policy and its first version in one call:
+
+```python
+policy = client.policies.create(
+    name="AML Investigation Policy",
+    content={
+        "guidelines": {
+            "categories": [
+                {
+                    "title": "Structuring",
+                    "rules": [
+                        {
+                            "title": "Cash structuring below reporting thresholds",
+                            "description": "Multiple deposits just under $10,000 within short timeframes",
+                            "flag": "RED_FLAG",
+                        }
+                    ],
+                },
+                {
+                    "title": "Layering",
+                    "rules": [
+                        {
+                            "title": "Rapid movement between accounts",
+                            "description": "Funds transferred through multiple accounts to obscure origin",
+                            "flag": "RED_FLAG",
+                            "sub_rules": [
+                                {"title": "Cross-border wire transfers with no business purpose"},
+                                {"title": "Shell company intermediaries"},
+                            ],
+                        }
+                    ],
+                },
+            ]
+        },
+        "instructions": "Investigate the alert against each category. Use available data sources to gather evidence.",
+        "dispositions": {
+            "classifications": [
+                {"name": "Suspicious", "description": "Activity warrants SAR filing"},
+                {"name": "Not Suspicious", "description": "Activity has legitimate explanation"},
+                {"name": "Needs Escalation", "description": "Requires senior analyst review"},
+            ]
+        },
+        "summary_template": {
+            "template": "Investigation of {{subject}} found {{verdict}} based on {{findings_count}} findings."
+        },
+    },
+)
+```
+
+Iterate on policies by creating new versions:
+
+```python
+# Create a new version (automatically becomes the current version)
+new_version = client.policies.versions.create(
+    policy_id=str(policy.id),
+    content={...},  # Updated policy content
+    version_name="v2 - added layering rules",
+)
+
+# List all versions
+versions = client.policies.versions.list(policy_id=str(policy.id))
+
+# Retrieve a specific version
+version = client.policies.versions.retrieve(str(policy.id), str(new_version.id))
+
+# Update policy metadata
+client.policies.update(str(policy.id), name="Updated Policy Name")
+
+# List all policies
+policies = client.policies.list()
+
+# Delete a policy
+client.policies.delete(str(policy.id))
+```
+
+### Policy Content Reference
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `guidelines` | object | Categories → Rules → Sub-rules hierarchy |
+| `guidelines.categories[].title` | string | Category name |
+| `guidelines.categories[].rules[].title` | string | Rule name |
+| `guidelines.categories[].rules[].description` | string | Rule details |
+| `guidelines.categories[].rules[].flag` | string | `"RED_FLAG"` or `"GREEN_FLAG"` |
+| `guidelines.categories[].rules[].sub_rules[].title` | string | Sub-rule name |
+| `instructions` | string | Free-text investigation instructions |
+| `dispositions.classifications[].name` | string | Outcome label (e.g., "Suspicious") |
+| `dispositions.classifications[].description` | string | When to apply this outcome |
+| `summary_template.template` | string | Handlebars template for report generation |
+| `optional.sar_narrative_template.template` | string | SAR narrative template (AML-specific) |
+
+### Product Compliance
+
+Analyze product listings against your compliance policy:
+
+```python
+agent = client.agents.create(
+    name="Product Compliance",
+    engine_class_id="ProductPolicyEngine",
+    input_definitions=[
+        {"key": "product_listings", "data_type": "text/plain", "description": "Product listing to analyze"},
+    ],
+    engine_config={
+        "policy_version_id": str(policy.current_version_id),
+        "product_listings": "${product_listings}",
+    },
+)
+
+result = client.agents.run_sync(
+    agent_id=str(agent.id),
+    product_listings="Nike Air Max 90, brand new, $45 — ships from Shenzhen",
+)
+```
+
+### AML Investigation
+
+Investigate anti-money laundering alerts:
+
+```python
+agent = client.agents.create(
+    name="AML Investigation",
+    engine_class_id="AMLInvestigationEngine",
+    input_definitions=[
+        {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context"},
+    ],
+    engine_config={
+        "policy_version_id": str(policy.current_version_id),
+        "alert_data": "${alert_data}",
+    },
+)
+
+job = client.agents.run(
+    agent_id=str(agent.id),
+    alert_data="Customer John Doe, 5 cash deposits of $9,500 in 3 days",
+)
+result = job.wait()
+```
+
+### Fraud Investigation
+
+Investigate fraud alerts and suspicious activity:
+
+```python
+agent = client.agents.create(
+    name="Fraud Investigation",
+    engine_class_id="FraudInvestigationEngine",
+    input_definitions=[
+        {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context"},
+    ],
+    engine_config={
+        "policy_version_id": str(policy.current_version_id),
+        "alert_data": "${alert_data}",
+    },
+)
+
+job = client.agents.run(
+    agent_id=str(agent.id),
+    alert_data="Chargeback spike: 47 disputes in 24h from merchant ACME-1234",
+)
+result = job.wait()
+```
+
+### Merchant Risk
+
+Analyze merchant risk profiles:
+
+```python
+agent = client.agents.create(
+    name="Merchant Risk Analysis",
+    engine_class_id="MerchantRiskEngine",
+    input_definitions=[
+        {"key": "merchant_context", "data_type": "text/plain", "description": "Merchant name and context"},
+    ],
+    engine_config={
+        "policy_version_id": str(policy.current_version_id),
+        "merchant_context": "${merchant_context}",
+    },
+)
+
+job = client.agents.run(
+    agent_id=str(agent.id),
+    merchant_context="ACME Corp - Online electronics retailer, MCC 5732",
+)
+result = job.wait()
+```
+
+### Agent Configuration Options
+
+All Rory agents accept these options in `engine_config`:
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `policy_version_id` | string | — | Policy version UUID (required) |
+| `context_sources` | list | `[]` | External data sources (SQL connections, APIs) |
+| `enable_planning` | bool | `true` | Enable autonomous tool-use planning |
+| `enable_memory` | bool | `false` | Retain context across runs for the same entity |
+| `reasoning_effort` | string | `"medium"` | `"low"`, `"medium"`, or `"high"` |
+
+Example with advanced configuration:
+
+```python
+agent = client.agents.create(
+    name="AML Investigation (Advanced)",
+    engine_class_id="AMLInvestigationEngine",
+    input_definitions=[
+        {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context"},
+    ],
+    engine_config={
+        "policy_version_id": str(policy.current_version_id),
+        "alert_data": "${alert_data}",
+        "reasoning_effort": "high",
+        "context_sources": [
+            {"type": "sql", "name": "Transactions DB", "connection_id": "conn-uuid"},
+        ],
+    },
+)
+```
+
 ## Running Agents
 
 ```python
@@ -297,6 +521,8 @@ client.agents.jobs.delete_data(job_id)
 
 | Model | Value |
 |-------|-------|
+| GPT-5.4 | `gpt-5.4-2026-03-05` |
+| GPT-5.2 | `gpt-5.2-2025-12-11` |
 | GPT-5.1 | `gpt-5.1-2025-11-13` |
 | GPT-5 | `gpt-5-2025-08-07` |
 | GPT-5 Mini | `gpt-5-mini-2025-08-07` |
@@ -305,18 +531,20 @@ client.agents.jobs.delete_data(job_id)
 | O3 Pro | `o3-pro-2025-06-10` |
 | O3 | `o3-2025-04-16` |
 | O4 Mini | `o4-mini-2025-04-16` |
-| GPT-4o | `gpt-4o-2024-11-20` |
-| Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
-| Claude Sonnet 4 | `claude-sonnet-4-20250514` |
-| Claude 3.7 Sonnet | `claude-3-7-sonnet-20250219` |
-| Claude Haiku 4.5 | `claude-haiku-4-5-20251001` |
-| Claude 3.5 Haiku | `claude-3-5-haiku-20241022` |
+| Claude Opus 4.6 | `claude-opus-4-6` |
+| Claude Sonnet 4.6 | `claude-sonnet-4-6` |
 | Claude Opus 4.5 | `claude-opus-4-5-20251101` |
+| Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
 | Claude Opus 4.1 | `claude-opus-4-1-20250805` |
 | Claude Opus 4 | `claude-opus-4-20250514` |
+| Claude Sonnet 4 | `claude-sonnet-4-20250514` |
+| Claude Haiku 4.5 | `claude-haiku-4-5-20251001` |
 | Gemini 3 Pro | `gemini-3-pro-preview` |
+| Gemini 3 Flash | `gemini-3-flash-preview` |
 | Gemini 2.5 Pro | `gemini-2.5-pro` |
 | Gemini 2.5 Flash | `gemini-2.5-flash` |
+| Grok 4 | `grok-4-0709` |
+| Grok 4.1 Fast Reasoning | `grok-4-1-fast-reasoning` |
 
 ## Engine Classes
 
@@ -330,10 +558,12 @@ client.agents.jobs.delete_data(job_id)
 | Web Search | `URLFinderEngine` |
 | Perplexity Search | `PerplexitySearchEngine` |
 | Maps Search | `GoogleMapsEntityExtractionEngine` |
-| Merchant Risk | `MerchantRiskAnalysisEngine` |
-| Product Policy | `ProductPolicyEngine` |
 | LinkedIn Crawler | `LinkedInScraperEngine` |
 | Social Media | `SocialScraperEngine` |
+| Product Compliance | `ProductPolicyEngine` |
+| Merchant Risk | `MerchantRiskEngine` |
+| AML Investigation | `AMLInvestigationEngine` |
+| Fraud Investigation | `FraudInvestigationEngine` |
 
 ## Links
 

@@ -1,6 +1,7 @@
 """Main client for the Roe AI SDK."""
 
 from roe.api.agents import AgentsAPI
+from roe.api.policies import PoliciesAPI
 from roe.auth import RoeAuth
 from roe.config import RoeConfig
 from roe.utils.http_client import RoeHTTPClient
@@ -63,6 +64,7 @@ class RoeClient:
 
         # Create API instances
         self._agents = AgentsAPI(self.config, self.http_client)
+        self._policies = PoliciesAPI(self.config, self.http_client)
 
     @property
     def agents(self) -> AgentsAPI:
@@ -90,6 +92,28 @@ class RoeClient:
             )
         """
         return self._agents
+
+    @property
+    def policies(self) -> PoliciesAPI:
+        """Access the policies API for managing policies used by agentic workflows.
+
+        Returns:
+            PoliciesAPI instance for managing policies and policy versions.
+
+        Examples:
+            # Create a policy
+            policy = client.policies.create(
+                name="Investigation SOP",
+                content={"guidelines": {...}, "instructions": "..."}
+            )
+
+            # List policies
+            policies = client.policies.list()
+
+            # Manage versions
+            versions = client.policies.versions.list("policy-uuid")
+        """
+        return self._policies
 
     def close(self) -> None:
         """Close the HTTP client and clean up resources."""

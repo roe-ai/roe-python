@@ -3,6 +3,7 @@
 from .agent import AgentInputDefinition, AgentVersion, BaseAgent
 from .file import FileUpload
 from .job import Job, JobBatch
+from .policy import Policy, PolicyVersion
 from .responses import (
     AgentDatum,
     ErrorResponse,
@@ -19,6 +20,8 @@ __all__ = [
     "FileUpload",
     "Job",
     "JobBatch",
+    "Policy",
+    "PolicyVersion",
     "AgentDatum",
     "ErrorResponse",
     "JobDataDeleteResponse",
