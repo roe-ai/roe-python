@@ -141,6 +141,9 @@ def main():
     # Step 6: Update agent to use new policy version and re-run
     client.agents.versions.create(
         agent_id=str(agent.id),
+        input_definitions=[
+            {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context for AML investigation"},
+        ],
         engine_config={
             "policy_version_id": str(new_version.id),
             "alert_data": "${alert_data}",
