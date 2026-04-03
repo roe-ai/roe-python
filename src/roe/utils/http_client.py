@@ -113,19 +113,15 @@ class RoeHTTPClient:
             else:
                 message = str(error_data) if error_data is not None else f"HTTP {response.status_code}"
                 error_data = None
-
-            raise exception_class(
-                message=message,
-                status_code=response.status_code,
-                response=error_data,
-            )
         except (ValueError, KeyError, AttributeError):
-            # If we can't parse the error response, use the status text
-            raise exception_class(
-                message=f"HTTP {response.status_code}: {response.text}",
-                status_code=response.status_code,
-                response=None,
-            )
+            message = f"HTTP {response.status_code}: {response.text}"
+            error_data = None
+
+        raise exception_class(
+            message=message,
+            status_code=response.status_code,
+            response=error_data,
+        )
 
     def get(self, url: str, params: dict[str, Any] | None = None) -> Any:
         """Make a GET request.
@@ -267,27 +263,5 @@ class RoeHTTPClient:
         if response.is_success:
             return response.content
 
-        # Handle error using standard handler
-        exception_class = get_exception_for_status_code(response.status_code)
-        try:
-            error_data = response.json()
-            if isinstance(error_data, dict):
-                message = error_data.get("detail", f"HTTP {response.status_code}")
-            elif isinstance(error_data, list):
-                message = "; ".join(str(e) for e in error_data) if error_data else f"HTTP {response.status_code}"
-                error_data = None
-            else:
-                message = str(error_data) if error_data is not None else f"HTTP {response.status_code}"
-                error_data = None
-
-            raise exception_class(
-                message=message,
-                status_code=response.status_code,
-                response=error_data,
-            )
-        except (ValueError, KeyError, AttributeError):
-            raise exception_class(
-                message=f"HTTP {response.status_code}: {response.text}",
-                status_code=response.status_code,
-                response=None,
-            )
+        # Reuse shared error handler — it always raises, never returns
+        self._handle_response(response)

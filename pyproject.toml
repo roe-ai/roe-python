@@ -1,6 +1,6 @@
 [project]
 name = "roe-ai"
-version = "0.2.5"
+version = "0.2.7"
 authors = [
     { name = "Roe AI", email = "founders@roe-ai.com" },
 ]
@@ -26,6 +26,5 @@ module-name = "roe"
 
 [dependency-groups]
 dev = [
-    "pytest>=9.0.2",
     "ruff>=0.12.10",
 ]
