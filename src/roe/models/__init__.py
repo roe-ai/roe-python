@@ -6,8 +6,11 @@ from .job import Job, JobBatch
 from .policy import Policy, PolicyVersion
 from .responses import (
     AgentDatum,
+    AgentJobResult,
+    AgentJobStatus,
     ErrorResponse,
     JobDataDeleteResponse,
+    JobStatus,
     PaginatedResponse,
     Reference,
 )
@@ -23,8 +26,11 @@ __all__ = [
     "Policy",
     "PolicyVersion",
     "AgentDatum",
+    "AgentJobResult",
+    "AgentJobStatus",
     "ErrorResponse",
     "JobDataDeleteResponse",
+    "JobStatus",
     "PaginatedResponse",
     "Reference",
     "UserInfo",
