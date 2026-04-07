@@ -336,7 +336,9 @@ class JobBatch:
 
                 for result_item in result_batch:
                     job_id = result_item.id
-                    is_failed = result_item.status in (
+                    # Use cached terminal status (reliable) instead of result_item.status (nullable)
+                    cached_status = self._job_statuses.get(job_id)
+                    is_failed = cached_status is not None and cached_status.status in (
                         JobStatus.FAILURE,
                         JobStatus.CANCELLED,
                     )
