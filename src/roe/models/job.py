@@ -107,7 +107,20 @@ class Job:
                 JobStatus.CANCELLED,
                 JobStatus.CACHED,
             ):
-                result = self.retrieve_result()
+                is_failed = status.status in (JobStatus.FAILURE, JobStatus.CANCELLED)
+                try:
+                    result = self.retrieve_result()
+                except Exception:
+                    if not is_failed:
+                        raise
+                    result = AgentJobResult(
+                        agent_id="",
+                        agent_version_id="",
+                        inputs=[],
+                        input_tokens=None,
+                        output_tokens=None,
+                        outputs=[],
+                    )
                 result.status = status.status
                 result.error_message = status.error_message
                 return result

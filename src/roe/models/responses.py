@@ -70,7 +70,7 @@ class AgentJobStatus(BaseModel):
     )
     timestamp: float | None = Field(default=None, description="Unix timestamp in seconds")
     error_message: str | None = Field(
-        default=None, description="Error message if status is RETRY or FAILURE"
+        default=None, description="Error message if status is FAILURE, RETRY, or CANCELLED"
     )
 
 
@@ -90,8 +90,8 @@ class Reference(BaseModel):
 class AgentJobResult(BaseModel):
     """Agent job result response model."""
 
-    agent_id: UUID = Field(..., description="The ID of the base agent")
-    agent_version_id: UUID = Field(..., description="The ID of the agent version")
+    agent_id: str = Field(..., description="The ID of the base agent")
+    agent_version_id: str = Field(..., description="The ID of the agent version")
     inputs: list[Any] = Field(..., description="The input data provided to the agent")
     input_tokens: int | None = Field(..., description="Number of input tokens used")
     output_tokens: int | None = Field(
@@ -173,7 +173,7 @@ class AgentJobStatusBatch(BaseModel):
         default=None, description="Unix timestamp in seconds from the latest status event"
     )
     error_message: str | None = Field(
-        default=None, description="Error message if status is FAILURE or RETRY"
+        default=None, description="Error message if status is FAILURE, RETRY, or CANCELLED"
     )
 
 

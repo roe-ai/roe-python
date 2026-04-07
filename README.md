@@ -33,6 +33,32 @@ export ROE_ORGANIZATION_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
+## Job Result Inspection
+
+After waiting for a job, you can inspect its outcome using status helpers:
+
+```python
+from roe import JobStatus
+
+result = job.wait()
+
+# Check job outcome
+if result.succeeded:
+    for output in result.outputs:
+        print(f"{output.key}: {output.value}")
+elif result.cancelled:
+    print("Job was cancelled")
+elif result.failed:
+    print("Error:", result.error_message)
+
+# Available fields
+result.status         # JobStatus code (int) or None
+result.error_message  # Error string or None
+result.succeeded      # True if SUCCESS or CACHED
+result.failed         # True if FAILURE or CANCELLED
+result.cancelled      # True if CANCELLED
+```
+
 ## Agent Examples
 
 ### Multimodal Extraction
