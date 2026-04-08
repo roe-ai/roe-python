@@ -360,7 +360,7 @@ class JobBatch:
                             input_tokens=None,
                             output_tokens=None,
                             outputs=[],
-                            status=result_item.status,
+                            status=cached_status.status if cached_status else result_item.status,
                             error_message=cached_status.error_message if cached_status else None,
                         )
                     else:
@@ -376,7 +376,7 @@ class JobBatch:
                                 if isinstance(result_item.result, list)
                                 else []
                             ),
-                            status=result_item.status,
+                            status=cached_status.status if cached_status else result_item.status,
                             error_message=cached_status.error_message if cached_status else None,
                         )
 
@@ -416,8 +416,11 @@ class JobBatch:
         jobs_to_query = []
 
         for job_id in self._job_ids:
-            if job_id in self._job_statuses:
-                status_map[job_id] = self._job_statuses[job_id]
+            cached = self._job_statuses.get(job_id)
+            if cached is not None and cached.status in (
+                JobStatus.SUCCESS, JobStatus.FAILURE, JobStatus.CANCELLED, JobStatus.CACHED
+            ):
+                status_map[job_id] = cached
             else:
                 jobs_to_query.append(job_id)
 

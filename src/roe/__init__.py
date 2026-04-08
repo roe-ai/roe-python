@@ -32,7 +32,14 @@ from roe.exceptions import (
     ServerError,
 )
 from roe.models import FileUpload
-from roe.models.responses import AgentJobResult, AgentJobStatus, JobStatus
+from roe.models.responses import (
+    AgentDatum,
+    AgentJobResult,
+    AgentJobStatus,
+    JobDataDeleteResponse,
+    JobStatus,
+    Reference,
+)
 
 __version__ = "0.2.7"
 
@@ -42,9 +49,12 @@ __all__ = [
     # Helper classes
     "FileUpload",
     # Response models
+    "AgentDatum",
     "AgentJobResult",
     "AgentJobStatus",
+    "JobDataDeleteResponse",
     "JobStatus",
+    "Reference",
     # Exceptions
     "RoeAPIException",
     "AuthenticationError",
