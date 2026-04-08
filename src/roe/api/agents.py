@@ -226,7 +226,7 @@ class AgentJobsAPI:
             if not chunk:
                 continue
             if not is_first_chunk:
-                time.sleep(10)
+                time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
             response_data = self.http_client.post(
                 "/v1/agents/jobs/statuses/", json_data={"job_ids": chunk}
@@ -251,7 +251,7 @@ class AgentJobsAPI:
             if not chunk:
                 continue
             if not is_first_chunk:
-                time.sleep(10)
+                time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
             response_data = self.http_client.post(
                 "/v1/agents/jobs/results/", json_data={"job_ids": chunk}
@@ -568,7 +568,7 @@ class AgentsAPI:
             if not chunk:
                 continue
             if not is_first_chunk:
-                time.sleep(10)
+                time.sleep(self.config.batch_chunk_delay)
             is_first_chunk = False
             json_data: dict[str, Any] = {"inputs": chunk}
             if metadata is not None:

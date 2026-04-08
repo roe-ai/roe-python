@@ -442,13 +442,23 @@ Other error codes (400, 401, 404, 500, etc.) are raised immediately without retr
 
 ## Batch Processing
 
-When batch operations exceed 1,000 items, the SDK automatically chunks requests. A 10-second delay is applied between chunks to avoid overwhelming the API. This applies to:
+When batch operations exceed 1,000 items, the SDK automatically chunks requests. A configurable delay (default: 10 seconds) is applied between chunks to avoid overwhelming the API. This applies to:
 
 - `client.agents.run_many()` — job submissions
 - `client.agents.jobs.retrieve_status_many()` — batch status checks
 - `client.agents.jobs.retrieve_result_many()` — batch result retrieval
 
 Single-chunk batches (≤1,000 items) are unaffected.
+
+You can configure the delay via the `batch_chunk_delay` parameter or the `ROE_BATCH_CHUNK_DELAY` environment variable:
+
+```python
+client = RoeClient(
+    api_key="your-api-key",
+    organization_id="your-org-uuid",
+    batch_chunk_delay=2.0,  # default: 10.0
+)
+```
 
 ## Running Agents
 

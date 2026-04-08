@@ -15,6 +15,10 @@ class RoeConfig(BaseModel):
     )
     timeout: float = Field(default=60.0, description="Request timeout in seconds")
     max_retries: int = Field(default=3, description="Maximum number of retries")
+    batch_chunk_delay: float = Field(
+        default=10.0,
+        description="Delay in seconds between batch chunk requests",
+    )
 
     @classmethod
     def from_env(
@@ -24,6 +28,7 @@ class RoeConfig(BaseModel):
         base_url: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
+        batch_chunk_delay: float | None = None,
     ) -> "RoeConfig":
         """Create configuration from environment variables and parameters.
 
@@ -33,6 +38,7 @@ class RoeConfig(BaseModel):
             base_url: Base URL. If not provided, uses ROE_BASE_URL env var or default.
             timeout: Request timeout. If not provided, uses ROE_TIMEOUT env var or default.
             max_retries: Max retries. If not provided, uses ROE_MAX_RETRIES env var or default.
+            batch_chunk_delay: Delay between batch chunks. If not provided, uses ROE_BATCH_CHUNK_DELAY env var or default.
 
         Returns:
             RoeConfig instance.
@@ -46,6 +52,9 @@ class RoeConfig(BaseModel):
         base_url = base_url or os.getenv("ROE_BASE_URL", "https://api.roe-ai.com")
         timeout = timeout or float(os.getenv("ROE_TIMEOUT", "60.0"))
         max_retries = max_retries or int(os.getenv("ROE_MAX_RETRIES", "3"))
+        batch_chunk_delay = batch_chunk_delay if batch_chunk_delay is not None else float(
+            os.getenv("ROE_BATCH_CHUNK_DELAY", "10.0")
+        )
 
         if not api_key:
             raise ValueError(
@@ -63,4 +72,5 @@ class RoeConfig(BaseModel):
             base_url=base_url,
             timeout=timeout,
             max_retries=max_retries,
+            batch_chunk_delay=batch_chunk_delay,
         )

@@ -17,6 +17,7 @@ class RoeClient:
         base_url: str | None = None,
         timeout: float | None = None,
         max_retries: int | None = None,
+        batch_chunk_delay: float | None = None,
     ):
         """Initialize the Roe AI client.
 
@@ -26,6 +27,7 @@ class RoeClient:
             base_url: Base URL for the API. If not provided, will use ROE_BASE_URL env var or default.
             timeout: Request timeout in seconds. If not provided, will use ROE_TIMEOUT env var or default.
             max_retries: Maximum number of retries. If not provided, will use ROE_MAX_RETRIES env var or default.
+            batch_chunk_delay: Delay in seconds between batch chunk requests. If not provided, will use ROE_BATCH_CHUNK_DELAY env var or default (10.0).
 
         Raises:
             ValueError: If required parameters (api_key, organization_id) are not provided.
@@ -54,6 +56,7 @@ class RoeClient:
             base_url=base_url,
             timeout=timeout,
             max_retries=max_retries,
+            batch_chunk_delay=batch_chunk_delay,
         )
 
         # Create authentication
