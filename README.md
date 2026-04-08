@@ -424,6 +424,32 @@ agent = client.agents.create(
 )
 ```
 
+## Retry Behavior
+
+The SDK automatically retries requests that receive `502`, `503`, or `504` responses using exponential backoff (1s, 2s, 4s, …). By default, up to 3 retries are attempted before raising a `ServerError`.
+
+You can configure this via the `max_retries` parameter or the `ROE_MAX_RETRIES` environment variable:
+
+```python
+client = RoeClient(
+    api_key="your-api-key",
+    organization_id="your-org-uuid",
+    max_retries=5,  # default: 3
+)
+```
+
+Other error codes (400, 401, 404, 500, etc.) are raised immediately without retrying.
+
+## Batch Processing
+
+When batch operations exceed 1,000 items, the SDK automatically chunks requests. A 10-second delay is applied between chunks to avoid overwhelming the API. This applies to:
+
+- `client.agents.run_many()` — job submissions
+- `client.agents.jobs.retrieve_status_many()` — batch status checks
+- `client.agents.jobs.retrieve_result_many()` — batch result retrieval
+
+Single-chunk batches (≤1,000 items) are unaffected.
+
 ## Running Agents
 
 ```python
