@@ -107,8 +107,23 @@ class Job:
                 JobStatus.CANCELLED,
                 JobStatus.CACHED,
             ):
-                # Return result regardless of success/failure - let user check status if needed
-                return self.retrieve_result()
+                is_failed = status.status in (JobStatus.FAILURE, JobStatus.CANCELLED)
+                try:
+                    result = self.retrieve_result()
+                except Exception:
+                    if not is_failed:
+                        raise
+                    result = AgentJobResult(
+                        agent_id="",
+                        agent_version_id="",
+                        inputs=[],
+                        input_tokens=None,
+                        output_tokens=None,
+                        outputs=[],
+                    )
+                result.status = status.status
+                result.error_message = status.error_message
+                return result
 
             if (time.time() - start_time) > effective_timeout:
                 raise TimeoutError(
@@ -179,7 +194,7 @@ class JobBatch:
         self.agents_api = agents_api
         self._job_ids = job_ids
         self._completed_jobs: dict[str, AgentJobResult] = {}
-        self._job_statuses: dict[str, int] = {}
+        self._job_statuses: dict[str, AgentJobStatus] = {}
 
         # Set default timeout
         if timeout_seconds is None:
@@ -308,7 +323,11 @@ class JobBatch:
 
                 # Update status cache (only if status is not None)
                 if status_item.status is not None:
-                    self._job_statuses[job_id] = status_item.status
+                    self._job_statuses[job_id] = AgentJobStatus(
+                        status=status_item.status,
+                        timestamp=status_item.timestamp,
+                        error_message=status_item.error_message,
+                    )
 
             if completed_in_this_batch:
                 result_batch = self.agents_api.jobs.retrieve_result_many(
@@ -317,25 +336,49 @@ class JobBatch:
 
                 for result_item in result_batch:
                     job_id = result_item.id
+                    # Use cached terminal status (reliable) instead of result_item.status (nullable)
+                    cached_status = self._job_statuses.get(job_id)
+                    is_failed = cached_status is not None and cached_status.status in (
+                        JobStatus.FAILURE,
+                        JobStatus.CANCELLED,
+                    )
 
                     if (
                         result_item.agent_id is None
                         or result_item.agent_version_id is None
                     ):
-                        raise NotFoundError(
-                            f"Job {job_id} not found or has been deleted"
+                        if not is_failed:
+                            raise NotFoundError(
+                                f"Job {job_id} not found or has been deleted"
+                            )
+                        # Failed/cancelled jobs may lack agent identifiers
+                        cached_status = self._job_statuses.get(job_id)
+                        job_result = AgentJobResult(
+                            agent_id="",
+                            agent_version_id="",
+                            inputs=[],
+                            input_tokens=None,
+                            output_tokens=None,
+                            outputs=[],
+                            status=cached_status.status if cached_status else result_item.status,
+                            error_message=cached_status.error_message if cached_status else None,
                         )
-
-                    job_result = AgentJobResult(
-                        agent_id=result_item.agent_id,
-                        agent_version_id=result_item.agent_version_id,
-                        inputs=result_item.inputs or [],
-                        input_tokens=result_item.input_tokens,
-                        output_tokens=result_item.output_tokens,
-                        outputs=result_item.result
-                        if isinstance(result_item.result, list)
-                        else [],
-                    )
+                    else:
+                        cached_status = self._job_statuses.get(job_id)
+                        job_result = AgentJobResult(
+                            agent_id=result_item.agent_id,
+                            agent_version_id=result_item.agent_version_id,
+                            inputs=result_item.inputs or [],
+                            input_tokens=result_item.input_tokens,
+                            output_tokens=result_item.output_tokens,
+                            outputs=(
+                                result_item.result
+                                if isinstance(result_item.result, list)
+                                else []
+                            ),
+                            status=cached_status.status if cached_status else result_item.status,
+                            error_message=cached_status.error_message if cached_status else None,
+                        )
 
                     self._completed_jobs[job_id] = job_result
 
@@ -354,29 +397,30 @@ class JobBatch:
 
         return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
 
-    def retrieve_status(self) -> dict[str, int]:
+    def retrieve_status(self) -> dict[str, AgentJobStatus]:
         """Retrieve the current status of all jobs in the batch.
 
         Returns:
-            Dictionary mapping job IDs to their current status codes.
-            Status codes: 0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED
+            Dictionary mapping job IDs to AgentJobStatus objects containing
+            status code, timestamp, and error_message.
 
         Examples:
             status_map = batch.retrieve_status()
-            print(f"Batch status: {status_map}")
 
-            # Check individual statuses
-            for job_id, status_code in status_map.items():
-                if status_code == JobStatus.SUCCESS:
-                    print(f"Job {job_id} completed successfully")
+            for job_id, status in status_map.items():
+                if status.status == JobStatus.FAILURE:
+                    print(f"Job {job_id} failed: {status.error_message}")
         """
         # Return cached status for completed jobs, query for others
-        status_map = {}
+        status_map: dict[str, AgentJobStatus] = {}
         jobs_to_query = []
 
         for job_id in self._job_ids:
-            if job_id in self._job_statuses:
-                status_map[job_id] = self._job_statuses[job_id]
+            cached = self._job_statuses.get(job_id)
+            if cached is not None and cached.status in (
+                JobStatus.SUCCESS, JobStatus.FAILURE, JobStatus.CANCELLED, JobStatus.CACHED
+            ):
+                status_map[job_id] = cached
             else:
                 jobs_to_query.append(job_id)
 
@@ -385,7 +429,12 @@ class JobBatch:
             status_batch = self.agents_api.jobs.retrieve_status_many(jobs_to_query)
             for status_item in status_batch:
                 if status_item.status is not None:
-                    status_map[status_item.id] = status_item.status
-                    self._job_statuses[status_item.id] = status_item.status
+                    job_status = AgentJobStatus(
+                        status=status_item.status,
+                        timestamp=status_item.timestamp,
+                        error_message=status_item.error_message,
+                    )
+                    status_map[status_item.id] = job_status
+                    self._job_statuses[status_item.id] = job_status
 
         return status_map

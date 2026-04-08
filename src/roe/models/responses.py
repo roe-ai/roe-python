@@ -68,9 +68,9 @@ class AgentJobStatus(BaseModel):
         ...,
         description="Current status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)",
     )
-    timestamp: float = Field(..., description="Unix timestamp in seconds")
+    timestamp: float | None = Field(default=None, description="Unix timestamp in seconds")
     error_message: str | None = Field(
-        default=None, description="Error message if status is RETRY or FAILURE"
+        default=None, description="Error message if status is FAILURE, RETRY, or CANCELLED"
     )
 
 
@@ -90,14 +90,43 @@ class Reference(BaseModel):
 class AgentJobResult(BaseModel):
     """Agent job result response model."""
 
-    agent_id: UUID = Field(..., description="The ID of the base agent")
-    agent_version_id: UUID = Field(..., description="The ID of the agent version")
+    agent_id: str = Field(..., description="The ID of the base agent")
+    agent_version_id: str = Field(..., description="The ID of the agent version")
     inputs: list[Any] = Field(..., description="The input data provided to the agent")
     input_tokens: int | None = Field(..., description="Number of input tokens used")
     output_tokens: int | None = Field(
         ..., description="Number of output tokens generated"
     )
     outputs: list[AgentDatum] = Field(..., description="The output data from the agent")
+    status: int | None = Field(
+        default=None,
+        description="Job status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)",
+    )
+    error_message: str | None = Field(
+        default=None,
+        description="Error message if the job failed or was cancelled",
+    )
+
+    @property
+    def succeeded(self) -> bool | None:
+        """True if status is SUCCESS or CACHED, None if status unknown."""
+        if self.status is None:
+            return None
+        return self.status in (JobStatus.SUCCESS, JobStatus.CACHED)
+
+    @property
+    def failed(self) -> bool | None:
+        """True if status is FAILURE or CANCELLED, None if status unknown."""
+        if self.status is None:
+            return None
+        return self.status in (JobStatus.FAILURE, JobStatus.CANCELLED)
+
+    @property
+    def cancelled(self) -> bool | None:
+        """True if status is CANCELLED, None if status unknown."""
+        if self.status is None:
+            return None
+        return self.status == JobStatus.CANCELLED
 
     def get_references(self) -> list[Reference]:
         """Extract all reference files from job outputs.
@@ -139,6 +168,12 @@ class AgentJobStatusBatch(BaseModel):
     created_at: Any | None = Field(default=None, description="When the job was created")
     last_updated_at: Any | None = Field(
         default=None, description="When the job was last updated"
+    )
+    timestamp: float | None = Field(
+        default=None, description="Unix timestamp in seconds from the latest status event"
+    )
+    error_message: str | None = Field(
+        default=None, description="Error message if status is FAILURE, RETRY, or CANCELLED"
     )
 
 
