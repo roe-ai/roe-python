@@ -426,9 +426,9 @@ agent = client.agents.create(
 
 ## Retry Behavior
 
-The SDK automatically retries requests that receive `502`, `503`, or `504` responses using exponential backoff (1s, 2s, 4s, …). By default, up to 3 retries are attempted before raising a `ServerError`.
+The SDK automatically retries idempotent requests (GET, PUT, DELETE) that receive `502`, `503`, or `504` responses using exponential backoff (1s, 2s, 4s, …). By default, up to 3 retries are attempted before raising a `ServerError`. POST requests are never retried to avoid duplicate submissions.
 
-You can configure this via the `max_retries` parameter or the `ROE_MAX_RETRIES` environment variable:
+You can configure the retry count via the `max_retries` parameter or the `ROE_MAX_RETRIES` environment variable:
 
 ```python
 client = RoeClient(

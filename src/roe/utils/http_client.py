@@ -128,36 +128,48 @@ class RoeHTTPClient:
         )
 
     _RETRYABLE_STATUS_CODES = {502, 503, 504}
+    _IDEMPOTENT_METHODS = {"get", "put", "delete"}
 
     def _request_with_retry(self, method: str, url: str, **kwargs) -> httpx.Response:
         """Execute an HTTP request with retries for 502/503/504 errors.
 
+        Only idempotent methods (GET, PUT, DELETE) are retried. POST requests
+        are never retried to avoid duplicate submissions and file-handle
+        exhaustion on multipart uploads.
+
         Uses exponential backoff: 1s, 2s, 4s, ...
         Retries up to config.max_retries times (default: 3).
         """
-        max_retries = self.config.max_retries
-        last_response = None
+        response = getattr(self.client, method)(url, **kwargs)
 
-        for attempt in range(max_retries + 1):
+        if method not in self._IDEMPOTENT_METHODS:
+            return response
+
+        if response.status_code not in self._RETRYABLE_STATUS_CODES:
+            return response
+
+        max_retries = self.config.max_retries
+        last_response = response
+
+        for attempt in range(max_retries):
+            wait_time = 2 ** attempt  # 1, 2, 4, ...
+            logger.warning(
+                "Roe API returned %d for %s %s, retrying in %ds (attempt %d/%d)",
+                last_response.status_code,
+                method.upper(),
+                url,
+                wait_time,
+                attempt + 1,
+                max_retries,
+            )
+            time.sleep(wait_time)
+
             response = getattr(self.client, method)(url, **kwargs)
 
             if response.status_code not in self._RETRYABLE_STATUS_CODES:
                 return response
 
             last_response = response
-
-            if attempt < max_retries:
-                wait_time = 2 ** attempt  # 1, 2, 4, ...
-                logger.warning(
-                    "Roe API returned %d for %s %s, retrying in %ds (attempt %d/%d)",
-                    response.status_code,
-                    method.upper(),
-                    url,
-                    wait_time,
-                    attempt + 1,
-                    max_retries,
-                )
-                time.sleep(wait_time)
 
         # All retries exhausted — let _handle_response raise the exception
         return last_response
