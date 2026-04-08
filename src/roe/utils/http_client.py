@@ -2,9 +2,13 @@
 
 import io
 import json as _json
+import logging
+import time
 from typing import Any
 
 import httpx
+
+logger = logging.getLogger(__name__)
 
 from roe.auth import RoeAuth
 from roe.config import RoeConfig
@@ -123,6 +127,41 @@ class RoeHTTPClient:
             response=error_data,
         )
 
+    _RETRYABLE_STATUS_CODES = {502, 503, 504}
+
+    def _request_with_retry(self, method: str, url: str, **kwargs) -> httpx.Response:
+        """Execute an HTTP request with retries for 502/503/504 errors.
+
+        Uses exponential backoff: 1s, 2s, 4s, ...
+        Retries up to config.max_retries times (default: 3).
+        """
+        max_retries = self.config.max_retries
+        last_response = None
+
+        for attempt in range(max_retries + 1):
+            response = getattr(self.client, method)(url, **kwargs)
+
+            if response.status_code not in self._RETRYABLE_STATUS_CODES:
+                return response
+
+            last_response = response
+
+            if attempt < max_retries:
+                wait_time = 2 ** attempt  # 1, 2, 4, ...
+                logger.warning(
+                    "Roe API returned %d for %s %s, retrying in %ds (attempt %d/%d)",
+                    response.status_code,
+                    method.upper(),
+                    url,
+                    wait_time,
+                    attempt + 1,
+                    max_retries,
+                )
+                time.sleep(wait_time)
+
+        # All retries exhausted — let _handle_response raise the exception
+        return last_response
+
     def get(self, url: str, params: dict[str, Any] | None = None) -> Any:
         """Make a GET request.
 
@@ -133,7 +172,7 @@ class RoeHTTPClient:
         Returns:
             Parsed JSON response.
         """
-        response = self.client.get(url, params=params)
+        response = self._request_with_retry("get", url, params=params)
         return self._handle_response(response)
 
     def post(
@@ -167,7 +206,7 @@ class RoeHTTPClient:
         if params:
             kwargs["params"] = params
 
-        response = self.client.post(url, **kwargs)
+        response = self._request_with_retry("post", url, **kwargs)
         return self._handle_response(response)
 
     def post_with_dynamic_inputs(
@@ -222,7 +261,7 @@ class RoeHTTPClient:
         if params:
             kwargs["params"] = params
 
-        response = self.client.put(url, **kwargs)
+        response = self._request_with_retry("put", url, **kwargs)
         return self._handle_response(response)
 
     def delete(self, url: str, params: dict[str, Any] | None = None) -> None:
@@ -238,7 +277,7 @@ class RoeHTTPClient:
         Raises:
             RoeAPIException: For API errors.
         """
-        response = self.client.delete(url, params=params)
+        response = self._request_with_retry("delete", url, params=params)
         if response.status_code == 204:
             return None
         if response.is_success:
@@ -259,7 +298,7 @@ class RoeHTTPClient:
         Raises:
             RoeAPIException: For API errors.
         """
-        response = self.client.get(url, params=params)
+        response = self._request_with_retry("get", url, params=params)
         if response.is_success:
             return response.content
 

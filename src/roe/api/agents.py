@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import time
 from typing import TYPE_CHECKING, Any
 
 from roe.config import RoeConfig
@@ -220,9 +221,13 @@ class AgentJobsAPI:
             List of AgentJobStatusBatch instances in the same order as job_ids.
         """
         results: list[AgentJobStatusBatch] = []
+        is_first_chunk = True
         for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
             if not chunk:
                 continue
+            if not is_first_chunk:
+                time.sleep(10)
+            is_first_chunk = False
             response_data = self.http_client.post(
                 "/v1/agents/jobs/statuses/", json_data={"job_ids": chunk}
             )
@@ -241,9 +246,13 @@ class AgentJobsAPI:
             List of AgentJobResultBatch instances in the same order as job_ids.
         """
         results: list[AgentJobResultBatch] = []
+        is_first_chunk = True
         for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
             if not chunk:
                 continue
+            if not is_first_chunk:
+                time.sleep(10)
+            is_first_chunk = False
             response_data = self.http_client.post(
                 "/v1/agents/jobs/results/", json_data={"job_ids": chunk}
             )
@@ -554,9 +563,13 @@ class AgentsAPI:
             JobBatch instance for tracking and waiting on all executions.
         """
         all_job_ids: list[str] = []
+        is_first_chunk = True
         for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
             if not chunk:
                 continue
+            if not is_first_chunk:
+                time.sleep(10)
+            is_first_chunk = False
             json_data: dict[str, Any] = {"inputs": chunk}
             if metadata is not None:
                 json_data["metadata"] = metadata
