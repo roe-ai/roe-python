@@ -2,8 +2,6 @@
 
 import json
 from typing import Any, Generic, TypeVar
-from uuid import UUID
-
 from pydantic import BaseModel, Field
 
 T = TypeVar("T")
@@ -192,8 +190,8 @@ class AgentJobResultBatch(BaseModel):
         default=None,
         description="List of corrected outputs if any corrections were made",
     )
-    agent_id: UUID | None = Field(default=None, description="Base agent ID")
-    agent_version_id: UUID | None = Field(default=None, description="Agent version ID")
+    agent_id: str | None = Field(default=None, description="Base agent ID")
+    agent_version_id: str | None = Field(default=None, description="Agent version ID")
     cost: float | None = Field(
         default=None, description="Cost of the agent job execution"
     )
