@@ -65,24 +65,21 @@ class RoeClient:
 
         # Create HTTP client
         self.http_client = RoeHTTPClient(self.config, self.auth)
-        # Share the configured httpx.Client (and AsyncClient) so both sync
-        # and async raw-client paths inherit auth headers, timeout, and base
-        # URL. token= and base_url= satisfy required AuthenticatedClient
-        # fields but are not read at request time once set_*_httpx_client
-        # supplies the underlying clients.
-        self._raw = (
-            RawClient(
-                base_url=self.config.base_url,
-                token=self.config.api_key,
-                raise_on_unexpected_status=True,
-            )
-            .set_httpx_client(self.http_client.client)
-            .set_async_httpx_client(self.http_client.async_client)
-        )
+        # Share the configured httpx.Client; auth headers and timeout are baked
+        # in there. token= and base_url= satisfy required AuthenticatedClient
+        # fields but are not read at request time once set_httpx_client supplies
+        # the underlying client. raise_on_unexpected_status=False so non-2xx
+        # responses surface as a parsed Response that translate_response() can
+        # map to a typed RoeAPIException at the wrapper boundary.
+        self._raw = RawClient(
+            base_url=self.config.base_url,
+            token=self.config.api_key,
+            raise_on_unexpected_status=False,
+        ).set_httpx_client(self.http_client.client)
 
         # Create API instances
         self._agents = AgentsAPI(self.config, self.http_client)
-        self._policies = PoliciesAPI(self.config, self.http_client)
+        self._policies = PoliciesAPI(self.config, self._raw)
 
     @property
     def agents(self) -> AgentsAPI:
