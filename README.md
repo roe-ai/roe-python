@@ -59,6 +59,19 @@ result.failed         # True if FAILURE or CANCELLED
 result.cancelled      # True if CANCELLED
 ```
 
+## Raw API Access
+
+The generated raw client is exposed as `client.raw`, and the generated package is available under `roe._generated`:
+
+```python
+from roe import RoeClient
+from roe._generated.api.v1 import v1_users_current_user_retrieve
+
+client = RoeClient(api_key="your-api-key", organization_id="your-org-uuid")
+response = v1_users_current_user_retrieve.sync_detailed(client=client.raw)
+print(response.status_code)
+```
+
 ## Agent Examples
 
 ### Multimodal Extraction

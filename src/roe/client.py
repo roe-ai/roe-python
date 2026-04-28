@@ -1,5 +1,6 @@
 """Main client for the Roe AI SDK."""
 
+from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api.agents import AgentsAPI
 from roe.api.policies import PoliciesAPI
 from roe.auth import RoeAuth
@@ -64,6 +65,15 @@ class RoeClient:
 
         # Create HTTP client
         self.http_client = RoeHTTPClient(self.config, self.auth)
+        # Share the configured httpx.Client; auth headers and timeout are baked
+        # in there. token= and base_url= satisfy required AuthenticatedClient
+        # fields but are not read at request time once set_httpx_client supplies
+        # the underlying client.
+        self._raw = RawClient(
+            base_url=self.config.base_url,
+            token=self.config.api_key,
+            raise_on_unexpected_status=True,
+        ).set_httpx_client(self.http_client.client)
 
         # Create API instances
         self._agents = AgentsAPI(self.config, self.http_client)
@@ -117,6 +127,11 @@ class RoeClient:
             versions = client.policies.versions.list("policy-uuid")
         """
         return self._policies
+
+    @property
+    def raw(self) -> RawClient:
+        """Access the generated raw client."""
+        return self._raw
 
     def close(self) -> None:
         """Close the HTTP client and clean up resources."""

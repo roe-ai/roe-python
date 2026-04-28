@@ -1,0 +1,46 @@
+name: Tag Release Merge
+
+on:
+  push:
+    branches: [main]
+
+permissions:
+  contents: write
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11.9"
+
+      - name: Read merged release version
+        id: version
+        env:
+          BEFORE_SHA: ${{ github.event.before }}
+        run: |
+          if [ "$BEFORE_SHA" = "0000000000000000000000000000000000000000" ]; then
+            exit 0
+          fi
+          if git diff --quiet "$BEFORE_SHA" "$GITHUB_SHA" -- pyproject.toml; then
+            exit 0
+          fi
+          VERSION="$(uv run python -c 'import tomllib, pathlib; print(tomllib.loads(pathlib.Path("pyproject.toml").read_text())["project"]["version"])')"
+          echo "value=$VERSION" >> "$GITHUB_OUTPUT"
+
+      - name: Create version tag
+        if: steps.version.outputs.value != ''
+        env:
+          VERSION: ${{ steps.version.outputs.value }}
+        run: |
+          if git rev-parse "refs/tags/v$VERSION" >/dev/null 2>&1; then
+            exit 0
+          fi
+          git tag "v$VERSION"
+          git push origin "v$VERSION"
