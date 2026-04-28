@@ -1,0 +1,59 @@
+"""Dynamic-input pre-processor for agent execution requests.
+
+Splits a user-supplied ``inputs`` dict into ``(form_data, files)`` suitable
+for ``httpx``'s ``data=`` and ``files=`` kwargs. Detects:
+
+  * ``FileUpload`` instances → ``files``
+  * file-like objects (``io.IOBase``, anything with ``.read()``) → ``files``
+  * UUID strings → ``form_data`` (Roe file ID reference, never opened)
+  * existing file paths → ``files`` (auto-opened in binary mode)
+  * everything else → stringified into ``form_data``
+
+Bypasses the generated request models' ``to_multipart()`` because
+``openapi-python-client`` encodes every additional property as
+``(None, str(prop).encode(), "text/plain")`` — which silently sends a file's
+``repr`` instead of its bytes.
+"""
+
+from __future__ import annotations
+
+import io
+import json as _json
+from typing import Any
+
+from roe.models.file import FileUpload
+from roe.utils.file_detection import is_file_path, is_uuid_string
+
+
+def build_execution_multipart(
+    inputs: dict[str, Any],
+    metadata: dict[str, Any] | None = None,
+) -> tuple[dict[str, Any], dict[str, Any]]:
+    """Split inputs into ``(form_data, files)`` for an httpx multipart request.
+
+    Behavior is identical to ``RoeHTTPClient._process_inputs`` plus the
+    metadata-as-JSON serialization that ``post_with_dynamic_inputs`` does.
+    """
+    form_data: dict[str, Any] = {}
+    files: dict[str, Any] = {}
+
+    for key, value in inputs.items():
+        if isinstance(value, FileUpload):
+            filename, file_obj, mime_type = value.to_multipart_tuple()
+            files[key] = (filename, file_obj, mime_type)
+        elif isinstance(value, (io.IOBase, io.BytesIO)) or hasattr(value, "read"):
+            files[key] = value
+        elif isinstance(value, str):
+            if is_uuid_string(value):
+                form_data[key] = value
+            elif is_file_path(value):
+                files[key] = open(value, "rb")
+            else:
+                form_data[key] = value
+        else:
+            form_data[key] = str(value) if value is not None else ""
+
+    if metadata is not None:
+        form_data["metadata"] = _json.dumps(metadata)
+
+    return form_data, files

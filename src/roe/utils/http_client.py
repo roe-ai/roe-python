@@ -1,9 +1,15 @@
-"""HTTP client wrapper for the Roe AI SDK."""
+"""HTTP client wrapper for the Roe AI SDK.
+
+The retry policy lives in ``roe.utils.transport.RoeRetryTransport`` so it
+applies to every request that goes through the shared ``httpx.Client``,
+including raw-client calls. ``RoeHTTPClient`` is now a thin owner of that
+client plus the legacy convenience methods that ``AgentsAPI`` still uses;
+those will be retired once the agents migration lands.
+"""
 
 import io
 import json as _json
 import logging
-import time
 from typing import Any
 
 import httpx
@@ -15,6 +21,7 @@ from roe.config import RoeConfig
 from roe.exceptions import get_exception_for_status_code
 from roe.models.file import FileUpload
 from roe.utils.file_detection import is_file_path, is_uuid_string
+from roe.utils.transport import RoeRetryTransport
 
 
 class RoeHTTPClient:
@@ -30,11 +37,13 @@ class RoeHTTPClient:
         self.config = config
         self.auth = auth
 
-        # Create httpx client with configuration
+        # Retry policy (502/503/504, idempotent only) lives in the transport
+        # so raw-client calls and SDK calls share the same budget.
         self.client = httpx.Client(
             base_url=config.base_url,
             timeout=config.timeout,
             headers=auth.get_headers(),
+            transport=RoeRetryTransport(max_retries=config.max_retries),
         )
 
         # Mirror configuration onto an async client so callers reaching
@@ -142,52 +151,14 @@ class RoeHTTPClient:
             response=error_data,
         )
 
-    _RETRYABLE_STATUS_CODES = {502, 503, 504}
-    _IDEMPOTENT_METHODS = {"get", "put", "delete"}
-
     def _request_with_retry(self, method: str, url: str, **kwargs) -> httpx.Response:
-        """Execute an HTTP request with retries for 502/503/504 errors.
+        """Dispatch an HTTP request through the shared client.
 
-        Only idempotent methods (GET, PUT, DELETE) are retried. POST requests
-        are never retried to avoid duplicate submissions and file-handle
-        exhaustion on multipart uploads.
-
-        Uses exponential backoff: 1s, 2s, 4s, ...
-        Retries up to config.max_retries times (default: 3).
+        Retry on 502/503/504 (idempotent methods only) is owned by
+        ``RoeRetryTransport`` on ``self.client``; this is now a thin shim
+        kept so existing call sites remain unchanged.
         """
-        response = getattr(self.client, method)(url, **kwargs)
-
-        if method not in self._IDEMPOTENT_METHODS:
-            return response
-
-        if response.status_code not in self._RETRYABLE_STATUS_CODES:
-            return response
-
-        max_retries = self.config.max_retries
-        last_response = response
-
-        for attempt in range(max_retries):
-            wait_time = 2 ** attempt  # 1, 2, 4, ...
-            logger.warning(
-                "Roe API returned %d for %s %s, retrying in %ds (attempt %d/%d)",
-                last_response.status_code,
-                method.upper(),
-                url,
-                wait_time,
-                attempt + 1,
-                max_retries,
-            )
-            time.sleep(wait_time)
-
-            response = getattr(self.client, method)(url, **kwargs)
-
-            if response.status_code not in self._RETRYABLE_STATUS_CODES:
-                return response
-
-            last_response = response
-
-        # All retries exhausted — let _handle_response raise the exception
-        return last_response
+        return getattr(self.client, method)(url, **kwargs)
 
     def get(self, url: str, params: dict[str, Any] | None = None) -> Any:
         """Make a GET request.
