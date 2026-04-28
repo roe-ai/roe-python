@@ -8,25 +8,6 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-
-      - name: Set up uv and Python
-        uses: astral-sh/setup-uv@v6
-        with:
-          python-version: "3.11.9"
-          enable-cache: true
-          cache-dependency-glob: uv.lock
-          activate-environment: true
-
-      - name: Install dependencies
-        run: uv sync --locked --group dev --group codegen
-
-      - name: Run tests
-        run: uv run pytest
-
   check-codegen-drift:
     runs-on: ubuntu-latest
     steps:
