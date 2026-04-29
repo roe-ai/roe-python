@@ -31,14 +31,14 @@ class Dataset:
         Attributes:
             id (UUID):
             name (str):
-            creator (UserInfo):
+            creator (None | UserInfo):
             created_at (datetime.datetime):
             organization (UUID | Unset):
      """
 
     id: UUID
     name: str
-    creator: UserInfo
+    creator: None | UserInfo
     created_at: datetime.datetime
     organization: UUID | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -53,7 +53,11 @@ class Dataset:
 
         name = self.name
 
-        creator = self.creator.to_dict()
+        creator: dict[str, Any] | None
+        if isinstance(self.creator, UserInfo):
+            creator = self.creator.to_dict()
+        else:
+            creator = self.creator
 
         created_at = self.created_at.isoformat()
 
@@ -88,9 +92,22 @@ class Dataset:
 
         name = d.pop("name")
 
-        creator = UserInfo.from_dict(d.pop("creator"))
+        def _parse_creator(data: object) -> None | UserInfo:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                creator_type_0 = UserInfo.from_dict(data)
 
 
+
+                return creator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | UserInfo, data)
+
+        creator = _parse_creator(d.pop("creator"))
 
 
         created_at = isoparse(d.pop("created_at"))

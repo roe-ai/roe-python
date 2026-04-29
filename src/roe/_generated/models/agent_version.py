@@ -43,7 +43,7 @@ class AgentVersion:
             organization_id (UUID): Organization ID from base_agent.
             readonly (bool):
             base_agent (BaseAgent): Serializer for BaseAgent (agent config)
-            creator (UserInfo | Unset):
+            creator (None | Unset | UserInfo):
             description (str | Unset): Description of the agent version.
      """
 
@@ -58,7 +58,7 @@ class AgentVersion:
     organization_id: UUID
     readonly: bool
     base_agent: BaseAgent
-    creator: UserInfo | Unset = UNSET
+    creator: None | Unset | UserInfo = UNSET
     description: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -97,9 +97,13 @@ class AgentVersion:
 
         base_agent = self.base_agent.to_dict()
 
-        creator: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.creator, Unset):
+        creator: dict[str, Any] | None | Unset
+        if isinstance(self.creator, Unset):
+            creator = UNSET
+        elif isinstance(self.creator, UserInfo):
             creator = self.creator.to_dict()
+        else:
+            creator = self.creator
 
         description = self.description
 
@@ -176,14 +180,24 @@ class AgentVersion:
 
 
 
-        _creator = d.pop("creator", UNSET)
-        creator: UserInfo | Unset
-        if isinstance(_creator,  Unset):
-            creator = UNSET
-        else:
-            creator = UserInfo.from_dict(_creator)
+        def _parse_creator(data: object) -> None | Unset | UserInfo:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                creator_type_0 = UserInfo.from_dict(data)
 
 
+
+                return creator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | Unset | UserInfo, data)
+
+        creator = _parse_creator(d.pop("creator", UNSET))
 
 
         description = d.pop("description", UNSET)

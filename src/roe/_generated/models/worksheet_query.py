@@ -42,7 +42,7 @@ class WorksheetQuery:
             ai_summary (None | str):
             worksheet (Worksheet | Unset):
             organization (OrganizationSlim | Unset): Simple organization serializer for nested use.
-            creator (UserInfo | Unset):
+            creator (None | Unset | UserInfo):
      """
 
     id: UUID
@@ -56,7 +56,7 @@ class WorksheetQuery:
     ai_summary: None | str
     worksheet: Worksheet | Unset = UNSET
     organization: OrganizationSlim | Unset = UNSET
-    creator: UserInfo | Unset = UNSET
+    creator: None | Unset | UserInfo = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -101,9 +101,13 @@ class WorksheetQuery:
         if not isinstance(self.organization, Unset):
             organization = self.organization.to_dict()
 
-        creator: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.creator, Unset):
+        creator: dict[str, Any] | None | Unset
+        if isinstance(self.creator, Unset):
+            creator = UNSET
+        elif isinstance(self.creator, UserInfo):
             creator = self.creator.to_dict()
+        else:
+            creator = self.creator
 
 
         field_dict: dict[str, Any] = {}
@@ -223,14 +227,24 @@ class WorksheetQuery:
 
 
 
-        _creator = d.pop("creator", UNSET)
-        creator: UserInfo | Unset
-        if isinstance(_creator,  Unset):
-            creator = UNSET
-        else:
-            creator = UserInfo.from_dict(_creator)
+        def _parse_creator(data: object) -> None | Unset | UserInfo:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                creator_type_0 = UserInfo.from_dict(data)
 
 
+
+                return creator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | Unset | UserInfo, data)
+
+        creator = _parse_creator(d.pop("creator", UNSET))
 
 
         worksheet_query = cls(

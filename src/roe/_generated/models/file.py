@@ -55,11 +55,11 @@ class File:
                 * `text/*` - TEXT
                 * `*/*` - ANY
             blob_id (str):
-            creator (UserInfo):
+            creator (None | UserInfo):
             created_at (datetime.datetime):
             metadata (FileMetadata):
             deleted_at (datetime.datetime | None):
-            deleted_by (UserInfo):
+            deleted_by (None | UserInfo):
             dataset (None | Unset | UUID):
             meta (Any | Unset):
      """
@@ -70,11 +70,11 @@ class File:
     size: int
     content_type: ContentTypeEnum
     blob_id: str
-    creator: UserInfo
+    creator: None | UserInfo
     created_at: datetime.datetime
     metadata: FileMetadata
     deleted_at: datetime.datetime | None
-    deleted_by: UserInfo
+    deleted_by: None | UserInfo
     dataset: None | Unset | UUID = UNSET
     meta: Any | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -98,7 +98,11 @@ class File:
 
         blob_id = self.blob_id
 
-        creator = self.creator.to_dict()
+        creator: dict[str, Any] | None
+        if isinstance(self.creator, UserInfo):
+            creator = self.creator.to_dict()
+        else:
+            creator = self.creator
 
         created_at = self.created_at.isoformat()
 
@@ -110,7 +114,11 @@ class File:
         else:
             deleted_at = self.deleted_at
 
-        deleted_by = self.deleted_by.to_dict()
+        deleted_by: dict[str, Any] | None
+        if isinstance(self.deleted_by, UserInfo):
+            deleted_by = self.deleted_by.to_dict()
+        else:
+            deleted_by = self.deleted_by
 
         dataset: None | str | Unset
         if isinstance(self.dataset, Unset):
@@ -170,9 +178,22 @@ class File:
 
         blob_id = d.pop("blob_id")
 
-        creator = UserInfo.from_dict(d.pop("creator"))
+        def _parse_creator(data: object) -> None | UserInfo:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                creator_type_0 = UserInfo.from_dict(data)
 
 
+
+                return creator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | UserInfo, data)
+
+        creator = _parse_creator(d.pop("creator"))
 
 
         created_at = isoparse(d.pop("created_at"))
@@ -203,9 +224,22 @@ class File:
         deleted_at = _parse_deleted_at(d.pop("deleted_at"))
 
 
-        deleted_by = UserInfo.from_dict(d.pop("deleted_by"))
+        def _parse_deleted_by(data: object) -> None | UserInfo:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                deleted_by_type_0 = UserInfo.from_dict(data)
 
 
+
+                return deleted_by_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | UserInfo, data)
+
+        deleted_by = _parse_deleted_by(d.pop("deleted_by"))
 
 
         def _parse_dataset(data: object) -> None | Unset | UUID:

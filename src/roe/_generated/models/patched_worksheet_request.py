@@ -30,12 +30,12 @@ class PatchedWorksheetRequest:
     """ 
         Attributes:
             name (str | Unset):
-            creator (UserInfoRequest | Unset):
+            creator (None | Unset | UserInfoRequest):
             organization (OrganizationSlimRequest | Unset): Simple organization serializer for nested use.
      """
 
     name: str | Unset = UNSET
-    creator: UserInfoRequest | Unset = UNSET
+    creator: None | Unset | UserInfoRequest = UNSET
     organization: OrganizationSlimRequest | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -48,9 +48,13 @@ class PatchedWorksheetRequest:
         from ..models.user_info_request import UserInfoRequest
         name = self.name
 
-        creator: dict[str, Any] | Unset = UNSET
-        if not isinstance(self.creator, Unset):
+        creator: dict[str, Any] | None | Unset
+        if isinstance(self.creator, Unset):
+            creator = UNSET
+        elif isinstance(self.creator, UserInfoRequest):
             creator = self.creator.to_dict()
+        else:
+            creator = self.creator
 
         organization: dict[str, Any] | Unset = UNSET
         if not isinstance(self.organization, Unset):
@@ -82,8 +86,11 @@ class PatchedWorksheetRequest:
 
 
         if not isinstance(self.creator, Unset):
-            files.append(("creator", (None, json.dumps( self.creator.to_dict()).encode(), "application/json")))
+            if isinstance(self.creator, UserInfoRequest):
 
+                files.append(("creator", (None, json.dumps( self.creator.to_dict()).encode(), "application/json")))
+            else:
+                files.append(("creator", (None, str(self.creator).encode(), "text/plain")))
 
 
         if not isinstance(self.organization, Unset):
@@ -107,14 +114,24 @@ class PatchedWorksheetRequest:
         d = dict(src_dict)
         name = d.pop("name", UNSET)
 
-        _creator = d.pop("creator", UNSET)
-        creator: UserInfoRequest | Unset
-        if isinstance(_creator,  Unset):
-            creator = UNSET
-        else:
-            creator = UserInfoRequest.from_dict(_creator)
+        def _parse_creator(data: object) -> None | Unset | UserInfoRequest:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                creator_type_0 = UserInfoRequest.from_dict(data)
 
 
+
+                return creator_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | Unset | UserInfoRequest, data)
+
+        creator = _parse_creator(d.pop("creator", UNSET))
 
 
         _organization = d.pop("organization", UNSET)

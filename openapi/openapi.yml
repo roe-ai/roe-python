@@ -6188,7 +6188,9 @@ components:
           description: Version name for the agent version. Defaults to 'unnamed version'
             if not provided.
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
         created_at:
           type: string
           format: date-time
@@ -6362,7 +6364,9 @@ components:
           format: uuid
           readOnly: true
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
         created_at:
           type: string
           format: date-time
@@ -7315,8 +7319,9 @@ components:
           type: string
           maxLength: 1024
         creator:
-          allOf:
+          oneOf:
           - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
           readOnly: true
         created_at:
           type: string
@@ -7354,7 +7359,10 @@ components:
           type: string
           maxLength: 1024
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -7416,8 +7424,9 @@ components:
           type: string
           maxLength: 1024
         creator:
-          allOf:
+          oneOf:
           - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
           readOnly: true
         created_at:
           type: string
@@ -7436,8 +7445,9 @@ components:
           format: date-time
           readOnly: true
         deleted_by:
-          allOf:
+          oneOf:
           - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
           readOnly: true
       required:
       - blob_id
@@ -7513,7 +7523,10 @@ components:
           maximum: 2147483647
           minimum: -2147483648
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+          readOnly: true
         created_at:
           type: string
           format: date-time
@@ -8183,7 +8196,9 @@ components:
           minLength: 1
           maxLength: 1024
         creator:
-          $ref: '#/components/schemas/UserInfoRequest'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfoRequest'
+          - type: 'null'
         organization:
           $ref: '#/components/schemas/OrganizationSlimRequest'
     Policy:
@@ -8808,7 +8823,9 @@ components:
           format: date-time
           readOnly: true
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
         organization:
           $ref: '#/components/schemas/OrganizationSlim'
       required:
@@ -8891,7 +8908,9 @@ components:
         organization:
           $ref: '#/components/schemas/OrganizationSlim'
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
         created_at:
           type: string
           format: date-time
@@ -8965,7 +8984,9 @@ components:
           minLength: 1
           maxLength: 1024
         creator:
-          $ref: '#/components/schemas/UserInfoRequest'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfoRequest'
+          - type: 'null'
         organization:
           $ref: '#/components/schemas/OrganizationSlimRequest'
       required:
@@ -9014,7 +9035,9 @@ components:
         worksheet:
           $ref: '#/components/schemas/WorksheetSlim'
         creator:
-          $ref: '#/components/schemas/UserInfo'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
         created_at:
           type: string
           format: date-time
@@ -9031,7 +9054,9 @@ components:
         worksheet:
           $ref: '#/components/schemas/WorksheetSlimRequest'
         creator:
-          $ref: '#/components/schemas/UserInfoRequest'
+          oneOf:
+          - $ref: '#/components/schemas/UserInfoRequest'
+          - type: 'null'
         content:
           type: string
           maxLength: 1000000
