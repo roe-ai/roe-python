@@ -37,8 +37,23 @@ class RoeHTTPClient:
             headers=auth.get_headers(),
         )
 
+        # Mirror configuration onto an async client so callers reaching
+        # asyncio_detailed via client.raw inherit the same auth/timeout
+        # rather than getting a default-constructed AsyncClient.
+        self.async_client = httpx.AsyncClient(
+            base_url=config.base_url,
+            timeout=config.timeout,
+            headers=auth.get_headers(),
+        )
+
     def close(self) -> None:
-        """Close the HTTP client."""
+        """Close the HTTP client.
+
+        The async client's ``close()`` is a coroutine and cannot be awaited
+        from this sync method; callers using ``client.raw.<endpoint>.asyncio_*``
+        should use ``async with`` on the generated client. The async client
+        is otherwise garbage-collected like any other httpx.AsyncClient.
+        """
         self.client.close()
 
     def __enter__(self):

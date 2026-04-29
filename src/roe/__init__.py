@@ -52,7 +52,6 @@ except PackageNotFoundError:  # pragma: no cover - fallback for local source int
 __all__ = [
     # Main client
     "RoeClient",
-    "_generated",
     # Helper classes
     "FileUpload",
     # Response models
