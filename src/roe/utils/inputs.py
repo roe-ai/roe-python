@@ -19,6 +19,8 @@ from __future__ import annotations
 
 import io
 import json as _json
+import mimetypes
+from pathlib import Path
 from typing import Any
 
 from roe.models.file import FileUpload
@@ -48,11 +50,15 @@ def build_execution_multipart(
             if is_uuid_string(value):
                 form_data[key] = value
             elif is_file_path(value):
-                files[key] = open(value, "rb")
+                p = Path(value)
+                mime, _ = mimetypes.guess_type(p.name)
+                with open(value, "rb") as fh:
+                    files[key] = (p.name, fh.read(), mime or "application/octet-stream")
             else:
                 form_data[key] = value
         else:
-            form_data[key] = str(value) if value is not None else ""
+            if value is not None:
+                form_data[key] = str(value)
 
     if metadata is not None:
         form_data["metadata"] = _json.dumps(metadata)

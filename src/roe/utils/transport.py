@@ -1,8 +1,12 @@
 """Custom httpx transport with retry policy for the Roe SDK.
 
-Retries 502/503/504 responses for idempotent methods (GET/PUT/DELETE) with
-exponential backoff. POST is never retried — POSTs may carry non-rewindable
-multipart bodies and may not be idempotent on the server side.
+Retries 502/503/504 responses for GET/PUT/PATCH/DELETE with exponential
+backoff. POST is never retried — POSTs may carry non-rewindable multipart
+bodies and may not be idempotent on the server side. PATCH is included
+because the SDK's only PATCH calls are partial-field updates on
+``agents.update()`` / ``policies.update()`` (replacing prior PUT calls)
+that the Roe backend implements idempotently — the same partial body
+yields the same end state.
 """
 
 from __future__ import annotations
@@ -15,7 +19,7 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _RETRYABLE_STATUS_CODES = frozenset({502, 503, 504})
-_IDEMPOTENT_METHODS = frozenset({"GET", "PUT", "DELETE"})
+_IDEMPOTENT_METHODS = frozenset({"GET", "PUT", "PATCH", "DELETE"})
 
 
 class RoeRetryTransport(httpx.HTTPTransport):

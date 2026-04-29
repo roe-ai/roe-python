@@ -15,7 +15,7 @@ from uuid import UUID
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
 from roe._generated.models.agent_job_status import AgentJobStatus
-from roe.exceptions import NotFoundError
+from roe.exceptions import NotFoundError, RoeAPIException
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
@@ -123,7 +123,7 @@ class Job:
                 is_failed = status.status in _FAILED_STATUSES
                 try:
                     result = self.retrieve_result()
-                except Exception:
+                except RoeAPIException:
                     if not is_failed:
                         raise
                     return _empty_result(status.status, error_message)

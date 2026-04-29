@@ -79,7 +79,7 @@ from roe._generated.models.patched_patched_agent_version_update_request_request 
 )
 from roe._generated.types import UNSET
 from roe.config import RoeConfig
-from roe.exceptions import translate_response
+from roe.exceptions import RoeAPIException, translate_response
 from roe.models.job import Job, JobBatch
 from roe.utils._dynamic_call import call_dynamic
 
@@ -502,11 +502,14 @@ class AgentsAPI:
             if isinstance(chunk_ids, list):
                 all_job_ids.extend(chunk_ids)
             elif chunk_ids is not None:
-                # Generated wrapper may model this as ``AgentsRunAsyncMany5Response200``;
-                # fall back to its dict shape if needed.
-                fallback = getattr(chunk_ids, "additional_keys", None)
-                if fallback:
-                    all_job_ids.extend(fallback)
+                raw = (
+                    chunk_ids.to_dict()
+                    if hasattr(chunk_ids, "to_dict")
+                    else chunk_ids
+                )
+                raise RoeAPIException(
+                    f"run_async_many returned unexpected response shape: {raw!r}"
+                )
         return JobBatch(self, all_job_ids, timeout_seconds)
 
     def run_sync(
