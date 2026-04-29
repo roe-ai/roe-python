@@ -477,6 +477,10 @@ class AgentsAPI:
             agent_id=UUID(agent_id),
         )
         job_id = response.json()
+        if not isinstance(job_id, str):
+            raise RoeAPIException(
+                f"run_async returned unexpected job ID shape: {job_id!r}"
+            )
         return Job(self, job_id, timeout_seconds)
 
     def run_many(
@@ -555,6 +559,10 @@ class AgentsAPI:
             agent_version_id=UUID(version_id),
         )
         job_id = response.json()
+        if not isinstance(job_id, str):
+            raise RoeAPIException(
+                f"run_async returned unexpected job ID shape: {job_id!r}"
+            )
         return Job(self, job_id, timeout_seconds)
 
     def run_version_sync(
