@@ -31,8 +31,9 @@ def build_execution_multipart(
 ) -> tuple[dict[str, Any], dict[str, Any]]:
     """Split inputs into ``(form_data, files)`` for an httpx multipart request.
 
-    Behavior is identical to ``RoeHTTPClient._process_inputs`` plus the
-    metadata-as-JSON serialization that ``post_with_dynamic_inputs`` does.
+    Detects ``FileUpload``, file-like objects, file-path strings, UUID strings
+    (treated as Roe file references — kept in form data, not opened), and
+    plain scalars. ``metadata`` is JSON-encoded into the form when present.
     """
     form_data: dict[str, Any] = {}
     files: dict[str, Any] = {}
