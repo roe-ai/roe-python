@@ -2,9 +2,10 @@
 
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
-> **v1.0.0** — generated-client migration. Hand-written response models
-> moved to `roe._generated.models`; `RoeHTTPClient` is gone. See
-> [CHANGELOG.md](CHANGELOG.md) for the full breaking-change list.
+> **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
+> (`roe._generated`); ergonomic wrappers on `client.agents` and
+> `client.policies` remain. Noteworthy API and behavioral changes compared
+> to earlier releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Installation
 
@@ -33,7 +34,7 @@ for output in result.outputs:
 Or set environment variables:
 
 ```bash
-export ROE_ORGANIZATION_API_KEY="your-api-key"
+export ROE_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
@@ -440,9 +441,9 @@ agent = client.agents.create(
 
 ## Retry Behavior
 
-The SDK automatically retries idempotent requests (GET, PUT, DELETE) that receive `502`, `503`, or `504` responses using exponential backoff (1s, 2s, 4s, …). By default, up to 3 retries are attempted before raising a `ServerError`. POST requests are never retried to avoid duplicate submissions.
-
-You can configure the retry count via the `max_retries` parameter or the `ROE_MAX_RETRIES` environment variable:
+Transient failures are retried with exponential backoff capped at about 10
+seconds per attempt. By default there are up to 3 retries (configurable via
+`max_retries` or `ROE_MAX_RETRIES`):
 
 ```python
 client = RoeClient(
@@ -452,7 +453,14 @@ client = RoeClient(
 )
 ```
 
-Other error codes (400, 401, 404, 500, etc.) are raised immediately without retrying.
+**Retried:** HTTP statuses `408`, `429`, and any `5xx`, plus transport errors
+(for example disconnects and timeouts). JSON `POST` bodies may be replayed;
+multipart agent-run calls (`run`, `run_sync`, …) opt out via
+`x-roe-skip-retry` so they are not automatically retried at the transport layer.
+
+**Not retried immediately:** Typical client/auth responses (`401`, `403`,
+`404`, validation `422`, …) — surfaced as typed exceptions matching the SDK’s
+usual error mapping.
 
 ## Batch Processing
 
@@ -645,4 +653,5 @@ client.agents.jobs.delete_data(job_id)
 
 - [Roe AI](https://www.roe-ai.com/)
 - [API Documentation](https://docs.roe-ai.com)
+- [Changelog](CHANGELOG.md)
 - [Examples](examples/)

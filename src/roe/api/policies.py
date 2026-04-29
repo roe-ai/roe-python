@@ -38,6 +38,21 @@ from roe._generated.models.policy_version import PolicyVersion
 from roe._generated.types import UNSET
 from roe.config import RoeConfig
 from roe.exceptions import translate_response
+from roe.utils.generated_request import request_json, request_raw
+
+
+_ZERO_UUID = "00000000-0000-0000-0000-000000000000"
+
+
+def _normalize_policy_version_wire(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(data)
+    if normalized.get("base_version_id") is None:
+        normalized["base_version_id"] = _ZERO_UUID
+    return normalized
+
+
+def _parse_policy_version(data: dict[str, Any]) -> PolicyVersion:
+    return PolicyVersion.from_dict(_normalize_policy_version_wire(data))
 
 if TYPE_CHECKING:
     pass
@@ -57,26 +72,32 @@ class PolicyVersionsAPI:
         page_size: int | None = None,
     ) -> PaginatedPolicyVersionList:
         """List versions of a policy."""
-        resp = v1_policies_versions_list.sync_detailed(
-            policy_id=UUID(policy_id),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            v1_policies_versions_list,
+            UUID(policy_id),
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
             organization_id=UUID(self.config.organization_id),
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        data = response.json()
+        return PaginatedPolicyVersionList(
+            count=data["count"],
+            results=[_parse_policy_version(item) for item in data.get("results", [])],
+            next_=data.get("next"),
+            previous=data.get("previous"),
+        )
 
     def retrieve(self, policy_id: str, version_id: str) -> PolicyVersion:
         """Retrieve a specific version of a policy."""
-        resp = v1_policies_versions_retrieve.sync_detailed(
-            policy_id=UUID(policy_id),
-            version_id=UUID(version_id),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            v1_policies_versions_retrieve,
+            UUID(policy_id),
+            UUID(version_id),
             organization_id=UUID(self.config.organization_id),
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return _parse_policy_version(response.json())
 
     def create(
         self,
@@ -91,13 +112,13 @@ class PolicyVersionsAPI:
             version_name=version_name if version_name is not None else UNSET,
             base_version_id=UUID(base_version_id) if base_version_id else UNSET,
         )
-        resp = v1_policies_versions_create.sync_detailed(
-            policy_id=UUID(policy_id),
-            client=self._raw,
+        resp = request_json(
+            self._raw,
+            v1_policies_versions_create,
+            UUID(policy_id),
             body=body,
             organization_id=UUID(self.config.organization_id),
         )
-        translate_response(resp)
         created = resp.parsed
         if created is None or created.id is None:
             raise ValueError(f"Unexpected response from server: status={resp.status_code}")
@@ -157,12 +178,12 @@ class PoliciesAPI:
             description=description,
             version_name=version_name if version_name is not None else UNSET,
         )
-        resp = v1_policies_create.sync_detailed(
-            client=self._raw,
+        resp = request_json(
+            self._raw,
+            v1_policies_create,
             body=body,
             organization_id=UUID(self.config.organization_id),
         )
-        translate_response(resp)
         return resp.parsed  # type: ignore[return-value]
 
     def update(
@@ -176,13 +197,13 @@ class PoliciesAPI:
             name=name if name is not None else UNSET,
             description=description if description is not None else UNSET,
         )
-        resp = v1_policies_partial_update.sync_detailed(
-            id=UUID(policy_id),
-            client=self._raw,
+        resp = request_json(
+            self._raw,
+            v1_policies_partial_update,
+            UUID(policy_id),
             body=body,
             organization_id=UUID(self.config.organization_id),
         )
-        translate_response(resp)
         return resp.parsed
 
     def delete(self, policy_id: str) -> None:

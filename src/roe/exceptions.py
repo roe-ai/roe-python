@@ -106,6 +106,14 @@ def translate_response(response: Any) -> None:
     if isinstance(body, dict):
         message = body.get("detail") or body.get("error") or body.get("message")
         if not message:
+            for value in body.values():
+                if isinstance(value, list) and value:
+                    message = "; ".join(str(e) for e in value)
+                    break
+                if isinstance(value, str) and value:
+                    message = value
+                    break
+        if not message:
             message = f"HTTP {status_code}"
         error_data = body
     elif isinstance(body, list):

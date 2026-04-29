@@ -55,6 +55,7 @@ from roe._generated.models.agent_job_delete_data_response import (
 from roe._generated.models.agent_job_result_many_request_request import (
     AgentJobResultManyRequestRequest,
 )
+from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe._generated.models.agent_job_status_many_request_request import (
@@ -67,9 +68,6 @@ from roe._generated.models.agent_version import AgentVersion
 from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
 from roe._generated.models.base_agent import BaseAgent
 from roe._generated.models.base_agent_create_request import BaseAgentCreateRequest
-from roe._generated.models.paginated_agent_job_result_item_list import (
-    PaginatedAgentJobResultItemList,
-)
 from roe._generated.models.paginated_base_agent_list import PaginatedBaseAgentList
 from roe._generated.models.patched_base_agent_update_request import (
     PatchedBaseAgentUpdateRequest,
@@ -82,6 +80,7 @@ from roe.config import RoeConfig
 from roe.exceptions import RoeAPIException, translate_response
 from roe.models.job import Job, JobBatch
 from roe.utils._dynamic_call import call_dynamic
+from roe.utils.generated_request import request_json, request_raw
 
 
 def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequestRequest:
@@ -158,14 +157,21 @@ class AgentVersionsAPI:
             version_name=version_name if version_name is not None else UNSET,
             description=description if description is not None else UNSET,
         )
-        resp = v1_agents_versions_create.sync_detailed(
-            agent_id=UUID(agent_id),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            v1_agents_versions_create,
+            UUID(agent_id),
             body=body,
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        data = response.json()
+        version_id = data.get("id") if isinstance(data, dict) else None
+        if version_id is None:
+            raise RoeAPIException(
+                f"Unexpected response from server: status={response.status_code}"
+            )
+        # POST returns a partial create payload; re-fetch to get the full version.
+        return self.retrieve(agent_id, str(version_id))
 
     def update(
         self,
@@ -179,14 +185,14 @@ class AgentVersionsAPI:
             version_name=version_name if version_name is not None else UNSET,
             description=description if description is not None else UNSET,
         )
-        resp = v1_agents_versions_partial_update.sync_detailed(
-            agent_id=UUID(agent_id),
-            agent_version_id=UUID(version_id),
-            client=self._raw,
+        request_json(
+            self._raw,
+            v1_agents_versions_partial_update,
+            UUID(agent_id),
+            UUID(version_id),
             body=body,
             organization_id=self._org_id,
         )
-        translate_response(resp)
 
     def delete(self, agent_id: str, version_id: str) -> None:
         resp = v1_agents_versions_destroy.sync_detailed(
@@ -246,14 +252,15 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentJobStatusManyRequestRequest()
-            body.additional_properties["job_ids"] = chunk
-            resp = v1_agents_jobs_statuses_create.sync_detailed(
-                client=self._raw,
+            body = AgentJobStatusManyRequestRequest(
+                job_ids=[UUID(job_id) for job_id in chunk]
+            )
+            resp = request_json(
+                self._raw,
+                v1_agents_jobs_statuses_create,
                 body=body,
                 organization_id=self._org_id,
             )
-            translate_response(resp)
             chunk_result = resp.parsed
             if chunk_result is not None:
                 results.extend(chunk_result)
@@ -270,20 +277,22 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentJobResultManyRequestRequest()
-            body.additional_properties["job_ids"] = chunk
-            resp = v1_agents_jobs_results_create.sync_detailed(
-                client=self._raw,
+            body = AgentJobResultManyRequestRequest(
+                job_ids=[UUID(job_id) for job_id in chunk]
+            )
+            response = request_raw(
+                self._raw,
+                v1_agents_jobs_results_create,
                 body=body,
                 organization_id=self._org_id,
             )
-            translate_response(resp)
-            page = resp.parsed
-            if isinstance(page, PaginatedAgentJobResultItemList):
-                results.extend(page.results)
-            elif page is not None:
-                # Backend may also return a bare list — accept that shape too.
-                results.extend(page)
+            data = response.json()
+            items = data.get("results", []) if isinstance(data, dict) else data
+            if not isinstance(items, list):
+                raise RoeAPIException(
+                    f"jobs/results returned unexpected response shape: {data!r}"
+                )
+            results.extend(AgentJobResultItem.from_dict(item) for item in items)
         return results
 
     def download_reference(
@@ -369,13 +378,13 @@ class AgentsAPI:
         return resp.parsed  # type: ignore[return-value]
 
     def retrieve(self, agent_id: str) -> BaseAgent:
-        resp = v1_agents_retrieve.sync_detailed(
-            agent_id=UUID(agent_id),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            v1_agents_retrieve,
+            UUID(agent_id),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return BaseAgent.from_dict(response.json())
 
     def create(
         self,
@@ -395,12 +404,12 @@ class AgentsAPI:
             version_name=version_name if version_name is not None else UNSET,
             description=description if description is not None else UNSET,
         )
-        resp = v1_agents_create.sync_detailed(
-            client=self._raw,
+        resp = request_json(
+            self._raw,
+            v1_agents_create,
             body=body,
             organization_id=self._org_id,
         )
-        translate_response(resp)
         return resp.parsed  # type: ignore[return-value]
 
     def update(
@@ -418,13 +427,13 @@ class AgentsAPI:
             if cache_failed_jobs is not None
             else UNSET,
         )
-        resp = v1_agents_partial_update.sync_detailed(
-            agent_id=UUID(agent_id),
-            client=self._raw,
+        resp = request_json(
+            self._raw,
+            v1_agents_partial_update,
+            UUID(agent_id),
             body=body,
             organization_id=self._org_id,
         )
-        translate_response(resp)
         return resp.parsed  # type: ignore[return-value]
 
     def delete(self, agent_id: str) -> None:
@@ -491,25 +500,24 @@ class AgentsAPI:
             )
             if metadata is not None:
                 body.additional_properties["metadata"] = metadata
-            resp = agents_run_async_many_5.sync_detailed(
-                agent_id=UUID(agent_id),
-                client=self._raw,
+            response = request_raw(
+                self._raw,
+                agents_run_async_many_5,
+                UUID(agent_id),
                 body=body,
                 organization_id=self._org_id,
             )
-            translate_response(resp)
-            chunk_ids = resp.parsed
-            if isinstance(chunk_ids, list):
-                all_job_ids.extend(chunk_ids)
-            elif chunk_ids is not None:
-                raw = (
-                    chunk_ids.to_dict()
-                    if hasattr(chunk_ids, "to_dict")
-                    else chunk_ids
-                )
+            chunk_ids = response.json()
+            if not isinstance(chunk_ids, list):
                 raise RoeAPIException(
-                    f"run_async_many returned unexpected response shape: {raw!r}"
+                    f"run_async_many returned unexpected response shape: {chunk_ids!r}"
                 )
+            for job_id in chunk_ids:
+                if not isinstance(job_id, str):
+                    raise RoeAPIException(
+                        f"run_async_many returned invalid job ID: {job_id!r}"
+                    )
+                all_job_ids.append(job_id)
         return JobBatch(self, all_job_ids, timeout_seconds)
 
     def run_sync(

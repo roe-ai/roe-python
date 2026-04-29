@@ -44,6 +44,7 @@ def call_dynamic(
     kwargs["data"] = data
     kwargs["files"] = files
     headers = kwargs.setdefault("headers", {})
+    headers["x-roe-skip-retry"] = "1"  # multipart POST — do not replay (aligns with TS)
     headers.pop("Content-Type", None)  # let httpx pick the boundary
     response = raw.get_httpx_client().request(**kwargs)
     translate_response(response)
