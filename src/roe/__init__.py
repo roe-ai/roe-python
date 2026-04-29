@@ -35,14 +35,7 @@ from roe.exceptions import (
     ServerError,
 )
 from roe.models import FileUpload
-from roe.models.responses import (
-    AgentDatum,
-    AgentJobResult,
-    AgentJobStatus,
-    JobDataDeleteResponse,
-    JobStatus,
-    Reference,
-)
+from roe.models.job import Job, JobBatch, JobStatus
 
 try:
     __version__ = version("roe-ai")
@@ -52,15 +45,13 @@ except PackageNotFoundError:  # pragma: no cover - fallback for local source int
 __all__ = [
     # Main client
     "RoeClient",
-    # Helper classes
-    "FileUpload",
-    # Response models
-    "AgentDatum",
-    "AgentJobResult",
-    "AgentJobStatus",
-    "JobDataDeleteResponse",
+    "_generated",
+    # Stateful job helpers
+    "Job",
+    "JobBatch",
     "JobStatus",
-    "Reference",
+    # File upload helper
+    "FileUpload",
     # Exceptions
     "RoeAPIException",
     "AuthenticationError",

@@ -77,8 +77,10 @@ class RoeClient:
             raise_on_unexpected_status=False,
         ).set_httpx_client(self.http_client.client)
 
-        # Create API instances
-        self._agents = AgentsAPI(self.config, self.http_client)
+        # Create API instances. Both APIs delegate to the generated raw
+        # client; the shared httpx.Client (with retry transport + auth) lives
+        # on RoeHTTPClient.
+        self._agents = AgentsAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
 
     @property
