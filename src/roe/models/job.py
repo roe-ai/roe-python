@@ -224,6 +224,7 @@ class JobBatch:
                     self._job_statuses[job_id] = {
                         "status": stat_code,
                         "error_message": self._extract_error_message(status_item),
+                        "timestamp": self._extract_timestamp(status_item),
                     }
 
             if completed_in_this_batch:
@@ -231,7 +232,7 @@ class JobBatch:
                     completed_in_this_batch
                 )
                 for result_item in result_batch:
-                    job_id = result_item.id
+                    job_id = str(result_item.id)
                     cached = self._job_statuses.get(job_id)
                     is_failed = (
                         cached is not None and cached["status"] in _FAILED_STATUSES
@@ -269,7 +270,7 @@ class JobBatch:
             if cached is not None and cached["status"] in _TERMINAL_STATUSES:
                 status_map[job_id] = AgentJobStatus(
                     status=cached["status"],
-                    timestamp=0,
+                    timestamp=cached.get("timestamp", 0),
                     error_message=cached["error_message"]
                     if cached["error_message"] is not None
                     else _UNSET_SENTINEL(),
@@ -292,7 +293,11 @@ class JobBatch:
                     timestamp=self._extract_timestamp(status_item),
                     error_message=err if err is not None else _UNSET_SENTINEL(),
                 )
-                self._job_statuses[job_id] = {"status": stat_code, "error_message": err}
+                self._job_statuses[job_id] = {
+                    "status": stat_code,
+                    "error_message": err,
+                    "timestamp": self._extract_timestamp(status_item),
+                }
 
         return status_map
 
