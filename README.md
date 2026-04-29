@@ -39,7 +39,9 @@ export ROE_ORGANIZATION_ID="your-org-uuid"
 
 ## Job Result Inspection
 
-After waiting for a job, you can inspect its outcome using status helpers:
+After waiting for a job, inspect its outcome using the `JobStatus` enum.
+The terminal status and error message are stuffed into the generated
+response's `additional_properties` and accessed via subscript:
 
 ```python
 from roe import JobStatus
@@ -47,20 +49,18 @@ from roe import JobStatus
 result = job.wait()
 
 # Check job outcome
-if result.succeeded:
+if result["status"] in (JobStatus.SUCCESS, JobStatus.CACHED):
     for output in result.outputs:
         print(f"{output.key}: {output.value}")
-elif result.cancelled:
+elif result["status"] == JobStatus.CANCELLED:
     print("Job was cancelled")
-elif result.failed:
-    print("Error:", result.error_message)
+elif result["status"] == JobStatus.FAILURE:
+    print("Error:", result["error_message"])
 
 # Available fields
-result.status         # JobStatus code (int) or None
-result.error_message  # Error string or None
-result.succeeded      # True if SUCCESS or CACHED
-result.failed         # True if FAILURE or CANCELLED
-result.cancelled      # True if CANCELLED
+result.outputs           # list[AgentDatum] (direct attribute on the generated model)
+result["status"]         # JobStatus code (int) — set by Job.wait()
+result["error_message"]  # Error string or None — set by Job.wait()
 ```
 
 ## Raw API Access
@@ -177,11 +177,8 @@ agent = client.agents.create(
 job = client.agents.run(agent_id=str(agent.id), url="https://www.roe-ai.com/")
 result = job.wait()
 
-# Download saved references (screenshots, HTML, markdown)
-for ref in result.get_references():
-    content = client.agents.jobs.download_reference(str(job.id), ref.resource_id)
-    with open(ref.resource_id, "wb") as f:
-        f.write(content)
+for output in result.outputs:
+    print(f"{output.key}: {output.value}")
 ```
 
 ### Interactive Web
