@@ -74,15 +74,18 @@ class RoeClient:
             headers=self.auth.get_headers(),
             transport=RoeRetryTransport(max_retries=self.config.max_retries),
         )
-
         # token= and base_url= satisfy required AuthenticatedClient fields but
         # are not read at request time once set_httpx_client supplies the
-        # underlying client. raise_on_unexpected_status=False so non-2xx
-        # responses surface as a parsed Response that translate_response() can
-        # map to a typed RoeAPIException at the wrapper boundary.
+        # underlying sync client. headers= and timeout= keep raw async calls
+        # aligned with RoeClient configuration if users call client.raw directly.
+        # raise_on_unexpected_status=False so non-2xx responses surface as a
+        # parsed Response that translate_response() can map to a typed
+        # RoeAPIException at the wrapper boundary.
         self._raw = RawClient(
             base_url=self.config.base_url,
             token=self.config.api_key,
+            headers=self.auth.get_headers(),
+            timeout=self.config.timeout,
             raise_on_unexpected_status=False,
         ).set_httpx_client(self._httpx_client)
 

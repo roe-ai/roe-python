@@ -23,7 +23,6 @@ Basic usage:
 
 from importlib.metadata import PackageNotFoundError, version
 
-from . import _generated
 from roe.client import RoeClient
 from roe.exceptions import (
     AuthenticationError,
@@ -39,13 +38,13 @@ from roe.models.job import Job, JobBatch, JobStatus
 
 try:
     __version__ = version("roe-ai")
-except PackageNotFoundError:  # pragma: no cover - fallback for local source introspection
+# Fallback for local source introspection.
+except PackageNotFoundError:  # pragma: no cover
     __version__ = "0.0.0"
 
 __all__ = [
     # Main client
     "RoeClient",
-    "_generated",
     # Stateful job helpers
     "Job",
     "JobBatch",
