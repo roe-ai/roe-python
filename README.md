@@ -2,6 +2,10 @@
 
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
+> **v1.0.0** — generated-client migration. Hand-written response models
+> moved to `roe._generated.models`; `RoeHTTPClient` is gone. See
+> [CHANGELOG.md](CHANGELOG.md) for the full breaking-change list.
+
 ## Installation
 
 ```bash
