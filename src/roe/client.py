@@ -5,6 +5,7 @@ import httpx
 from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api.agents import AgentsAPI
 from roe.api.policies import PoliciesAPI
+from roe.api.users import UsersAPI
 from roe.auth import RoeAuth
 from roe.config import RoeConfig
 from roe.utils.transport import RoeRetryTransport
@@ -89,9 +90,10 @@ class RoeClient:
             raise_on_unexpected_status=False,
         ).set_httpx_client(self._httpx_client)
 
-        # Create API instances. Both APIs delegate to the generated raw client.
+        # Create API instances. All APIs delegate to the generated raw client.
         self._agents = AgentsAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
+        self._users = UsersAPI(self.config, self._raw)
 
     @property
     def agents(self) -> AgentsAPI:
@@ -141,6 +143,20 @@ class RoeClient:
             versions = client.policies.versions.list("policy-uuid")
         """
         return self._policies
+
+    @property
+    def users(self) -> UsersAPI:
+        """Access the users API.
+
+        Returns:
+            UsersAPI instance for retrieving information about the
+            authenticated user.
+
+        Examples:
+            # Get the current user
+            me = client.users.me()
+        """
+        return self._users
 
     @property
     def raw(self) -> RawClient:
