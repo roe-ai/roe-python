@@ -75,10 +75,10 @@ class PolicyVersionsAPI:
         response = request_raw(
             self._raw,
             v1_policies_versions_list,
-            UUID(policy_id),
+            UUID(str(policy_id)),
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         data = response.json()
         return PaginatedPolicyVersionList(
@@ -93,9 +93,9 @@ class PolicyVersionsAPI:
         response = request_raw(
             self._raw,
             v1_policies_versions_retrieve,
-            UUID(policy_id),
-            UUID(version_id),
-            organization_id=UUID(self.config.organization_id),
+            UUID(str(policy_id)),
+            UUID(str(version_id)),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         return _parse_policy_version(response.json())
 
@@ -110,14 +110,14 @@ class PolicyVersionsAPI:
         body = CreatePolicyVersionRequest(
             content=content,
             version_name=version_name if version_name is not None else UNSET,
-            base_version_id=UUID(base_version_id) if base_version_id else UNSET,
+            base_version_id=UUID(str(base_version_id)) if base_version_id else UNSET,
         )
         resp = request_json(
             self._raw,
             v1_policies_versions_create,
-            UUID(policy_id),
+            UUID(str(policy_id)),
             body=body,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         created = resp.parsed
         if created is None or created.id is None:
@@ -149,7 +149,7 @@ class PoliciesAPI:
             client=self._raw,
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         translate_response(resp)
         return resp.parsed  # type: ignore[return-value]
@@ -157,9 +157,9 @@ class PoliciesAPI:
     def retrieve(self, policy_id: str) -> Policy:
         """Retrieve a specific policy by ID."""
         resp = v1_policies_retrieve.sync_detailed(
-            id=UUID(policy_id),
+            id=UUID(str(policy_id)),
             client=self._raw,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         translate_response(resp)
         return resp.parsed  # type: ignore[return-value]
@@ -182,7 +182,7 @@ class PoliciesAPI:
             self._raw,
             v1_policies_create,
             body=body,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         return resp.parsed  # type: ignore[return-value]
 
@@ -200,17 +200,17 @@ class PoliciesAPI:
         resp = request_json(
             self._raw,
             v1_policies_partial_update,
-            UUID(policy_id),
+            UUID(str(policy_id)),
             body=body,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         return resp.parsed
 
     def delete(self, policy_id: str) -> None:
         """Delete a policy and all its versions."""
         resp = v1_policies_destroy.sync_detailed(
-            id=UUID(policy_id),
+            id=UUID(str(policy_id)),
             client=self._raw,
-            organization_id=UUID(self.config.organization_id),
+            organization_id=UUID(str(self.config.organization_id)),
         )
         translate_response(resp)

@@ -108,11 +108,11 @@ class AgentVersionsAPI:
 
     @property
     def _org_id(self) -> UUID:
-        return UUID(self._agents_api.config.organization_id)
+        return UUID(str(self._agents_api.config.organization_id))
 
     def list(self, agent_id: str) -> list[AgentVersion]:
         resp = v1_agents_versions_list.sync_detailed(
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -123,8 +123,8 @@ class AgentVersionsAPI:
         self, agent_id: str, version_id: str, get_supports_eval: bool | None = None
     ) -> AgentVersion:
         resp = v1_agents_versions_retrieve.sync_detailed(
-            agent_id=UUID(agent_id),
-            agent_version_id=UUID(version_id),
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
             client=self._raw,
             get_supports_eval=get_supports_eval
             if get_supports_eval is not None
@@ -136,7 +136,7 @@ class AgentVersionsAPI:
 
     def retrieve_current(self, agent_id: str) -> AgentVersion:
         resp = v1_agents_versions_current_retrieve.sync_detailed(
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -160,7 +160,7 @@ class AgentVersionsAPI:
         response = request_raw(
             self._raw,
             v1_agents_versions_create,
-            UUID(agent_id),
+            UUID(str(agent_id)),
             body=body,
             organization_id=self._org_id,
         )
@@ -188,16 +188,16 @@ class AgentVersionsAPI:
         request_json(
             self._raw,
             v1_agents_versions_partial_update,
-            UUID(agent_id),
-            UUID(version_id),
+            UUID(str(agent_id)),
+            UUID(str(version_id)),
             body=body,
             organization_id=self._org_id,
         )
 
     def delete(self, agent_id: str, version_id: str) -> None:
         resp = v1_agents_versions_destroy.sync_detailed(
-            agent_id=UUID(agent_id),
-            agent_version_id=UUID(version_id),
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -218,7 +218,7 @@ class AgentJobsAPI:
 
     @property
     def _org_id(self) -> UUID:
-        return UUID(self._agents_api.config.organization_id)
+        return UUID(str(self._agents_api.config.organization_id))
 
     @staticmethod
     def _iter_chunks(items, chunk_size: int):
@@ -227,7 +227,7 @@ class AgentJobsAPI:
 
     def retrieve_status(self, job_id: str) -> AgentJobStatus:
         resp = v1_agents_jobs_status_retrieve.sync_detailed(
-            job_id=UUID(job_id),
+            job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -236,7 +236,7 @@ class AgentJobsAPI:
 
     def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
         resp = v1_agents_jobs_result_retrieve.sync_detailed(
-            agent_job_id=UUID(job_id),
+            agent_job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -253,7 +253,7 @@ class AgentJobsAPI:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
             body = AgentJobStatusManyRequestRequest(
-                job_ids=[UUID(job_id) for job_id in chunk]
+                job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
             resp = request_json(
                 self._raw,
@@ -278,7 +278,7 @@ class AgentJobsAPI:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
             body = AgentJobResultManyRequestRequest(
-                job_ids=[UUID(job_id) for job_id in chunk]
+                job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
             response = request_raw(
                 self._raw,
@@ -299,7 +299,7 @@ class AgentJobsAPI:
         self, job_id: str, resource_id: str, as_attachment: bool = False
     ) -> bytes:
         kwargs = v1_agents_jobs_references_retrieve._get_kwargs(
-            agent_job_id=UUID(job_id),
+            agent_job_id=UUID(str(job_id)),
             resource_id=resource_id,
             organization_id=self._org_id,
         )
@@ -311,7 +311,7 @@ class AgentJobsAPI:
 
     def cancel(self, job_id: str) -> None:
         resp = v1_agents_jobs_cancel_create.sync_detailed(
-            job_id=UUID(job_id),
+            job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -319,7 +319,7 @@ class AgentJobsAPI:
 
     def cancel_all(self, agent_id: str) -> None:
         resp = v1_agents_jobs_cancel_all_create.sync_detailed(
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -327,7 +327,7 @@ class AgentJobsAPI:
 
     def delete_data(self, job_id: str) -> AgentJobDeleteDataResponse:
         resp = v1_agents_jobs_delete_data_create.sync_detailed(
-            job_id=UUID(job_id),
+            job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -348,7 +348,7 @@ class AgentsAPI:
 
     @property
     def _org_id(self) -> UUID:
-        return UUID(self.config.organization_id)
+        return UUID(str(self.config.organization_id))
 
     @property
     def versions(self) -> AgentVersionsAPI:
@@ -381,7 +381,7 @@ class AgentsAPI:
         response = request_raw(
             self._raw,
             v1_agents_retrieve,
-            UUID(agent_id),
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
         return BaseAgent.from_dict(response.json())
@@ -430,7 +430,7 @@ class AgentsAPI:
         resp = request_json(
             self._raw,
             v1_agents_partial_update,
-            UUID(agent_id),
+            UUID(str(agent_id)),
             body=body,
             organization_id=self._org_id,
         )
@@ -438,7 +438,7 @@ class AgentsAPI:
 
     def delete(self, agent_id: str) -> None:
         resp = v1_agents_destroy.sync_detailed(
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -453,7 +453,7 @@ class AgentsAPI:
         agent should read ``result.base_agent`` (already populated).
         """
         resp = v1_agents_duplicate_create.sync_detailed(
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
         )
@@ -474,7 +474,7 @@ class AgentsAPI:
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
         )
         job_id = response.json()
         if not isinstance(job_id, str):
@@ -507,7 +507,7 @@ class AgentsAPI:
             response = request_raw(
                 self._raw,
                 agents_run_async_many_5,
-                UUID(agent_id),
+                UUID(str(agent_id)),
                 body=body,
                 organization_id=self._org_id,
             )
@@ -537,7 +537,7 @@ class AgentsAPI:
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
-            agent_id=UUID(agent_id),
+            agent_id=UUID(str(agent_id)),
         )
         return [AgentDatum.from_dict(d) for d in response.json()]
 
@@ -555,8 +555,8 @@ class AgentsAPI:
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
-            agent_id=UUID(agent_id),
-            agent_version_id=UUID(version_id),
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
         )
         job_id = response.json()
         if not isinstance(job_id, str):
@@ -578,7 +578,7 @@ class AgentsAPI:
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
-            agent_id=UUID(agent_id),
-            agent_version_id=UUID(version_id),
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
         )
         return [AgentDatum.from_dict(d) for d in response.json()]
