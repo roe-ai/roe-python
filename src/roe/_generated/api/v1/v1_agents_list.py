@@ -1,0 +1,337 @@
+from http import HTTPStatus
+from typing import Any, cast
+from urllib.parse import quote
+
+import httpx
+
+from ...client import AuthenticatedClient, Client
+from ...types import Response, UNSET
+from ... import errors
+
+from ...models.error_response import ErrorResponse
+from ...models.paginated_base_agent_list import PaginatedBaseAgentList
+from ...types import UNSET, Unset
+from typing import cast
+from uuid import UUID
+
+
+
+def _get_kwargs(
+    *,
+    engine_class_id: str | Unset = UNSET,
+    exclude_engine_class_id: str | Unset = UNSET,
+    include_job_stats: bool | Unset = UNSET,
+    ordering: str | Unset = UNSET,
+    organization_id: UUID,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
+    tags: list[str] | Unset = UNSET,
+
+) -> dict[str, Any]:
+    
+
+    
+
+    params: dict[str, Any] = {}
+
+    params["engine_class_id"] = engine_class_id
+
+    params["exclude_engine_class_id"] = exclude_engine_class_id
+
+    params["include_job_stats"] = include_job_stats
+
+    params["ordering"] = ordering
+
+    json_organization_id = str(organization_id)
+    params["organization_id"] = json_organization_id
+
+    params["page"] = page
+
+    params["page_size"] = page_size
+
+    params["search"] = search
+
+    json_tags: list[str] | Unset = UNSET
+    if not isinstance(tags, Unset):
+        json_tags = tags
+
+
+    params["tags"] = json_tags
+
+
+    params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
+
+
+    _kwargs: dict[str, Any] = {
+        "method": "get",
+        "url": "/v1/agents/",
+        "params": params,
+    }
+
+
+    return _kwargs
+
+
+
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | PaginatedBaseAgentList | None:
+    if response.status_code == 200:
+        response_200 = PaginatedBaseAgentList.from_dict(response.json())
+
+
+
+        return response_200
+
+    if response.status_code == 400:
+        response_400 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_400
+
+    if response.status_code == 403:
+        response_403 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_403
+
+    if response.status_code == 404:
+        response_404 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_404
+
+    if client.raise_on_unexpected_status:
+        raise errors.UnexpectedStatus(response.status_code, response.content)
+    else:
+        return None
+
+
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+    return Response(
+        status_code=HTTPStatus(response.status_code),
+        content=response.content,
+        headers=response.headers,
+        parsed=_parse_response(client=client, response=response),
+    )
+
+
+def sync_detailed(
+    *,
+    client: AuthenticatedClient | Client,
+    engine_class_id: str | Unset = UNSET,
+    exclude_engine_class_id: str | Unset = UNSET,
+    include_job_stats: bool | Unset = UNSET,
+    ordering: str | Unset = UNSET,
+    organization_id: UUID,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
+    tags: list[str] | Unset = UNSET,
+
+) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+    """ List agents or create a new agent.
+
+     Retrieve a list of agents or create a new agent.
+
+    Args:
+        engine_class_id (str | Unset):
+        exclude_engine_class_id (str | Unset):
+        include_job_stats (bool | Unset):
+        ordering (str | Unset):
+        organization_id (UUID):
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
+        tags (list[str] | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[ErrorResponse | PaginatedBaseAgentList]
+     """
+
+
+    kwargs = _get_kwargs(
+        engine_class_id=engine_class_id,
+exclude_engine_class_id=exclude_engine_class_id,
+include_job_stats=include_job_stats,
+ordering=ordering,
+organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
+tags=tags,
+
+    )
+
+    response = client.get_httpx_client().request(
+        **kwargs,
+    )
+
+    return _build_response(client=client, response=response)
+
+def sync(
+    *,
+    client: AuthenticatedClient | Client,
+    engine_class_id: str | Unset = UNSET,
+    exclude_engine_class_id: str | Unset = UNSET,
+    include_job_stats: bool | Unset = UNSET,
+    ordering: str | Unset = UNSET,
+    organization_id: UUID,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
+    tags: list[str] | Unset = UNSET,
+
+) -> ErrorResponse | PaginatedBaseAgentList | None:
+    """ List agents or create a new agent.
+
+     Retrieve a list of agents or create a new agent.
+
+    Args:
+        engine_class_id (str | Unset):
+        exclude_engine_class_id (str | Unset):
+        include_job_stats (bool | Unset):
+        ordering (str | Unset):
+        organization_id (UUID):
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
+        tags (list[str] | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        ErrorResponse | PaginatedBaseAgentList
+     """
+
+
+    return sync_detailed(
+        client=client,
+engine_class_id=engine_class_id,
+exclude_engine_class_id=exclude_engine_class_id,
+include_job_stats=include_job_stats,
+ordering=ordering,
+organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
+tags=tags,
+
+    ).parsed
+
+async def asyncio_detailed(
+    *,
+    client: AuthenticatedClient | Client,
+    engine_class_id: str | Unset = UNSET,
+    exclude_engine_class_id: str | Unset = UNSET,
+    include_job_stats: bool | Unset = UNSET,
+    ordering: str | Unset = UNSET,
+    organization_id: UUID,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
+    tags: list[str] | Unset = UNSET,
+
+) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+    """ List agents or create a new agent.
+
+     Retrieve a list of agents or create a new agent.
+
+    Args:
+        engine_class_id (str | Unset):
+        exclude_engine_class_id (str | Unset):
+        include_job_stats (bool | Unset):
+        ordering (str | Unset):
+        organization_id (UUID):
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
+        tags (list[str] | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[ErrorResponse | PaginatedBaseAgentList]
+     """
+
+
+    kwargs = _get_kwargs(
+        engine_class_id=engine_class_id,
+exclude_engine_class_id=exclude_engine_class_id,
+include_job_stats=include_job_stats,
+ordering=ordering,
+organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
+tags=tags,
+
+    )
+
+    response = await client.get_async_httpx_client().request(
+        **kwargs
+    )
+
+    return _build_response(client=client, response=response)
+
+async def asyncio(
+    *,
+    client: AuthenticatedClient | Client,
+    engine_class_id: str | Unset = UNSET,
+    exclude_engine_class_id: str | Unset = UNSET,
+    include_job_stats: bool | Unset = UNSET,
+    ordering: str | Unset = UNSET,
+    organization_id: UUID,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
+    tags: list[str] | Unset = UNSET,
+
+) -> ErrorResponse | PaginatedBaseAgentList | None:
+    """ List agents or create a new agent.
+
+     Retrieve a list of agents or create a new agent.
+
+    Args:
+        engine_class_id (str | Unset):
+        exclude_engine_class_id (str | Unset):
+        include_job_stats (bool | Unset):
+        ordering (str | Unset):
+        organization_id (UUID):
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
+        tags (list[str] | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        ErrorResponse | PaginatedBaseAgentList
+     """
+
+
+    return (await asyncio_detailed(
+        client=client,
+engine_class_id=engine_class_id,
+exclude_engine_class_id=exclude_engine_class_id,
+include_job_stats=include_job_stats,
+ordering=ordering,
+organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
+tags=tags,
+
+    )).parsed

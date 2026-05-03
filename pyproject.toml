@@ -9,8 +9,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"
 dependencies = [
+    "attrs>=23.2.0",
     "httpx>=0.28.1",
     "pydantic>=2.11.7",
+    "python-dateutil>=2.9.0",
 ]
 
 [project.urls]
@@ -26,5 +28,12 @@ module-name = "roe"
 
 [dependency-groups]
 dev = [
+    "pytest>=8.3.0",
     "ruff>=0.12.10",
 ]
+codegen = [
+    "openapi-python-client>=0.28,<0.29",
+]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

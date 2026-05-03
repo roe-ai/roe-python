@@ -1,0 +1,4 @@
+project_name_override: roe-sdk-generated
+package_name_override: _generated
+use_path_prefixes_for_title_model_names: false
+post_hooks: []

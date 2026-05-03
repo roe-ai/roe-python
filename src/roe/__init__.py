@@ -21,6 +21,9 @@ Basic usage:
     )
 """
 
+from importlib.metadata import PackageNotFoundError, version
+
+from . import _generated
 from roe.client import RoeClient
 from roe.exceptions import (
     AuthenticationError,
@@ -41,7 +44,10 @@ from roe.models.responses import (
     Reference,
 )
 
-__version__ = "0.2.9"
+try:
+    __version__ = version("roe-ai")
+except PackageNotFoundError:  # pragma: no cover - fallback for local source introspection
+    __version__ = "0.0.0"
 
 __all__ = [
     # Main client

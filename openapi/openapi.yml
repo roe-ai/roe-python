@@ -1,0 +1,2928 @@
+openapi: 3.1.0
+info:
+  title: Roe AI API
+  version: 1.0.0
+  description: Complete API documentation for Roe AI platform
+paths:
+  /v1/agents/:
+    get:
+      operationId: v1_agents_list
+      description: Retrieve a list of agents or create a new agent.
+      summary: List agents or create a new agent.
+      parameters:
+      - in: query
+        name: engine_class_id
+        schema:
+          type: string
+        description: Filter agents by engine type.
+      - in: query
+        name: exclude_engine_class_id
+        schema:
+          type: string
+        description: Exclude agents with this engine type.
+      - in: query
+        name: include_job_stats
+        schema:
+          type: boolean
+        description: 'Include job_count and most_recent_job in response (default:
+          true). Set to false for faster response.'
+      - in: query
+        name: ordering
+        schema:
+          type: string
+        description: 'Field to order results by. Prefix with ''-'' for descending.
+          Options: name, created_at, most_recent_job, job_count, engine_class_id,
+          creator.'
+      - in: query
+        name: organization_id
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID to list agents from.
+        required: true
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+        description: Search term to filter agents by name, ID, engine, creator, tags,
+          or version IDs (case-insensitive).
+      - in: query
+        name: tags
+        schema:
+          type: array
+          items:
+            type: string
+        description: Filter agents by tag IDs. Can be provided multiple times.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedBaseAgentList'
+          description: Successfully retrieved list of agents.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: organization_id query parameter is required.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or organization access
+            denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Organization not found.
+    post:
+      operationId: v1_agents_create
+      description: Create a new base agent.
+      summary: Create a new base agent.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseAgentCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaseAgentCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaseAgentCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseAgent'
+          description: Successfully created agent.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request data.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden.
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/agents/{agent_id}/:
+    get:
+      operationId: v1_agents_retrieve
+      description: Retrieve details of a specific base agent.
+      summary: Retrieve an agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseAgent'
+              examples:
+                Example:
+                  value:
+                    id: 123e4567-e89b-12d3-a456-426614174000
+                    name: My Agent
+                    creator:
+                      id: 2
+                      email: user@example.com
+                      first_name: John
+                      last_name: Doe
+                    created_at: '2024-01-15T10:30:00Z'
+                    engine_class_id: openai_chat
+                    engine_name: OpenAI Chat
+                    current_version_id: 456e7890-e89b-12d3-a456-426614174001
+                    organization: org-123e4567-e89b-12d3-a456-426614174000
+                    disable_cache: false
+                    cache_failed_jobs: false
+                    job_count: 42
+                    most_recent_job: '2024-01-20T15:45:00Z'
+          description: Successfully retrieved base agent details.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+    put:
+      operationId: v1_agents_update
+      description: Update a base agent's settings.
+      summary: Update a base agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this base agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/BaseAgentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/BaseAgentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/BaseAgentUpdateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseAgent'
+          description: Agent updated successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid name provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+    patch:
+      operationId: v1_agents_partial_update
+      description: Partially update details of a specific base agent.
+      summary: Partially update an agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BaseAgent'
+          description: Agent updated successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid name provided.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+    delete:
+      operationId: v1_agents_destroy
+      description: Delete a specific base agent.
+      summary: Delete a base agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this base agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '204':
+          description: Base agent deleted successfully.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to delete this base agent denied or access to Agents
+            feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Base agent ID doesn't exist.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Failed to delete base agent or some Qdrant collections.
+  /v1/agents/{agent_id}/duplicate/:
+    post:
+      operationId: v1_agents_duplicate_create
+      description: Create a new agent with the same attributes as the current version
+        of the specified agent.
+      summary: Duplicate an agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentVersion'
+          description: Agent duplicated successfully.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+  /v1/agents/{agent_id}/jobs/cancel-all/:
+    post:
+      operationId: v1_agents_jobs_cancel_all_create
+      description: Cancel all running jobs for a given agent.
+      summary: Cancel all agent jobs
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      deprecated: true
+      responses:
+        '204':
+          description: All running agent jobs cancelled successfully
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found
+  /v1/agents/{agent_id}/versions/:
+    get:
+      operationId: v1_agents_versions_list
+      description: Retrieve a list of versions for a specific agent.
+      summary: List agent versions.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentVersion'
+              examples:
+                Example:
+                  value:
+                  - - id: 456e7890-e89b-12d3-a456-426614174001
+                      version_name: version 1
+                      description: Initial version
+                      input_definitions:
+                      - key: input_text
+                        description: Text to process
+                        data_type: text/plain
+                      engine_config:
+                        model: gpt-4
+                        temperature: '0.7'
+                      created_at: '2024-01-15T10:30:00Z'
+                      readonly: false
+          description: Successfully retrieved list of agent versions.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+    post:
+      operationId: v1_agents_versions_create
+      description: Create a new version of an existing agent.
+      summary: Create a new agent version.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentVersionCreateRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentVersionCreateRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentVersionCreateRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentVersion'
+              examples:
+                Example:
+                  value:
+                    id: 789e1234-e89b-12d3-a456-426614174002
+                    version_name: version 2
+                    description: Updated version with new features
+                    input_definitions:
+                    - key: input_text
+                      description: Text to process
+                      data_type: text/plain
+                    engine_config:
+                      model: gpt-4
+                      temperature: '0.5'
+                    created_at: '2024-01-16T14:20:00Z'
+                    readonly: false
+                    engine_class_id: openai_chat
+                    organization: org-123e4567-e89b-12d3-a456-426614174000
+          description: Successfully created new agent version.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request data.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+  /v1/agents/{agent_id}/versions/{agent_version_id}/:
+    get:
+      operationId: v1_agents_versions_retrieve
+      description: Retrieve details of a specific agent version.
+      summary: Retrieve an agent version.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent version.
+        required: true
+      - in: query
+        name: get_supports_eval
+        schema:
+          type: boolean
+        description: Include information on whether the agent engine supports evaluation.
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentVersion'
+          description: Successfully retrieved agent version details.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to access this agent denied or access to Agents
+            feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent version not found.
+    put:
+      operationId: v1_agents_versions_update
+      description: Update details of a specific agent version (only version name and
+        description).
+      summary: Update an agent version.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent version.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
+      responses:
+        '200':
+          description: Agent version updated successfully.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to access this agent denied or access to Agents
+            feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent version not found.
+    patch:
+      operationId: v1_agents_versions_partial_update
+      description: Partially update details of a specific agent version (only version
+        name and description).
+      summary: Partially update an agent version.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent version.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
+      responses:
+        '200':
+          description: Agent version updated successfully.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to access this agent denied or access to Agents
+            feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent version not found.
+    delete:
+      operationId: v1_agents_versions_destroy
+      description: Delete a specific agent version.
+      summary: Delete an agent version.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying this agent version.
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '204':
+          description: Agent version deleted successfully.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to delete this agent version denied or access to
+            Agents feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent version not found.
+  /v1/agents/{agent_id}/versions/current/:
+    get:
+      operationId: v1_agents_versions_current_retrieve
+      description: Retrieve details of the current version of a specific agent.
+      summary: Retrieve the current version of an agent.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: A UUID string identifying the base agent.
+        required: true
+      - in: query
+        name: get_supports_eval
+        schema:
+          type: boolean
+        description: Include information on whether the agent engine supports evaluation.
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentVersion'
+              examples:
+                Example:
+                  value:
+                    id: 456e7890-e89b-12d3-a456-426614174001
+                    name: My Agent
+                    version_name: version 2
+                    creator:
+                      id: 2
+                      email: user@example.com
+                      first_name: John
+                      last_name: Doe
+                    created_at: '2024-01-15T10:30:00Z'
+                    description: Current version of the agent
+                    engine_class_id: TextExtractionEngine
+                    input_definitions:
+                    - key: text
+                      data_type: text/plain
+                      description: Text to be processed
+                      accepts_multiple_files: null
+                    engine_config:
+                      text: ${text}
+                      model: gpt-4.1-2025-04-14
+                      instruction: Process the text
+                      temperature: '0.0'
+                      output_schema: '{"type":"string","description":"The result"}'
+                      reasoning_effort: medium
+                    organization: f3268066-4185-4353-8e0d-8089c759610c
+                    readonly: false
+                    base_agent:
+                      id: 123e4567-e89b-12d3-a456-426614174000
+                      creator:
+                        id: 2
+                        email: user@example.com
+                        first_name: John
+                        last_name: Doe
+                      created_at: '2024-01-15T10:30:00Z'
+                      name: My Agent
+                      disable_cache: false
+                      cache_failed_jobs: false
+                      organization: f3268066-4185-4353-8e0d-8089c759610c
+                      engine_class_id: TextExtractionEngine
+                      current_version_id: 456e7890-e89b-12d3-a456-426614174001
+                      engine_name: Text Insights
+                    engine_name: Text Insights
+          description: Successfully retrieved current agent version details.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Permission to access this agent denied or access to Agents
+            feature is forbidden.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found.
+  /v1/agents/jobs/{agent_job_id}/references/{resource_id}/:
+    get:
+      operationId: v1_agents_jobs_references_retrieve
+      description: 'Token-authenticated proxy view for serving web resource references
+        from S3.
+
+
+        Uses Organization API Key authentication (for external API consumers).
+
+
+        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/'
+      parameters:
+      - in: path
+        name: agent_job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: resource_id
+        schema:
+          type: string
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          description: No response body
+  /v1/agents/jobs/{agent_job_id}/result/:
+    get:
+      operationId: v1_agents_jobs_result_retrieve
+      description: Get agent job result data.
+      parameters:
+      - in: path
+        name: agent_job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobResultResponse'
+              examples:
+                Example:
+                  value:
+                    agent_id: 123e4567-e89b-12d3-a456-426614174000
+                    agent_version_id: 456e7890-e89b-12d3-a456-426614174001
+                    inputs:
+                    - key: input_text
+                      value: Hello world
+                      data_type: text/plain
+                    input_tokens: 100
+                    output_tokens: 50
+                    outputs:
+                    - key: output
+                      description: Output JSON data
+                      data_type: application/json
+                      value: '{"summary": "hello world!"}'
+                      cost: 0.05
+          description: Agent job result with outputs, inputs, tokens and metadata
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: You don't have access to agents feature
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent job denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Agent job not found
+          description: Agent job not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Failed to get agent job result data
+          description: Internal server error
+  /v1/agents/jobs/{job_id}/cancel/:
+    post:
+      operationId: v1_agents_jobs_cancel_create
+      description: Cancel a running agent job by its ID.
+      summary: Cancel an agent job
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      deprecated: true
+      responses:
+        '204':
+          description: Agent job cancelled successfully
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent job not found
+  /v1/agents/jobs/{job_id}/delete-data/:
+    post:
+      operationId: v1_agents_jobs_delete_data_create
+      description: Delete uploaded inputs from S3, sanitize stored blob data (outputs,
+        steps, logs, trace), and delete workflow artifacts for an agent job without
+        removing DB metadata.
+      summary: Delete agent job data
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      deprecated: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobDeleteDataResponse'
+          description: Data deleted successfully
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad request - job not in final state
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access forbidden
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent job not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Failed to delete data
+  /v1/agents/jobs/{job_id}/status/:
+    get:
+      operationId: v1_agents_jobs_status_retrieve
+      description: Get agent job status.
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobStatus'
+              examples:
+                Example:
+                  value:
+                    status: 3
+                    timestamp: 1719556664.569293
+          description: Agent job status
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent job denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent job not found
+  /v1/agents/jobs/results/:
+    post:
+      operationId: v1_agents_jobs_results_create
+      description: Retrieve the detailed results for multiple agent jobs by providing
+        a list of job IDs
+      summary: Get results for multiple agent jobs
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedAgentJobResultItemList'
+          description: List of agent job results with outputs and metadata
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request data
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access forbidden to one or more agent jobs
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/agents/jobs/statuses/:
+    post:
+      operationId: v1_agents_jobs_statuses_create
+      description: Retrieve the current status for multiple agent jobs by providing
+        a list of job IDs
+      summary: Get status for multiple agent jobs
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentJobStatus'
+          description: List of agent job statuses
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Invalid request data
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access forbidden to one or more agent jobs
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/agents/run/{agent_id}/:
+    post:
+      operationId: agents_run_2
+      description: Execute an agent with provided inputs and return results immediately.
+      summary: Run agent synchronously
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentDatum'
+          description: Agent job result
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad request - invalid input data
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Insufficient credits
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found
+  /v1/agents/run/{agent_id}/async/:
+    post:
+      operationId: v1_agents_run_async_create
+      description: Run agent asynchronously. Returns agent job id which can be used
+        to check status and get results.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Example:
+                  value: 123e4567-e89b-12d3-a456-426614174000
+          description: Agent job ID
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Invalid agent input data
+          description: Invalid request data or agent input validation error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: You don't have access to agents feature
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Agent not found
+          description: Agent not found
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Insufficient credits
+                    status_code: 402
+          description: Insufficient credits
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Internal server error
+          description: Internal server error
+  /v1/agents/run/{agent_id}/async/many/:
+    post:
+      operationId: agents_run_async_many_5
+      description: Execute an agent with multiple inputs asynchronously and return
+        job IDs for tracking results.
+      summary: Run agent asynchronously with multiple inputs
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+                description: Unspecified response body
+              examples:
+                SuccessResponse:
+                  value:
+                  - 123e4567-e89b-12d3-a456-426614174001
+                  - 123e4567-e89b-12d3-a456-426614174002
+                  - 123e4567-e89b-12d3-a456-426614174003
+                  summary: Success response
+          description: List of agent job IDs
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                ValidationError:
+                  value:
+                    error: At least one agent input is required.
+                  summary: Validation error
+                TooManyInputs:
+                  value:
+                    error: Too many inputs. Maximum 1000 inputs allowed.
+                  summary: Too many inputs
+          description: Invalid request data or agent input validation error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Forbidden:
+                  value:
+                    error: You don't have access to agents feature
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                NotFound:
+                  value:
+                    error: Agent not found
+                  summary: Not found
+          description: Agent not found
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                InsufficientCredits:
+                  value:
+                    error: Insufficient credits
+                    status_code: 402
+                  summary: Insufficient credits
+          description: Insufficient credits
+  /v1/agents/run/{agent_id}/versions/{agent_version_id}/:
+    post:
+      operationId: agents_run_version_2
+      description: Execute a specific agent version with provided inputs and return
+        results immediately.
+      summary: Run agent version synchronously
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentDatum'
+          description: Agent job result
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad request - invalid input data
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Insufficient credits
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Agent not found
+  /v1/agents/run/{agent_id}/versions/{agent_version_id}/async/:
+    post:
+      operationId: v1_agents_run_versions_async_create
+      description: Run agent version asynchronously. Returns agent job id which can
+        be used to check status and get results.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: agent_version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: string
+              examples:
+                Example:
+                  value: 123e4567-e89b-12d3-a456-426614174000
+          description: Agent job ID
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Invalid agent input data
+          description: Invalid request data or agent input validation error
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: You don't have access to agents feature
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Agent not found
+          description: Agent not found
+        '402':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Insufficient credits
+                    status_code: 402
+          description: Insufficient credits
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                Example:
+                  value:
+                    error: Internal server error
+          description: Internal server error
+  /v1/policies/:
+    get:
+      operationId: v1_policies_list
+      description: List all policies and create a new policy
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPolicyList'
+          description: ''
+    post:
+      operationId: v1_policies_create
+      description: List all policies and create a new policy
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePolicy'
+          description: ''
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/policies/{id}/:
+    get:
+      operationId: v1_policies_retrieve
+      description: Retrieve, update, or delete a single policy by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Policy'
+          description: ''
+    put:
+      operationId: v1_policies_update
+      description: Retrieve, update, or delete a single policy by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdatePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/UpdatePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/UpdatePolicyRequest'
+        required: true
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePolicy'
+          description: ''
+    patch:
+      operationId: v1_policies_partial_update
+      description: Retrieve, update, or delete a single policy by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdatePolicy'
+          description: ''
+    delete:
+      operationId: v1_policies_destroy
+      description: Retrieve, update, or delete a single policy by ID
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '204':
+          description: No response body
+  /v1/policies/{policy_id}/versions/:
+    get:
+      operationId: v1_policies_versions_list
+      description: Create a new policy version or list all versions of a specific
+        policy
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: policy_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedPolicyVersionList'
+          description: ''
+    post:
+      operationId: v1_policies_versions_create
+      description: Create a new policy version or list all versions of a specific
+        policy
+      parameters:
+      - in: path
+        name: policy_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyVersionRequest'
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyVersionRequest'
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/CreatePolicyVersionRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreatePolicyVersion'
+          description: ''
+  /v1/policies/{policy_id}/versions/{version_id}/:
+    get:
+      operationId: v1_policies_versions_retrieve
+      description: 'Get a specific policy version by policy_id and version_id.
+
+        Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/'
+      parameters:
+      - in: path
+        name: policy_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyVersion'
+          description: ''
+  /v1/users/current_user/:
+    get:
+      operationId: v1_users_current_user_retrieve
+      tags:
+      - v1
+      - sdk
+      responses:
+        '200':
+          description: No response body
+components:
+  schemas:
+    AgentDatum:
+      type: object
+      properties:
+        key:
+          type: string
+          description: The key of the output
+        description:
+          type: string
+          description: The description of the output
+        data_type:
+          type: string
+          description: The MIME data type of the output
+        value:
+          type: string
+          description: The value of the output, serialized as a string
+        cost:
+          type: number
+          format: double
+          description: The cost of the agent job execution
+      required:
+      - data_type
+      - key
+      - value
+    AgentExecutionRequestRequest:
+      type: object
+      description: Serializer for agent execution requests with dynamic input fields.
+      properties:
+        metadata:
+          description: Optional metadata as JSON object or JSON string
+        agent_input_key_example:
+          type: string
+          minLength: 1
+          description: Agent input keys are dynamic based on agent configuration.
+            Can be text or file.
+    AgentInputDefinition:
+      type: object
+      properties:
+        key:
+          type: string
+          description: The unique identifier for this input definition
+        data_type:
+          type: string
+          description: The data type of the input (e.g., text, file, etc.)
+        description:
+          type: string
+          description: Description of what this input is for
+        example:
+          type: string
+          description: An example value for this input
+        accepts_multiple_files:
+          type: boolean
+          description: Whether this input accepts multiple files
+      required:
+      - data_type
+      - description
+      - key
+    AgentJobDeleteDataResponse:
+      type: object
+      properties:
+        status:
+          type: string
+          description: 'Overall status: ''success'' or ''partial_success'''
+        deleted_count:
+          type: integer
+          description: Number of input files successfully deleted
+        failed_count:
+          type: integer
+          description: Number of input files that failed to delete
+        blob_sanitized:
+          type: boolean
+          description: Whether blob data (outputs, steps, logs, trace) was successfully
+            sanitized
+        artifacts_deleted_count:
+          type: integer
+          description: Number of workflow artifacts successfully deleted
+        artifacts_failed_count:
+          type: integer
+          description: Number of workflow artifacts that failed to delete
+        errors:
+          type: array
+          items: {}
+          description: List of errors encountered during deletion
+      required:
+      - artifacts_deleted_count
+      - artifacts_failed_count
+      - blob_sanitized
+      - deleted_count
+      - failed_count
+      - status
+    AgentJobResultItem:
+      type: object
+      description: Serializer for individual agent job result item.
+      properties:
+        id:
+          type: string
+          description: Agent job ID
+        status:
+          type:
+          - integer
+          - 'null'
+          description: Job status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS,
+            4=FAILURE, 5=CANCELLED, 6=CACHED)
+        result:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentDatum'
+          description: List of job outputs, or error code if job failed
+        corrected_outputs:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/AgentDatum'
+          description: List of corrected outputs if any corrections were made
+        agent_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Base agent ID
+        agent_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Agent version ID
+        cost:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Cost of the agent job execution
+        inputs:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: The input data provided to the agent (full version from blob
+            if available, truncated from DB otherwise)
+        input_tokens:
+          type:
+          - integer
+          - 'null'
+          description: Number of input tokens used
+        output_tokens:
+          type:
+          - integer
+          - 'null'
+          description: Number of output tokens generated
+      required:
+      - agent_id
+      - agent_version_id
+      - cost
+      - id
+      - input_tokens
+      - inputs
+      - output_tokens
+      - result
+      - status
+    AgentJobResultManyRequestRequest:
+      type: object
+      description: Serializer for bulk agent job results request.
+      properties:
+        job_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of agent job IDs to retrieve results for
+          minItems: 1
+      required:
+      - job_ids
+    AgentJobResultResponse:
+      type: object
+      properties:
+        agent_id:
+          type: string
+          format: uuid
+          description: The ID of the base agent
+        agent_version_id:
+          type: string
+          format: uuid
+          description: The ID of the agent version
+        inputs:
+          type: array
+          items: {}
+          description: The input data provided to the agent
+        input_tokens:
+          type:
+          - integer
+          - 'null'
+          description: Number of input tokens used
+        output_tokens:
+          type:
+          - integer
+          - 'null'
+          description: Number of output tokens generated
+        outputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentDatum'
+          description: The output data from the agent
+      required:
+      - agent_id
+      - agent_version_id
+      - input_tokens
+      - inputs
+      - output_tokens
+      - outputs
+    AgentJobStatus:
+      type: object
+      properties:
+        status:
+          type: integer
+          description: 'Status code. 0: PENDING, 1: STARTED, 2: RETRY, 3: SUCCESS,
+            4: FAILURE, 5: CANCELLED, 6: CACHED'
+        timestamp:
+          type: integer
+          description: Unix timestamp in seconds
+        error_message:
+          type: string
+          description: Error message if status is RETRY or FAILURE
+      required:
+      - status
+      - timestamp
+    AgentJobStatusManyRequestRequest:
+      type: object
+      description: Serializer for bulk agent job status request.
+      properties:
+        job_ids:
+          type: array
+          items:
+            type: string
+            format: uuid
+          description: List of agent job IDs to retrieve statuses for
+          minItems: 1
+      required:
+      - job_ids
+    AgentRunAsyncManyRequestRequest:
+      type: object
+      description: Serializer for agent async many execution requests.
+      properties:
+        inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentExecutionRequestRequest'
+          description: List of agent execution requests to process
+      required:
+      - inputs
+    AgentVersion:
+      type: object
+      description: Serializer for Agent (version) model
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        version_name:
+          type: string
+          description: Version name for the agent version. Defaults to 'unnamed version'
+            if not provided.
+        creator:
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        description:
+          type: string
+          description: Description of the agent version.
+        engine_class_id:
+          type: string
+          description: Get engine_class_id from base_agent.
+          readOnly: true
+        engine_name:
+          type: string
+          description: Engine Display Name
+          readOnly: true
+        input_definitions:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentInputDefinition'
+          description: List of input definitions for this agent version.
+        engine_config:
+          description: Engine configuration.
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Organization ID from base_agent.
+        readonly:
+          type: boolean
+          readOnly: true
+        base_agent:
+          allOf:
+          - $ref: '#/components/schemas/BaseAgent'
+          readOnly: true
+      required:
+      - base_agent
+      - created_at
+      - engine_class_id
+      - engine_config
+      - engine_name
+      - id
+      - input_definitions
+      - name
+      - organization_id
+      - readonly
+      - version_name
+    AgentVersionCreateRequest:
+      type: object
+      description: Serializer for creating new agent versions
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: Version name for the agent version. Defaults to 'unnamed version'
+            if not provided.
+        description:
+          type:
+          - string
+          - 'null'
+          description: Description for the agent version.
+        input_definitions:
+          description: List of input definitions for this agent version.
+        engine_config:
+          description: Engine configuration as a dictionary of string key-value pairs.
+      required:
+      - engine_config
+      - input_definitions
+    AgentVersionUpdateRequestRequest:
+      type: object
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: New version name for the agent version.
+        description:
+          type: string
+          minLength: 1
+          description: New description for the agent version.
+    BaseAgent:
+      type: object
+      description: Serializer for BaseAgent (agent config)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        creator:
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+          minLength: 1
+        disable_cache:
+          type: boolean
+          description: Whether to disable job cache fetching for this agent.
+        cache_failed_jobs:
+          type: boolean
+          description: Whether to cache failed jobs for this agent.
+        organization_id:
+          type: string
+          format: uuid
+          description: Organization ID that owns this agent.
+        engine_class_id:
+          type: string
+          maxLength: 200
+        current_version_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: UUID of the current agent version.
+        job_count:
+          type:
+          - integer
+          - 'null'
+          description: Job count from annotation, or None when not fetched (use /agents/job-stats/).
+          readOnly: true
+        most_recent_job:
+          type: string
+          readOnly: true
+        engine_name:
+          type: string
+          description: Engine Display Name
+          readOnly: true
+        tags:
+          type: string
+          readOnly: true
+      required:
+      - cache_failed_jobs
+      - created_at
+      - current_version_id
+      - disable_cache
+      - engine_class_id
+      - engine_name
+      - id
+      - job_count
+      - most_recent_job
+      - name
+      - organization_id
+      - tags
+    BaseAgentCreateRequest:
+      type: object
+      description: Serializer for creating base agents with proper JSON field handling
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: Name of the base agent.
+        engine_class_id:
+          type: string
+          minLength: 1
+          description: Engine class ID for the agent.
+        organization_id:
+          type: string
+          format: uuid
+          description: Organization ID where the agent belongs.
+        version_name:
+          type: string
+          minLength: 1
+          description: Name of the first version.
+        description:
+          type: string
+          minLength: 1
+          description: Description of the first version.
+        input_definitions:
+          description: Input definitions for the first version.
+        engine_config:
+          description: Engine configuration for the first version.
+      required:
+      - engine_class_id
+      - engine_config
+      - input_definitions
+      - name
+      - organization_id
+    BaseAgentUpdateRequest:
+      type: object
+      description: Serializer for updating BaseAgent
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: New name for the agent. Must not be empty if provided.
+        disable_cache:
+          type: boolean
+          description: Whether to disable job cache fetching for this agent.
+        cache_failed_jobs:
+          type: boolean
+          description: Whether to cache failed jobs for this agent.
+    CreatePolicy:
+      type: object
+      description: Serializer for creating a new policy with initial version
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - id
+      - name
+      - organization_id
+      - updated_at
+    CreatePolicyRequest:
+      type: object
+      description: Serializer for creating a new policy with initial version
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+        content:
+          writeOnly: true
+          description: Content for the initial policy version
+        version_name:
+          type: string
+          writeOnly: true
+          minLength: 1
+          default: version 1
+          description: Name for the initial version (defaults to 'version 1')
+          maxLength: 255
+      required:
+      - content
+      - name
+    CreatePolicyVersion:
+      type: object
+      description: Serializer for creating a new policy version
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type: string
+          description: Version name (auto-generated if not provided)
+          maxLength: 255
+        content: {}
+      required:
+      - content
+      - id
+    CreatePolicyVersionRequest:
+      type: object
+      description: Serializer for creating a new policy version
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: Version name (auto-generated if not provided)
+          maxLength: 255
+        content: {}
+        base_version_id:
+          type: string
+          format: uuid
+          writeOnly: true
+          description: ID of the version this was derived from
+      required:
+      - content
+    ErrorResponse:
+      type: object
+      properties:
+        message:
+          type: string
+          description: Error message
+      required:
+      - message
+    PaginatedAgentJobResultItemList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentJobResultItem'
+    PaginatedBaseAgentList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/BaseAgent'
+    PaginatedPolicyList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Policy'
+    PaginatedPolicyVersionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/PolicyVersion'
+    PatchedBaseAgentUpdateRequest:
+      type: object
+      description: Serializer for updating BaseAgent
+      properties:
+        name:
+          type: string
+          minLength: 1
+          description: New name for the agent. Must not be empty if provided.
+        disable_cache:
+          type: boolean
+          description: Whether to disable job cache fetching for this agent.
+        cache_failed_jobs:
+          type: boolean
+          description: Whether to cache failed jobs for this agent.
+    PatchedPatchedAgentVersionUpdateRequestRequest:
+      type: object
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: New version name for the agent version.
+        description:
+          type: string
+          minLength: 1
+          description: New description for the agent version.
+    PatchedUpdatePolicyRequest:
+      type: object
+      description: Serializer for updating policy metadata (name, description)
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+    Policy:
+      type: object
+      description: Policy serializer
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - id
+      - name
+      - organization_id
+      - updated_at
+    PolicyVersion:
+      type: object
+      description: 'Policy version serializer for public API.
+
+
+        Exposes auto-generated structure IDs (category/rule/sub-rule IDs) in responses
+
+        so users can reference specific rules. IDs are immutable - any IDs provided
+        in
+
+        create/update requests are ignored and regenerated by the backend.'
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type: string
+          maxLength: 255
+        content: {}
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        policy:
+          $ref: '#/components/schemas/Policy'
+        created_by:
+          allOf:
+          - $ref: '#/components/schemas/PolicyVersionCreatedBy'
+          readOnly: true
+        base_version_id:
+          type: string
+          format: uuid
+          readOnly: true
+      required:
+      - base_version_id
+      - content
+      - created_at
+      - created_by
+      - id
+      - policy
+      - updated_at
+      - version_name
+    PolicyVersionCreatedBy:
+      type: object
+      description: Minimal user serializer for audit metadata on policy versions.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        display_name:
+          type: string
+          readOnly: true
+      required:
+      - display_name
+      - email
+      - id
+    UpdatePolicy:
+      type: object
+      description: Serializer for updating policy metadata (name, description)
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - id
+      - name
+      - organization_id
+      - updated_at
+    UpdatePolicyRequest:
+      type: object
+      description: Serializer for updating policy metadata (name, description)
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - name
+    UserInfo:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          title: Email address
+          maxLength: 254
+        first_name:
+          type: string
+          maxLength: 150
+        last_name:
+          type: string
+          maxLength: 150
+        display_name:
+          type: string
+          readOnly: true
+      required:
+      - display_name
+      - email
+      - id
+  securitySchemes:
+    jwtAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+servers:
+- url: https://api.roe-ai.com
+  description: Production API
+tags:
+- name: sdk
+  description: Operations included in the Roe SDK surface.
