@@ -1,11 +1,14 @@
 """Main client for the Roe AI SDK."""
 
+import httpx
+
 from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api.agents import AgentsAPI
 from roe.api.policies import PoliciesAPI
+from roe.api.users import UsersAPI
 from roe.auth import RoeAuth
 from roe.config import RoeConfig
-from roe.utils.http_client import RoeHTTPClient
+from roe.utils.transport import RoeRetryTransport
 
 
 class RoeClient:
@@ -63,26 +66,34 @@ class RoeClient:
         # Create authentication
         self.auth = RoeAuth(self.config)
 
-        # Create HTTP client
-        self.http_client = RoeHTTPClient(self.config, self.auth)
-        # Share the configured httpx.Client (and AsyncClient) so both sync
-        # and async raw-client paths inherit auth headers, timeout, and base
-        # URL. token= and base_url= satisfy required AuthenticatedClient
-        # fields but are not read at request time once set_*_httpx_client
-        # supplies the underlying clients.
-        self._raw = (
-            RawClient(
-                base_url=self.config.base_url,
-                token=self.config.api_key,
-                raise_on_unexpected_status=True,
-            )
-            .set_httpx_client(self.http_client.client)
-            .set_async_httpx_client(self.http_client.async_client)
+        # Build the shared httpx.Client. Retry on 502/503/504 (idempotent
+        # methods only) lives in RoeRetryTransport so SDK calls and raw-client
+        # calls share the same retry budget.
+        self._httpx_client = httpx.Client(
+            base_url=self.config.base_url,
+            timeout=self.config.timeout,
+            headers=self.auth.get_headers(),
+            transport=RoeRetryTransport(max_retries=self.config.max_retries),
         )
+        # token= and base_url= satisfy required AuthenticatedClient fields but
+        # are not read at request time once set_httpx_client supplies the
+        # underlying sync client. headers= and timeout= keep raw async calls
+        # aligned with RoeClient configuration if users call client.raw directly.
+        # raise_on_unexpected_status=False so non-2xx responses surface as a
+        # parsed Response that translate_response() can map to a typed
+        # RoeAPIException at the wrapper boundary.
+        self._raw = RawClient(
+            base_url=self.config.base_url,
+            token=self.config.api_key,
+            headers=self.auth.get_headers(),
+            timeout=self.config.timeout,
+            raise_on_unexpected_status=False,
+        ).set_httpx_client(self._httpx_client)
 
-        # Create API instances
-        self._agents = AgentsAPI(self.config, self.http_client)
-        self._policies = PoliciesAPI(self.config, self.http_client)
+        # Create API instances. All APIs delegate to the generated raw client.
+        self._agents = AgentsAPI(self.config, self._raw)
+        self._policies = PoliciesAPI(self.config, self._raw)
+        self._users = UsersAPI(self.config, self._raw)
 
     @property
     def agents(self) -> AgentsAPI:
@@ -134,13 +145,27 @@ class RoeClient:
         return self._policies
 
     @property
+    def users(self) -> UsersAPI:
+        """Access the users API.
+
+        Returns:
+            UsersAPI instance for retrieving information about the
+            authenticated user.
+
+        Examples:
+            # Get the current user
+            me = client.users.me()
+        """
+        return self._users
+
+    @property
     def raw(self) -> RawClient:
         """Access the generated raw client."""
         return self._raw
 
     def close(self) -> None:
         """Close the HTTP client and clean up resources."""
-        self.http_client.close()
+        self._httpx_client.close()
 
     def __enter__(self):
         """Context manager entry."""

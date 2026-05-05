@@ -72,10 +72,10 @@ def main():
     retrieved = client.policies.retrieve(str(policy.id))
     print(f"\nRetrieved: {retrieved.name}")
 
-    # List versions
+    # List versions (paginated)
     versions = client.policies.versions.list(str(policy.id))
-    print(f"\nVersions ({len(versions)}):")
-    for v in versions:
+    print(f"\nVersions ({versions.count}):")
+    for v in versions.results:
         print(f"  - {v.version_name} ({v.id})")
 
     # Create a new version (automatically becomes current)

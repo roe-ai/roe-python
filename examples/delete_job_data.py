@@ -22,7 +22,7 @@ def main():
     print(f"Status: {result.status}")
     print(f"Files deleted: {result.deleted_count}")
     print(f"Files failed: {result.failed_count}")
-    print(f"Outputs sanitized: {result.outputs_sanitized}")
+    print(f"Blob sanitized: {result.blob_sanitized}")
 
     if result.errors:
         print("Errors:")

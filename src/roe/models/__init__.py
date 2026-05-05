@@ -1,37 +1,15 @@
-"""Pydantic models for the Roe AI SDK."""
+"""Stateful helpers for the Roe AI SDK.
 
-from .agent import AgentInputDefinition, AgentVersion, BaseAgent
+Data models live in ``roe._generated.models``; only stateful objects
+(``Job``/``JobBatch``) and the upload helper (``FileUpload``) are kept here.
+"""
+
 from .file import FileUpload
-from .job import Job, JobBatch
-from .policy import Policy, PolicyVersion
-from .responses import (
-    AgentDatum,
-    AgentJobResult,
-    AgentJobStatus,
-    ErrorResponse,
-    JobDataDeleteResponse,
-    JobStatus,
-    PaginatedResponse,
-    Reference,
-)
-from .user import UserInfo
+from .job import Job, JobBatch, JobStatus
 
 __all__ = [
-    "BaseAgent",
-    "AgentVersion",
-    "AgentInputDefinition",
     "FileUpload",
     "Job",
     "JobBatch",
-    "Policy",
-    "PolicyVersion",
-    "AgentDatum",
-    "AgentJobResult",
-    "AgentJobStatus",
-    "ErrorResponse",
-    "JobDataDeleteResponse",
     "JobStatus",
-    "PaginatedResponse",
-    "Reference",
-    "UserInfo",
 ]
