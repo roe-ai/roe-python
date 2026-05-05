@@ -1,97 +1,147 @@
-"""Agents API implementation."""
+"""Agents API — thin facade over the generated raw client.
+
+Each public method delegates to a generated endpoint under
+``roe._generated.api.v1`` (or v2 where applicable) and returns the generated
+response model directly. Non-2xx responses are translated to the typed
+``RoeAPIException`` family via ``translate_response`` at the wrapper boundary.
+
+The dynamic-input multipart paths (``run``, ``run_sync``, ``run_version``,
+``run_version_sync``) bypass the generated request model's broken
+``to_multipart()`` and use ``call_dynamic`` to inject our own multipart body
+through the generated endpoint's URL/auth/query machinery.
+"""
 
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING, Any
+from typing import Any
+from uuid import UUID
 
-from roe.config import RoeConfig
-from roe.models.agent import AgentVersion, BaseAgent
-from roe.models.job import Job, JobBatch
-from roe.models.responses import (
-    AgentDatum,
-    AgentJobResult,
-    AgentJobResultBatch,
-    AgentJobStatus,
-    AgentJobStatusBatch,
-    JobDataDeleteResponse,
-    PaginatedResponse,
+from roe._generated.api.v1 import (
+    agents_run_2,
+    agents_run_async_many_5,
+    agents_run_version_2,
+    v1_agents_create,
+    v1_agents_destroy,
+    v1_agents_duplicate_create,
+    v1_agents_jobs_cancel_all_create,
+    v1_agents_jobs_cancel_create,
+    v1_agents_jobs_delete_data_create,
+    v1_agents_jobs_references_retrieve,
+    v1_agents_jobs_result_retrieve,
+    v1_agents_jobs_results_create,
+    v1_agents_jobs_status_retrieve,
+    v1_agents_jobs_statuses_create,
+    v1_agents_list,
+    v1_agents_partial_update,
+    v1_agents_retrieve,
+    v1_agents_run_async_create,
+    v1_agents_run_versions_async_create,
+    v1_agents_versions_create,
+    v1_agents_versions_current_retrieve,
+    v1_agents_versions_destroy,
+    v1_agents_versions_list,
+    v1_agents_versions_partial_update,
+    v1_agents_versions_retrieve,
 )
-from roe.utils.http_client import RoeHTTPClient
-from roe.utils.pagination import PaginationHelper
+from roe._generated.client import AuthenticatedClient
+from roe._generated.models.agent_datum import AgentDatum
+from roe._generated.models.agent_execution_request_request import (
+    AgentExecutionRequestRequest,
+)
+from roe._generated.models.agent_job_delete_data_response import (
+    AgentJobDeleteDataResponse,
+)
+from roe._generated.models.agent_job_result_many_request_request import (
+    AgentJobResultManyRequestRequest,
+)
+from roe._generated.models.agent_job_result_item import AgentJobResultItem
+from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_status import AgentJobStatus
+from roe._generated.models.agent_job_status_many_request_request import (
+    AgentJobStatusManyRequestRequest,
+)
+from roe._generated.models.agent_run_async_many_request_request import (
+    AgentRunAsyncManyRequestRequest,
+)
+from roe._generated.models.agent_version import AgentVersion
+from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
+from roe._generated.models.base_agent import BaseAgent
+from roe._generated.models.base_agent_create_request import BaseAgentCreateRequest
+from roe._generated.models.paginated_base_agent_list import PaginatedBaseAgentList
+from roe._generated.models.patched_base_agent_update_request import (
+    PatchedBaseAgentUpdateRequest,
+)
+from roe._generated.models.patched_patched_agent_version_update_request_request import (
+    PatchedPatchedAgentVersionUpdateRequestRequest,
+)
+from roe._generated.types import UNSET
+from roe.config import RoeConfig
+from roe.exceptions import RoeAPIException, translate_response
+from roe.models.job import Job, JobBatch
+from roe.utils._dynamic_call import call_dynamic
+from roe.utils.generated_request import request_json, request_raw
 
-if TYPE_CHECKING:
-    from roe.api.agents import AgentsAPI
+
+def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequestRequest:
+    """Pack a free-form ``inputs`` dict into an ``AgentExecutionRequestRequest``.
+
+    Used for the JSON-only batch endpoint. The model's fixed fields are
+    ignored; everything goes through ``additional_properties`` so the
+    ``to_dict()`` serializer emits a flat ``{key: value}`` shape.
+    """
+    body = AgentExecutionRequestRequest()
+    for key, value in inputs.items():
+        body.additional_properties[key] = value
+    return body
 
 
 class AgentVersionsAPI:
     """Nested API for agent version operations."""
 
     def __init__(self, agents_api: "AgentsAPI"):
-        """Initialize the versions API.
-
-        Args:
-            agents_api: Parent AgentsAPI instance.
-        """
         self._agents_api = agents_api
 
     @property
-    def http_client(self) -> RoeHTTPClient:
-        return self._agents_api.http_client
+    def _raw(self) -> AuthenticatedClient:
+        return self._agents_api._raw
+
+    @property
+    def _org_id(self) -> UUID:
+        return UUID(str(self._agents_api.config.organization_id))
 
     def list(self, agent_id: str) -> list[AgentVersion]:
-        """List all versions of an agent.
-
-        Args:
-            agent_id: Base agent UUID.
-
-        Returns:
-            List of agent versions.
-        """
-        response_data = self.http_client.get(f"/v1/agents/{agent_id}/versions/")
-        versions = [AgentVersion(**version_data) for version_data in response_data]
-        for version in versions:
-            version.set_agents_api(self._agents_api)
-        return versions
+        resp = v1_agents_versions_list.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def retrieve(
         self, agent_id: str, version_id: str, get_supports_eval: bool | None = None
     ) -> AgentVersion:
-        """Retrieve a specific version of an agent.
-
-        Args:
-            agent_id: Base agent UUID.
-            version_id: Version UUID.
-            get_supports_eval: Include information on whether the agent engine supports evaluation.
-
-        Returns:
-            AgentVersion instance.
-        """
-        params = {}
-        if get_supports_eval is not None:
-            params["get_supports_eval"] = str(get_supports_eval).lower()
-
-        response_data = self.http_client.get(
-            f"/v1/agents/{agent_id}/versions/{version_id}/", params=params
+        resp = v1_agents_versions_retrieve.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
+            client=self._raw,
+            get_supports_eval=get_supports_eval
+            if get_supports_eval is not None
+            else UNSET,
+            organization_id=self._org_id,
         )
-
-        version = AgentVersion(**response_data)
-        version.set_agents_api(self._agents_api)
-        return version
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def retrieve_current(self, agent_id: str) -> AgentVersion:
-        """Retrieve the current version of an agent.
-
-        Args:
-            agent_id: Base agent UUID.
-
-        Returns:
-            Current AgentVersion.
-        """
-        response_data = self.http_client.get(f"/v1/agents/{agent_id}/versions/current/")
-        version = AgentVersion(**response_data)
-        version.set_agents_api(self._agents_api)
-        return version
+        resp = v1_agents_versions_current_retrieve.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def create(
         self,
@@ -101,33 +151,27 @@ class AgentVersionsAPI:
         version_name: str | None = None,
         description: str | None = None,
     ) -> AgentVersion:
-        """Create a new version of an agent.
-
-        Args:
-            agent_id: Base agent UUID.
-            input_definitions: List of input definitions for the version.
-            engine_config: Engine configuration (model, instruction, output_schema, etc.).
-            version_name: Name for the version.
-            description: Description of the version.
-
-        Returns:
-            Created AgentVersion instance.
-        """
-        json_data: dict[str, Any] = {
-            "input_definitions": input_definitions or [],
-            "engine_config": engine_config or {},
-        }
-
-        if version_name is not None:
-            json_data["version_name"] = version_name
-        if description is not None:
-            json_data["description"] = description
-
-        response_data = self.http_client.post(
-            f"/v1/agents/{agent_id}/versions/", json_data=json_data
+        body = AgentVersionCreateRequest(
+            input_definitions=input_definitions or [],
+            engine_config=engine_config or {},
+            version_name=version_name if version_name is not None else UNSET,
+            description=description if description is not None else UNSET,
         )
-        version_id = response_data["id"]
-        return self.retrieve(agent_id, version_id)
+        response = request_raw(
+            self._raw,
+            v1_agents_versions_create,
+            UUID(str(agent_id)),
+            body=body,
+            organization_id=self._org_id,
+        )
+        data = response.json()
+        version_id = data.get("id") if isinstance(data, dict) else None
+        if version_id is None:
+            raise RoeAPIException(
+                f"Unexpected response from server: status={response.status_code}"
+            )
+        # POST returns a partial create payload; re-fetch to get the full version.
+        return self.retrieve(agent_id, str(version_id))
 
     def update(
         self,
@@ -136,33 +180,28 @@ class AgentVersionsAPI:
         version_name: str | None = None,
         description: str | None = None,
     ) -> None:
-        """Update an agent version.
-
-        Args:
-            agent_id: Base agent UUID.
-            version_id: Version UUID.
-            version_name: New version name.
-            description: New description.
-        """
-        json_data: dict[str, Any] = {}
-
-        if version_name is not None:
-            json_data["version_name"] = version_name
-        if description is not None:
-            json_data["description"] = description
-
-        self.http_client.put(
-            f"/v1/agents/{agent_id}/versions/{version_id}/", json_data=json_data
+        """Update an agent version via PATCH (partial update)."""
+        body = PatchedPatchedAgentVersionUpdateRequestRequest(
+            version_name=version_name if version_name is not None else UNSET,
+            description=description if description is not None else UNSET,
+        )
+        request_json(
+            self._raw,
+            v1_agents_versions_partial_update,
+            UUID(str(agent_id)),
+            UUID(str(version_id)),
+            body=body,
+            organization_id=self._org_id,
         )
 
     def delete(self, agent_id: str, version_id: str) -> None:
-        """Delete an agent version.
-
-        Args:
-            agent_id: Base agent UUID.
-            version_id: Version UUID to delete.
-        """
-        self.http_client.delete(f"/v1/agents/{agent_id}/versions/{version_id}/")
+        resp = v1_agents_versions_destroy.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
 
 
 class AgentJobsAPI:
@@ -171,56 +210,41 @@ class AgentJobsAPI:
     _MAX_BATCH_SIZE = 1000
 
     def __init__(self, agents_api: "AgentsAPI"):
-        """Initialize the jobs API.
-
-        Args:
-            agents_api: Parent AgentsAPI instance.
-        """
         self._agents_api = agents_api
 
     @property
-    def http_client(self) -> RoeHTTPClient:
-        return self._agents_api.http_client
+    def _raw(self) -> AuthenticatedClient:
+        return self._agents_api._raw
 
-    def _iter_chunks(self, items, chunk_size: int):
-        """Yield successive chunks from a list."""
+    @property
+    def _org_id(self) -> UUID:
+        return UUID(str(self._agents_api.config.organization_id))
+
+    @staticmethod
+    def _iter_chunks(items, chunk_size: int):
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
     def retrieve_status(self, job_id: str) -> AgentJobStatus:
-        """Retrieve the status of an agent job.
+        resp = v1_agents_jobs_status_retrieve.sync_detailed(
+            job_id=UUID(str(job_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
-        Args:
-            job_id: Agent job UUID.
+    def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
+        resp = v1_agents_jobs_result_retrieve.sync_detailed(
+            agent_job_id=UUID(str(job_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
-        Returns:
-            AgentJobStatus instance.
-        """
-        response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/status/")
-        return AgentJobStatus(**response_data)
-
-    def retrieve_result(self, job_id: str) -> AgentJobResult:
-        """Retrieve the result of an agent job.
-
-        Args:
-            job_id: Agent job UUID.
-
-        Returns:
-            AgentJobResult instance.
-        """
-        response_data = self.http_client.get(f"/v1/agents/jobs/{job_id}/result/")
-        return AgentJobResult(**response_data)
-
-    def retrieve_status_many(self, job_ids: list[str]) -> list[AgentJobStatusBatch]:
-        """Retrieve the status of multiple agent jobs.
-
-        Args:
-            job_ids: List of agent job UUIDs.
-
-        Returns:
-            List of AgentJobStatusBatch instances in the same order as job_ids.
-        """
-        results: list[AgentJobStatusBatch] = []
+    def retrieve_status_many(self, job_ids: list[str]) -> list[AgentJobStatus]:
+        results: list[AgentJobStatus] = []
         is_first_chunk = True
         for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
             if not chunk:
@@ -228,24 +252,24 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            response_data = self.http_client.post(
-                "/v1/agents/jobs/statuses/", json_data={"job_ids": chunk}
+            body = AgentJobStatusManyRequestRequest(
+                job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
-            results.extend(
-                AgentJobStatusBatch(**status_data) for status_data in response_data
+            resp = request_json(
+                self._raw,
+                v1_agents_jobs_statuses_create,
+                body=body,
+                organization_id=self._org_id,
             )
+            chunk_result = resp.parsed
+            if chunk_result is not None:
+                results.extend(chunk_result)
         return results
 
-    def retrieve_result_many(self, job_ids: list[str]) -> list[AgentJobResultBatch]:
-        """Retrieve the results of multiple agent jobs.
-
-        Args:
-            job_ids: List of agent job UUIDs.
-
-        Returns:
-            List of AgentJobResultBatch instances in the same order as job_ids.
-        """
-        results: list[AgentJobResultBatch] = []
+    def retrieve_result_many(
+        self, job_ids: list[str]
+    ) -> list[Any]:  # AgentJobResultItem
+        results: list[Any] = []
         is_first_chunk = True
         for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
             if not chunk:
@@ -253,66 +277,62 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            response_data = self.http_client.post(
-                "/v1/agents/jobs/results/", json_data={"job_ids": chunk}
+            body = AgentJobResultManyRequestRequest(
+                job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
-            results.extend(
-                AgentJobResultBatch(**result_data) for result_data in response_data
+            response = request_raw(
+                self._raw,
+                v1_agents_jobs_results_create,
+                body=body,
+                organization_id=self._org_id,
             )
+            data = response.json()
+            items = data.get("results", []) if isinstance(data, dict) else data
+            if not isinstance(items, list):
+                raise RoeAPIException(
+                    f"jobs/results returned unexpected response shape: {data!r}"
+                )
+            results.extend(AgentJobResultItem.from_dict(item) for item in items)
         return results
 
     def download_reference(
         self, job_id: str, resource_id: str, as_attachment: bool = False
     ) -> bytes:
-        """Download a reference file from an agent job.
-
-        Args:
-            job_id: Agent job UUID.
-            resource_id: Resource identifier (filename).
-            as_attachment: Whether to download as attachment.
-
-        Returns:
-            Raw bytes of the file content.
-        """
-        params = {}
-        if as_attachment:
-            params["download"] = "true"
-
-        return self.http_client.get_bytes(
-            f"/v1/agents/jobs/{job_id}/references/{resource_id}/",
-            params=params if params else None,
+        kwargs = v1_agents_jobs_references_retrieve._get_kwargs(
+            agent_job_id=UUID(str(job_id)),
+            resource_id=resource_id,
+            organization_id=self._org_id,
         )
+        if as_attachment:
+            kwargs.setdefault("params", {})["download"] = "true"
+        response = self._raw.get_httpx_client().request(**kwargs)
+        translate_response(response)
+        return response.content
 
     def cancel(self, job_id: str) -> None:
-        """Cancel a running agent job.
-
-        Args:
-            job_id: Agent job UUID to cancel.
-        """
-        self.http_client.post(f"/v1/agents/jobs/{job_id}/cancel/")
+        resp = v1_agents_jobs_cancel_create.sync_detailed(
+            job_id=UUID(str(job_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
 
     def cancel_all(self, agent_id: str) -> None:
-        """Cancel all running jobs for a given agent.
+        resp = v1_agents_jobs_cancel_all_create.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
 
-        Args:
-            agent_id: Base agent UUID whose running jobs should be cancelled.
-        """
-        self.http_client.post(f"/v1/agents/{agent_id}/jobs/cancel-all/")
-
-    def delete_data(self, job_id: str) -> JobDataDeleteResponse:
-        """Delete persisted data for an agent job.
-
-        Deletes uploaded input files and sanitizes stored outputs.
-        Only works for jobs in terminal states (SUCCESS, FAILURE, CANCELLED).
-
-        Args:
-            job_id: Agent job UUID.
-
-        Returns:
-            JobDataDeleteResponse with deletion status.
-        """
-        response_data = self.http_client.post(f"/v1/agents/jobs/{job_id}/delete-data/")
-        return JobDataDeleteResponse(**response_data)
+    def delete_data(self, job_id: str) -> AgentJobDeleteDataResponse:
+        resp = v1_agents_jobs_delete_data_create.sync_detailed(
+            job_id=UUID(str(job_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
 
 class AgentsAPI:
@@ -320,46 +340,26 @@ class AgentsAPI:
 
     _MAX_BATCH_SIZE = 1000
 
-    def __init__(self, config: RoeConfig, http_client: RoeHTTPClient):
-        """Initialize the agents API.
-
-        Args:
-            config: Roe configuration.
-            http_client: HTTP client instance.
-        """
+    def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
         self.config = config
-        self.http_client = http_client
+        self._raw = raw_client
         self._versions = AgentVersionsAPI(self)
         self._jobs = AgentJobsAPI(self)
 
     @property
+    def _org_id(self) -> UUID:
+        return UUID(str(self.config.organization_id))
+
+    @property
     def versions(self) -> AgentVersionsAPI:
-        """Access the versions sub-API for version operations.
-
-        Returns:
-            AgentVersionsAPI instance.
-
-        Examples:
-            versions = client.agents.versions.list("agent-uuid")
-            version = client.agents.versions.retrieve("agent-uuid", "version-uuid")
-        """
         return self._versions
 
     @property
     def jobs(self) -> AgentJobsAPI:
-        """Access the jobs sub-API for job operations.
-
-        Returns:
-            AgentJobsAPI instance.
-
-        Examples:
-            status = client.agents.jobs.retrieve_status("job-uuid")
-            result = client.agents.jobs.retrieve_result("job-uuid")
-        """
         return self._jobs
 
-    def _iter_chunks(self, items, chunk_size: int):
-        """Yield successive chunks from a list."""
+    @staticmethod
+    def _iter_chunks(items, chunk_size: int):
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
@@ -367,51 +367,24 @@ class AgentsAPI:
         self,
         page: int | None = None,
         page_size: int | None = None,
-    ) -> PaginatedResponse[BaseAgent]:
-        """List agents in the organization.
-
-        Args:
-            page: Page number (1-based).
-            page_size: Number of results per page.
-
-        Returns:
-            Paginated list of agents.
-        """
-        params = PaginationHelper.build_query_params(
-            organization_id=self.config.organization_id,
-            page=page,
-            page_size=page_size,
+    ) -> PaginatedBaseAgentList:
+        resp = v1_agents_list.sync_detailed(
+            client=self._raw,
+            page=page if page is not None else UNSET,
+            page_size=page_size if page_size is not None else UNSET,
+            organization_id=self._org_id,
         )
-
-        response_data = self.http_client.get("/v1/agents/", params=params)
-
-        base_agents = [
-            BaseAgent(**agent_data) for agent_data in response_data["results"]
-        ]
-
-        for agent in base_agents:
-            agent.set_agents_api(self)
-
-        return PaginatedResponse[BaseAgent](
-            count=response_data["count"],
-            next=response_data.get("next"),
-            previous=response_data.get("previous"),
-            results=base_agents,
-        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def retrieve(self, agent_id: str) -> BaseAgent:
-        """Retrieve a specific agent by ID.
-
-        Args:
-            agent_id: Agent UUID.
-
-        Returns:
-            BaseAgent instance.
-        """
-        response_data = self.http_client.get(f"/v1/agents/{agent_id}/")
-        base_agent = BaseAgent(**response_data)
-        base_agent.set_agents_api(self)
-        return base_agent
+        response = request_raw(
+            self._raw,
+            v1_agents_retrieve,
+            UUID(str(agent_id)),
+            organization_id=self._org_id,
+        )
+        return BaseAgent.from_dict(response.json())
 
     def create(
         self,
@@ -422,36 +395,22 @@ class AgentsAPI:
         version_name: str | None = None,
         description: str | None = None,
     ) -> BaseAgent:
-        """Create a new agent.
-
-        Args:
-            name: Name of the agent.
-            engine_class_id: Engine class ID (e.g., "TextExtractionEngine").
-            input_definitions: List of input definitions for the agent.
-            engine_config: Engine configuration (model, instruction, output_schema, etc.).
-            version_name: Name for the first version (defaults to "version 1").
-            description: Description of the first version.
-
-        Returns:
-            Created BaseAgent instance.
-        """
-        json_data: dict[str, Any] = {
-            "name": name,
-            "engine_class_id": engine_class_id,
-            "organization_id": self.config.organization_id,
-            "input_definitions": input_definitions or [],
-            "engine_config": engine_config or {},
-        }
-
-        if version_name is not None:
-            json_data["version_name"] = version_name
-        if description is not None:
-            json_data["description"] = description
-
-        response_data = self.http_client.post("/v1/agents/", json_data=json_data)
-        base_agent = BaseAgent(**response_data)
-        base_agent.set_agents_api(self)
-        return base_agent
+        body = BaseAgentCreateRequest(
+            name=name,
+            engine_class_id=engine_class_id,
+            organization_id=self._org_id,
+            input_definitions=input_definitions or [],
+            engine_config=engine_config or {},
+            version_name=version_name if version_name is not None else UNSET,
+            description=description if description is not None else UNSET,
+        )
+        resp = request_json(
+            self._raw,
+            v1_agents_create,
+            body=body,
+            organization_id=self._org_id,
+        )
+        return resp.parsed  # type: ignore[return-value]
 
     def update(
         self,
@@ -460,58 +419,46 @@ class AgentsAPI:
         disable_cache: bool | None = None,
         cache_failed_jobs: bool | None = None,
     ) -> BaseAgent:
-        """Update an agent.
-
-        Args:
-            agent_id: Agent UUID.
-            name: New name for the agent.
-            disable_cache: Whether to disable job cache fetching.
-            cache_failed_jobs: Whether to cache failed jobs.
-
-        Returns:
-            Updated BaseAgent instance.
-        """
-        json_data: dict[str, Any] = {}
-
-        if name is not None:
-            json_data["name"] = name
-        if disable_cache is not None:
-            json_data["disable_cache"] = disable_cache
-        if cache_failed_jobs is not None:
-            json_data["cache_failed_jobs"] = cache_failed_jobs
-
-        response_data = self.http_client.put(
-            f"/v1/agents/{agent_id}/", json_data=json_data
+        """Update an agent via PATCH (partial update)."""
+        body = PatchedBaseAgentUpdateRequest(
+            name=name if name is not None else UNSET,
+            disable_cache=disable_cache if disable_cache is not None else UNSET,
+            cache_failed_jobs=cache_failed_jobs
+            if cache_failed_jobs is not None
+            else UNSET,
         )
-        base_agent = BaseAgent(**response_data)
-        base_agent.set_agents_api(self)
-        return base_agent
+        resp = request_json(
+            self._raw,
+            v1_agents_partial_update,
+            UUID(str(agent_id)),
+            body=body,
+            organization_id=self._org_id,
+        )
+        return resp.parsed  # type: ignore[return-value]
 
     def delete(self, agent_id: str) -> None:
-        """Delete an agent and all its versions.
+        resp = v1_agents_destroy.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
 
-        Args:
-            agent_id: Agent UUID.
+    def duplicate(self, agent_id: str) -> AgentVersion:
+        """Duplicate an agent. Returns the resulting ``AgentVersion``.
+
+        The endpoint historically returned a JSON object with a ``base_agent``
+        key wrapping the new agent; the generated client now models the
+        response as ``AgentVersion`` directly. Callers wanting the new base
+        agent should read ``result.base_agent`` (already populated).
         """
-        self.http_client.delete(f"/v1/agents/{agent_id}/")
-
-    def duplicate(self, agent_id: str) -> BaseAgent:
-        """Duplicate an agent.
-
-        Creates a new agent with the same configuration as the source agent.
-        The new agent will have a different ID.
-
-        Args:
-            agent_id: Agent UUID to duplicate.
-
-        Returns:
-            BaseAgent instance of the newly created agent.
-        """
-        response_data = self.http_client.post(f"/v1/agents/{agent_id}/duplicate/")
-        # The duplicate endpoint returns an AgentVersion, extract the base_agent
-        base_agent = BaseAgent(**response_data["base_agent"])
-        base_agent.set_agents_api(self)
-        return base_agent
+        resp = v1_agents_duplicate_create.sync_detailed(
+            agent_id=UUID(str(agent_id)),
+            client=self._raw,
+            organization_id=self._org_id,
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def run(
         self,
@@ -520,28 +467,20 @@ class AgentsAPI:
         metadata: dict[str, Any] | None = None,
         **inputs: Any,
     ) -> Job:
-        """Run an agent and return a Job object.
-
-        Args:
-            agent_id: Agent UUID to run (can be base agent or version ID).
-            timeout_seconds: Maximum time in seconds to wait for job completion.
-                           Defaults to 7200 seconds (2 hours).
-            metadata: Optional metadata dictionary to attach to the job.
-            **inputs: Dynamic inputs based on agent configuration.
-
-        Returns:
-            Job instance for tracking and waiting on the execution.
-
-        Examples:
-            job = client.agents.run(agent_id="uuid", text="Analyze this")
-            result = job.wait()
-        """
-        job_id = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/async/",
+        """Run an agent asynchronously and return a ``Job`` handle."""
+        response = call_dynamic(
+            self._raw,
+            v1_agents_run_async_create,
             inputs=inputs,
             metadata=metadata,
+            organization_id=self._org_id,
+            agent_id=UUID(str(agent_id)),
         )
-
+        job_id = response.json()
+        if not isinstance(job_id, str):
+            raise RoeAPIException(
+                f"run_async returned unexpected job ID shape: {job_id!r}"
+            )
         return Job(self, job_id, timeout_seconds)
 
     def run_many(
@@ -551,17 +490,7 @@ class AgentsAPI:
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
     ) -> JobBatch:
-        """Run an agent with multiple inputs and return a JobBatch.
-
-        Args:
-            agent_id: Agent UUID to run.
-            batch_inputs: List of input dictionaries.
-            timeout_seconds: Maximum time in seconds to wait for jobs completion.
-            metadata: Optional metadata dictionary to attach to all jobs in the batch.
-
-        Returns:
-            JobBatch instance for tracking and waiting on all executions.
-        """
+        """Run an agent across many inputs (JSON body, no multipart)."""
         all_job_ids: list[str] = []
         is_first_chunk = True
         for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
@@ -570,15 +499,29 @@ class AgentsAPI:
             if not is_first_chunk:
                 time.sleep(self.config.batch_chunk_delay)
             is_first_chunk = False
-            json_data: dict[str, Any] = {"inputs": chunk}
-            if metadata is not None:
-                json_data["metadata"] = metadata
-            response_data = self.http_client.post(
-                url=f"/v1/agents/run/{agent_id}/async/many/",
-                json_data=json_data,
+            body = AgentRunAsyncManyRequestRequest(
+                inputs=[_build_aer(item) for item in chunk]
             )
-            all_job_ids.extend(response_data)
-
+            if metadata is not None:
+                body.additional_properties["metadata"] = metadata
+            response = request_raw(
+                self._raw,
+                agents_run_async_many_5,
+                UUID(str(agent_id)),
+                body=body,
+                organization_id=self._org_id,
+            )
+            chunk_ids = response.json()
+            if not isinstance(chunk_ids, list):
+                raise RoeAPIException(
+                    f"run_async_many returned unexpected response shape: {chunk_ids!r}"
+                )
+            for job_id in chunk_ids:
+                if not isinstance(job_id, str):
+                    raise RoeAPIException(
+                        f"run_async_many returned invalid job ID: {job_id!r}"
+                    )
+                all_job_ids.append(job_id)
         return JobBatch(self, all_job_ids, timeout_seconds)
 
     def run_sync(
@@ -587,22 +530,16 @@ class AgentsAPI:
         metadata: dict[str, Any] | None = None,
         **inputs: Any,
     ) -> list[AgentDatum]:
-        """Run an agent synchronously and return results directly.
-
-        Args:
-            agent_id: Agent UUID to run (uses current version).
-            metadata: Optional metadata dictionary to attach to the job.
-            **inputs: Dynamic inputs based on agent configuration.
-
-        Returns:
-            List of AgentDatum outputs.
-        """
-        response_data = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/",
+        """Run an agent synchronously and return the outputs."""
+        response = call_dynamic(
+            self._raw,
+            agents_run_2,
             inputs=inputs,
             metadata=metadata,
+            organization_id=self._org_id,
+            agent_id=UUID(str(agent_id)),
         )
-        return [AgentDatum(**datum) for datum in response_data]
+        return [AgentDatum.from_dict(d) for d in response.json()]
 
     def run_version(
         self,
@@ -612,23 +549,20 @@ class AgentsAPI:
         metadata: dict[str, Any] | None = None,
         **inputs: Any,
     ) -> Job:
-        """Run a specific agent version asynchronously.
-
-        Args:
-            agent_id: Base agent UUID.
-            version_id: Version UUID to run.
-            timeout_seconds: Maximum time in seconds to wait for job completion.
-            metadata: Optional metadata dictionary to attach to the job.
-            **inputs: Dynamic inputs based on agent configuration.
-
-        Returns:
-            Job instance for tracking and waiting on the execution.
-        """
-        job_id = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/versions/{version_id}/async/",
+        response = call_dynamic(
+            self._raw,
+            v1_agents_run_versions_async_create,
             inputs=inputs,
             metadata=metadata,
+            organization_id=self._org_id,
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
         )
+        job_id = response.json()
+        if not isinstance(job_id, str):
+            raise RoeAPIException(
+                f"run_async returned unexpected job ID shape: {job_id!r}"
+            )
         return Job(self, job_id, timeout_seconds)
 
     def run_version_sync(
@@ -638,20 +572,13 @@ class AgentsAPI:
         metadata: dict[str, Any] | None = None,
         **inputs: Any,
     ) -> list[AgentDatum]:
-        """Run a specific agent version synchronously.
-
-        Args:
-            agent_id: Base agent UUID.
-            version_id: Version UUID to run.
-            metadata: Optional metadata dictionary to attach to the job.
-            **inputs: Dynamic inputs based on agent configuration.
-
-        Returns:
-            List of AgentDatum outputs.
-        """
-        response_data = self.http_client.post_with_dynamic_inputs(
-            url=f"/v1/agents/run/{agent_id}/versions/{version_id}/",
+        response = call_dynamic(
+            self._raw,
+            agents_run_version_2,
             inputs=inputs,
             metadata=metadata,
+            organization_id=self._org_id,
+            agent_id=UUID(str(agent_id)),
+            agent_version_id=UUID(str(version_id)),
         )
-        return [AgentDatum(**datum) for datum in response_data]
+        return [AgentDatum.from_dict(d) for d in response.json()]

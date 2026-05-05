@@ -2,6 +2,11 @@
 
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
+> **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
+> (`roe._generated`); ergonomic wrappers on `client.agents` and
+> `client.policies` remain. Noteworthy API and behavioral changes compared
+> to earlier releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
+
 ## Installation
 
 ```bash
@@ -29,13 +34,15 @@ for output in result.outputs:
 Or set environment variables:
 
 ```bash
-export ROE_ORGANIZATION_API_KEY="your-api-key"
+export ROE_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
 ## Job Result Inspection
 
-After waiting for a job, you can inspect its outcome using status helpers:
+After waiting for a job, inspect its outcome using the `JobStatus` enum.
+The terminal status and error message are stuffed into the generated
+response's `additional_properties` and accessed via subscript:
 
 ```python
 from roe import JobStatus
@@ -43,20 +50,18 @@ from roe import JobStatus
 result = job.wait()
 
 # Check job outcome
-if result.succeeded:
+if result["status"] in (JobStatus.SUCCESS, JobStatus.CACHED):
     for output in result.outputs:
         print(f"{output.key}: {output.value}")
-elif result.cancelled:
+elif result["status"] == JobStatus.CANCELLED:
     print("Job was cancelled")
-elif result.failed:
-    print("Error:", result.error_message)
+elif result["status"] == JobStatus.FAILURE:
+    print("Error:", result["error_message"])
 
 # Available fields
-result.status         # JobStatus code (int) or None
-result.error_message  # Error string or None
-result.succeeded      # True if SUCCESS or CACHED
-result.failed         # True if FAILURE or CANCELLED
-result.cancelled      # True if CANCELLED
+result.outputs           # list[AgentDatum] (direct attribute on the generated model)
+result["status"]         # JobStatus code (int) — set by Job.wait()
+result["error_message"]  # Error string or None — set by Job.wait()
 ```
 
 ## Raw API Access
@@ -173,11 +178,8 @@ agent = client.agents.create(
 job = client.agents.run(agent_id=str(agent.id), url="https://www.roe-ai.com/")
 result = job.wait()
 
-# Download saved references (screenshots, HTML, markdown)
-for ref in result.get_references():
-    content = client.agents.jobs.download_reference(str(job.id), ref.resource_id)
-    with open(ref.resource_id, "wb") as f:
-        f.write(content)
+for output in result.outputs:
+    print(f"{output.key}: {output.value}")
 ```
 
 ### Interactive Web
@@ -439,9 +441,9 @@ agent = client.agents.create(
 
 ## Retry Behavior
 
-The SDK automatically retries idempotent requests (GET, PUT, DELETE) that receive `502`, `503`, or `504` responses using exponential backoff (1s, 2s, 4s, …). By default, up to 3 retries are attempted before raising a `ServerError`. POST requests are never retried to avoid duplicate submissions.
-
-You can configure the retry count via the `max_retries` parameter or the `ROE_MAX_RETRIES` environment variable:
+Transient failures are retried with exponential backoff capped at about 10
+seconds per attempt. By default there are up to 3 retries (configurable via
+`max_retries` or `ROE_MAX_RETRIES`):
 
 ```python
 client = RoeClient(
@@ -451,7 +453,14 @@ client = RoeClient(
 )
 ```
 
-Other error codes (400, 401, 404, 500, etc.) are raised immediately without retrying.
+**Retried:** HTTP statuses `408`, `429`, and any `5xx`, plus transport errors
+(for example disconnects and timeouts). JSON `POST` bodies may be replayed;
+multipart agent-run calls (`run`, `run_sync`, …) opt out via
+`x-roe-skip-retry` so they are not automatically retried at the transport layer.
+
+**Not retried immediately:** Typical client/auth responses (`401`, `403`,
+`404`, validation `422`, …) — surfaced as typed exceptions matching the SDK’s
+usual error mapping.
 
 ## Batch Processing
 
@@ -644,4 +653,5 @@ client.agents.jobs.delete_data(job_id)
 
 - [Roe AI](https://www.roe-ai.com/)
 - [API Documentation](https://docs.roe-ai.com)
+- [Changelog](CHANGELOG.md)
 - [Examples](examples/)

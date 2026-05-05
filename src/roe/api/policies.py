@@ -1,66 +1,103 @@
-"""Policies API implementation."""
+"""Policies API — thin facade over the generated raw client.
+
+Methods call the generated endpoint functions in ``roe._generated.api.v1``
+and return the generated response models directly. Non-2xx responses are
+translated to the typed ``RoeAPIException`` family at the wrapper boundary.
+"""
 
 from __future__ import annotations
 
 from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
+from roe._generated.api.v1 import (
+    v1_policies_create,
+    v1_policies_destroy,
+    v1_policies_list,
+    v1_policies_partial_update,
+    v1_policies_retrieve,
+    v1_policies_versions_create,
+    v1_policies_versions_list,
+    v1_policies_versions_retrieve,
+)
+from roe._generated.client import AuthenticatedClient
+from roe._generated.models.create_policy import CreatePolicy
+from roe._generated.models.create_policy_request import CreatePolicyRequest
+from roe._generated.models.create_policy_version_request import (
+    CreatePolicyVersionRequest,
+)
+from roe._generated.models.paginated_policy_list import PaginatedPolicyList
+from roe._generated.models.paginated_policy_version_list import (
+    PaginatedPolicyVersionList,
+)
+from roe._generated.models.patched_update_policy_request import (
+    PatchedUpdatePolicyRequest,
+)
+from roe._generated.models.policy import Policy
+from roe._generated.models.policy_version import PolicyVersion
+from roe._generated.types import UNSET
 from roe.config import RoeConfig
-from roe.models.policy import Policy, PolicyVersion
-from roe.models.responses import PaginatedResponse
-from roe.utils.http_client import RoeHTTPClient
-from roe.utils.pagination import PaginationHelper
+from roe.exceptions import translate_response
+from roe.utils.generated_request import request_json, request_raw
+
+
+_ZERO_UUID = "00000000-0000-0000-0000-000000000000"
+
+
+def _normalize_policy_version_wire(data: dict[str, Any]) -> dict[str, Any]:
+    normalized = dict(data)
+    if normalized.get("base_version_id") is None:
+        normalized["base_version_id"] = _ZERO_UUID
+    return normalized
+
+
+def _parse_policy_version(data: dict[str, Any]) -> PolicyVersion:
+    return PolicyVersion.from_dict(_normalize_policy_version_wire(data))
 
 if TYPE_CHECKING:
-    from roe.api.policies import PoliciesAPI
+    pass
 
 
 class PolicyVersionsAPI:
     """Nested API for policy version operations."""
 
-    def __init__(self, policies_api: "PoliciesAPI"):
-        """Initialize the versions API.
+    def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
+        self.config = config
+        self._raw = raw_client
 
-        Args:
-            policies_api: Parent PoliciesAPI instance.
-        """
-        self._policies_api = policies_api
-
-    @property
-    def http_client(self) -> RoeHTTPClient:
-        return self._policies_api.http_client
-
-    def list(self, policy_id: str) -> list[PolicyVersion]:
-        """List all versions of a policy.
-
-        Args:
-            policy_id: Policy UUID.
-
-        Returns:
-            List of policy versions.
-        """
-        response_data = self.http_client.get(
-            f"/v1/policies/{policy_id}/versions/"
+    def list(
+        self,
+        policy_id: str,
+        page: int | None = None,
+        page_size: int | None = None,
+    ) -> PaginatedPolicyVersionList:
+        """List versions of a policy."""
+        response = request_raw(
+            self._raw,
+            v1_policies_versions_list,
+            UUID(str(policy_id)),
+            page=page if page is not None else UNSET,
+            page_size=page_size if page_size is not None else UNSET,
+            organization_id=UUID(str(self.config.organization_id)),
         )
-        # Response is paginated: {"count": ..., "results": [...]}
-        results = response_data.get("results", response_data)
-        if isinstance(results, list):
-            return [PolicyVersion(**version_data) for version_data in results]
-        return []
+        data = response.json()
+        return PaginatedPolicyVersionList(
+            count=data["count"],
+            results=[_parse_policy_version(item) for item in data.get("results", [])],
+            next_=data.get("next"),
+            previous=data.get("previous"),
+        )
 
     def retrieve(self, policy_id: str, version_id: str) -> PolicyVersion:
-        """Retrieve a specific version of a policy.
-
-        Args:
-            policy_id: Policy UUID.
-            version_id: Version UUID.
-
-        Returns:
-            PolicyVersion instance.
-        """
-        response_data = self.http_client.get(
-            f"/v1/policies/{policy_id}/versions/{version_id}/"
+        """Retrieve a specific version of a policy."""
+        response = request_raw(
+            self._raw,
+            v1_policies_versions_retrieve,
+            UUID(str(policy_id)),
+            UUID(str(version_id)),
+            organization_id=UUID(str(self.config.organization_id)),
         )
-        return PolicyVersion(**response_data)
+        return _parse_policy_version(response.json())
 
     def create(
         self,
@@ -69,107 +106,63 @@ class PolicyVersionsAPI:
         version_name: str | None = None,
         base_version_id: str | None = None,
     ) -> PolicyVersion:
-        """Create a new version of a policy.
-
-        Creating a new version automatically sets it as the current version.
-
-        Args:
-            policy_id: Policy UUID.
-            content: Policy content (guidelines, instructions, dispositions).
-            version_name: Name for the version (auto-generated if not provided).
-            base_version_id: ID of the version this was derived from.
-
-        Returns:
-            Created PolicyVersion instance.
-        """
-        json_data: dict[str, Any] = {"content": content}
-
-        if version_name is not None:
-            json_data["version_name"] = version_name
-        if base_version_id is not None:
-            json_data["base_version_id"] = base_version_id
-
-        response_data = self.http_client.post(
-            f"/v1/policies/{policy_id}/versions/", json_data=json_data
+        """Create a new policy version (auto-set as current). Re-fetches for full data."""
+        body = CreatePolicyVersionRequest(
+            content=content,
+            version_name=version_name if version_name is not None else UNSET,
+            base_version_id=UUID(str(base_version_id)) if base_version_id else UNSET,
         )
-        # POST returns partial data; re-fetch to get the full version
-        version_id = response_data.get("id")
-        if not version_id:
-            raise ValueError(f"Unexpected response from server: {response_data}")
-        return self.retrieve(policy_id, version_id)
+        resp = request_json(
+            self._raw,
+            v1_policies_versions_create,
+            UUID(str(policy_id)),
+            body=body,
+            organization_id=UUID(str(self.config.organization_id)),
+        )
+        created = resp.parsed
+        if created is None or created.id is None:
+            raise ValueError(f"Unexpected response from server: status={resp.status_code}")
+        # POST returns partial data; re-fetch to get the full version.
+        return self.retrieve(policy_id, str(created.id))
 
 
 class PoliciesAPI:
     """API for managing policies used by agentic workflows."""
 
-    def __init__(self, config: RoeConfig, http_client: RoeHTTPClient):
-        """Initialize the policies API.
-
-        Args:
-            config: Roe configuration.
-            http_client: HTTP client instance.
-        """
+    def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
         self.config = config
-        self.http_client = http_client
-        self._versions = PolicyVersionsAPI(self)
+        self._raw = raw_client
+        self._versions = PolicyVersionsAPI(config, raw_client)
 
     @property
     def versions(self) -> PolicyVersionsAPI:
-        """Access the versions sub-API for policy version operations.
-
-        Returns:
-            PolicyVersionsAPI instance.
-
-        Examples:
-            versions = client.policies.versions.list("policy-uuid")
-            version = client.policies.versions.retrieve("policy-uuid", "version-uuid")
-        """
+        """Access the versions sub-API for policy version operations."""
         return self._versions
 
     def list(
         self,
         page: int | None = None,
         page_size: int | None = None,
-    ) -> PaginatedResponse[Policy]:
-        """List policies in the organization.
-
-        Args:
-            page: Page number (1-based).
-            page_size: Number of results per page.
-
-        Returns:
-            Paginated list of policies.
-        """
-        params = PaginationHelper.build_query_params(
-            organization_id=self.config.organization_id,
-            page=page,
-            page_size=page_size,
+    ) -> PaginatedPolicyList:
+        """List policies in the organization."""
+        resp = v1_policies_list.sync_detailed(
+            client=self._raw,
+            page=page if page is not None else UNSET,
+            page_size=page_size if page_size is not None else UNSET,
+            organization_id=UUID(str(self.config.organization_id)),
         )
-
-        response_data = self.http_client.get("/v1/policies/", params=params)
-
-        policies = [
-            Policy(**policy_data) for policy_data in response_data["results"]
-        ]
-
-        return PaginatedResponse[Policy](
-            count=response_data["count"],
-            next=response_data.get("next"),
-            previous=response_data.get("previous"),
-            results=policies,
-        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def retrieve(self, policy_id: str) -> Policy:
-        """Retrieve a specific policy by ID.
-
-        Args:
-            policy_id: Policy UUID.
-
-        Returns:
-            Policy instance.
-        """
-        response_data = self.http_client.get(f"/v1/policies/{policy_id}/")
-        return Policy(**response_data)
+        """Retrieve a specific policy by ID."""
+        resp = v1_policies_retrieve.sync_detailed(
+            id=UUID(str(policy_id)),
+            client=self._raw,
+            organization_id=UUID(str(self.config.organization_id)),
+        )
+        translate_response(resp)
+        return resp.parsed  # type: ignore[return-value]
 
     def create(
         self,
@@ -177,65 +170,47 @@ class PoliciesAPI:
         content: dict[str, Any],
         description: str = "",
         version_name: str | None = None,
-    ) -> Policy:
-        """Create a new policy with an initial version.
-
-        This atomically creates the policy and its first version.
-        The initial version is automatically set as the current version.
-
-        Args:
-            name: Name of the policy.
-            content: Policy content (guidelines, instructions, dispositions).
-            description: Description of the policy.
-            version_name: Name for the initial version (defaults to "version 1").
-
-        Returns:
-            Created Policy instance.
-        """
-        json_data: dict[str, Any] = {
-            "name": name,
-            "content": content,
-            "description": description,
-        }
-
-        if version_name is not None:
-            json_data["version_name"] = version_name
-
-        response_data = self.http_client.post("/v1/policies/", json_data=json_data)
-        return Policy(**response_data)
+    ) -> CreatePolicy:
+        """Create a new policy with an initial version."""
+        body = CreatePolicyRequest(
+            name=name,
+            content=content,
+            description=description,
+            version_name=version_name if version_name is not None else UNSET,
+        )
+        resp = request_json(
+            self._raw,
+            v1_policies_create,
+            body=body,
+            organization_id=UUID(str(self.config.organization_id)),
+        )
+        return resp.parsed  # type: ignore[return-value]
 
     def update(
         self,
         policy_id: str,
         name: str | None = None,
         description: str | None = None,
-    ) -> Policy:
-        """Update a policy's metadata.
-
-        Args:
-            policy_id: Policy UUID.
-            name: New name for the policy.
-            description: New description.
-
-        Returns:
-            Updated Policy instance.
-        """
-        json_data: dict[str, Any] = {}
-
-        if name is not None:
-            json_data["name"] = name
-        if description is not None:
-            json_data["description"] = description
-
-        response_data = self.http_client.put(
-            f"/v1/policies/{policy_id}/", json_data=json_data
+    ) -> Any:
+        """Update a policy's metadata via PATCH (partial update)."""
+        body = PatchedUpdatePolicyRequest(
+            name=name if name is not None else UNSET,
+            description=description if description is not None else UNSET,
         )
-        return Policy(**response_data)
+        resp = request_json(
+            self._raw,
+            v1_policies_partial_update,
+            UUID(str(policy_id)),
+            body=body,
+            organization_id=UUID(str(self.config.organization_id)),
+        )
+        return resp.parsed
 
     def delete(self, policy_id: str) -> None:
-        """Delete a policy and all its versions.
-
-        Args:
-            policy_id: Policy UUID.
-        """
-        self.http_client.delete(f"/v1/policies/{policy_id}/")
+        """Delete a policy and all its versions."""
+        resp = v1_policies_destroy.sync_detailed(
+            id=UUID(str(policy_id)),
+            client=self._raw,
+            organization_id=UUID(str(self.config.organization_id)),
+        )
+        translate_response(resp)

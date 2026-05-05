@@ -1,47 +1,86 @@
-"""Job and JobBatch models for agent execution tracking."""
+"""Stateful Job and JobBatch helpers for tracking agent executions.
+
+These are the only data classes that survive the migration in their
+hand-written form — they own the polling loop and convert the generated
+status codes into a familiar terminal-vs-pending decision. Body shapes
+returned to callers come from the generated client.
+"""
 
 from __future__ import annotations
 
 import time
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
+from uuid import UUID
 
-from roe.exceptions import NotFoundError
-from roe.models.responses import AgentJobResult, AgentJobStatus, JobStatus
+from roe._generated.models.agent_job_result_item import AgentJobResultItem
+from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_status import AgentJobStatus
+from roe.exceptions import NotFoundError, RoeAPIException
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
 
 
+class JobStatus:
+    """Integer status codes the backend uses for an agent job.
+
+    Mirrors the codes documented on ``AgentJobStatus.status``: 0 PENDING,
+    1 STARTED, 2 RETRY, 3 SUCCESS, 4 FAILURE, 5 CANCELLED, 6 CACHED.
+    """
+
+    PENDING = 0
+    STARTED = 1
+    RETRY = 2
+    SUCCESS = 3
+    FAILURE = 4
+    CANCELLED = 5
+    CACHED = 6
+
+
+_TERMINAL_STATUSES = (
+    JobStatus.SUCCESS,
+    JobStatus.FAILURE,
+    JobStatus.CANCELLED,
+    JobStatus.CACHED,
+)
+_FAILED_STATUSES = (JobStatus.FAILURE, JobStatus.CANCELLED)
+
+
+def _empty_result(status: int, error_message: str | None) -> AgentJobResultResponse:
+    """Synthesize a placeholder result for failed/cancelled jobs whose result fetch fails."""
+    result = AgentJobResultResponse(
+        agent_id=UUID(int=0),
+        agent_version_id=UUID(int=0),
+        inputs=[],
+        input_tokens=None,
+        output_tokens=None,
+        outputs=[],
+    )
+    result.additional_properties["status"] = status
+    result.additional_properties["error_message"] = error_message
+    return result
+
+
+def _attach_status(
+    result: AgentJobResultResponse, status: int, error_message: str | None
+) -> AgentJobResultResponse:
+    result.additional_properties["status"] = status
+    result.additional_properties["error_message"] = error_message
+    return result
+
+
 class Job:
-    """Represents a single agent job for tracking and waiting."""
+    """Single-job handle with polling and status helpers."""
 
     def __init__(
         self, agents_api: "AgentsAPI", job_id: str, timeout_seconds: int | None = None
     ):
-        """Initialize a Job instance.
-
-        Args:
-            agents_api: AgentsAPI instance for making requests.
-            job_id: Agent job UUID.
-            timeout_seconds: Maximum time in seconds to wait for job completion. Defaults to 7200 (2 hours).
-                           Must be positive if provided.
-
-        Raises:
-            ValueError: If timeout_seconds is not positive.
-
-        Examples:
-            # Typically created by run_async
-            job = client.agents.run_async(agent_id, inputs)
-            result = job.wait()
-        """
         self.agents_api = agents_api
         self._job_id = job_id
 
-        # Set default timeout
         if timeout_seconds is None:
             self._timeout_seconds = 7200  # 2 hours default
         else:
-            # Validate timeout is positive
             if timeout_seconds <= 0:
                 raise ValueError(
                     f"timeout_seconds must be positive, got {timeout_seconds}"
@@ -50,80 +89,45 @@ class Job:
 
     @property
     def id(self) -> str:
-        """Get the job ID.
-
-        Returns:
-            Agent job UUID string.
-        """
         return self._job_id
 
     @property
     def timeout_seconds(self) -> int:
-        """Get the configured timeout in seconds.
-
-        Returns:
-            Timeout value in seconds.
-        """
         return self._timeout_seconds
 
     def wait(
         self, interval: float = 5.0, timeout: float | None = None
-    ) -> AgentJobResult:
-        """Wait for the job to complete and return its result.
+    ) -> AgentJobResultResponse:
+        """Poll until the job reaches a terminal state and return its result.
 
-        Args:
-            interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the timeout_seconds
-                    specified when creating the job (default: 7200 seconds).
-                    Must be positive if provided.
-
-        Returns:
-            AgentJobResult when the job completes successfully.
-
-        Raises:
-            TimeoutError: If the job doesn't complete within the timeout.
-            ValueError: If timeout is not positive.
-
-        Examples:
-            # Basic usage - uses default timeout of 7200 seconds
-            result = job.wait()
-
-            # With custom interval and timeout
-            result = job.wait(interval=2.0, timeout=300)
+        Returns the generated ``AgentJobResultResponse`` with the terminal
+        ``status`` (int code) and any ``error_message`` attached via the
+        model's ``additional_properties`` dict — accessible as
+        ``result["status"]`` and ``result["error_message"]``.
         """
-        # Use provided timeout or fall back to instance timeout
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
 
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
         start_time = time.time()
 
+        from roe._generated.types import Unset
+
         while True:
             status = self.retrieve_status()
+            error_message = (
+                None if isinstance(status.error_message, Unset) else status.error_message
+            )
 
-            if status.status in (
-                JobStatus.SUCCESS,
-                JobStatus.FAILURE,
-                JobStatus.CANCELLED,
-                JobStatus.CACHED,
-            ):
-                is_failed = status.status in (JobStatus.FAILURE, JobStatus.CANCELLED)
+            if status.status in _TERMINAL_STATUSES:
+                is_failed = status.status in _FAILED_STATUSES
                 try:
                     result = self.retrieve_result()
-                except Exception:
+                except RoeAPIException:
                     if not is_failed:
                         raise
-                    result = AgentJobResult(
-                        agent_id="",
-                        agent_version_id="",
-                        inputs=[],
-                        input_tokens=None,
-                        output_tokens=None,
-                        outputs=[],
-                    )
-                result.status = status.status
-                result.error_message = status.error_message
-                return result
+                    return _empty_result(status.status, error_message)
+                return _attach_status(result, status.status, error_message)
 
             if (time.time() - start_time) > effective_timeout:
                 raise TimeoutError(
@@ -133,41 +137,16 @@ class Job:
             time.sleep(interval)
 
     def retrieve_status(self) -> AgentJobStatus:
-        """Retrieve the current status of the job.
-
-        Returns:
-            AgentJobStatus instance with current job status.
-
-        Examples:
-            status = job.retrieve_status()
-            if status.status == JobStatus.SUCCESS:
-                result = job.retrieve_result()
-        """
+        """Generated ``AgentJobStatus`` for the job."""
         return self.agents_api.jobs.retrieve_status(self._job_id)
 
-    def retrieve_result(self) -> AgentJobResult:
-        """Retrieve the result of the job.
-
-        Returns:
-            AgentJobResult instance.
-
-        Note:
-            This method will return the result regardless of job status.
-            For completed jobs only, use wait() which handles status checking.
-
-        Examples:
-            # Retrieve result (may fail if job not complete)
-            try:
-                result = job.retrieve_result()
-            except Exception:
-                # Job may not be complete yet
-                result = job.wait()  # Wait for completion
-        """
+    def retrieve_result(self) -> AgentJobResultResponse:
+        """Generated ``AgentJobResultResponse`` for the job (may 404 if not terminal)."""
         return self.agents_api.jobs.retrieve_result(self._job_id)
 
 
 class JobBatch:
-    """Represents a batch of agent jobs for tracking and waiting."""
+    """Batch handle that polls many jobs in chunked status calls."""
 
     def __init__(
         self,
@@ -175,32 +154,14 @@ class JobBatch:
         job_ids: list[str],
         timeout_seconds: int | None = None,
     ):
-        """Initialize a JobBatch instance.
-
-        Args:
-            agents_api: AgentsAPI instance for making requests.
-            job_ids: List of agent job UUIDs.
-            timeout_seconds: Maximum time in seconds to wait for jobs completion. Defaults to 7200 (2 hours).
-                           Must be positive if provided.
-
-        Raises:
-            ValueError: If timeout_seconds is not positive.
-
-        Examples:
-            # Typically created by run_async_many
-            batch = client.agents.run_async_many(agent_id, inputs_list)
-            results = batch.wait()
-        """
         self.agents_api = agents_api
         self._job_ids = job_ids
-        self._completed_jobs: dict[str, AgentJobResult] = {}
-        self._job_statuses: dict[str, AgentJobStatus] = {}
+        self._completed_jobs: dict[str, AgentJobResultItem] = {}
+        self._job_statuses: dict[str, dict[str, Any]] = {}
 
-        # Set default timeout
         if timeout_seconds is None:
-            self._timeout_seconds = 7200  # 2 hours default
+            self._timeout_seconds = 7200
         else:
-            # Validate timeout is positive
             if timeout_seconds <= 0:
                 raise ValueError(
                     f"timeout_seconds must be positive, got {timeout_seconds}"
@@ -209,39 +170,14 @@ class JobBatch:
 
     @property
     def job_ids(self) -> list[str]:
-        """Get the list of job IDs.
-
-        Returns:
-            List of agent job UUID strings.
-        """
         return self._job_ids.copy()
 
     @property
     def timeout_seconds(self) -> int:
-        """Get the configured timeout in seconds.
-
-        Returns:
-            Timeout value in seconds.
-        """
         return self._timeout_seconds
 
     @property
     def jobs(self) -> list[Job]:
-        """Get individual Job objects for each job in the batch.
-
-        Returns:
-            List of Job instances for individual job operations.
-
-        Examples:
-            batch = client.agents.run_async_many(agent_id, inputs_list)
-
-            # Access individual jobs
-            first_job = batch.jobs[0]
-            first_result = first_job.wait()
-
-            # Or wait for all
-            all_results = batch.wait()
-        """
         return [
             Job(self.agents_api, job_id, self._timeout_seconds)
             for job_id in self._job_ids
@@ -252,44 +188,11 @@ class JobBatch:
         interval: float = 5.0,
         timeout: float | None = None,
         raise_on_timeout: bool = True,
-    ) -> list[AgentJobResult | None]:
-        """Wait for jobs in the batch to complete and return their results.
+    ) -> list[AgentJobResultItem | None]:
+        """Poll and return per-job ``AgentJobResultItem`` (or ``None`` if not finished and ``raise_on_timeout=False``).
 
-        Args:
-            interval: Time in seconds between status checks (default: 5.0).
-            timeout: Maximum time in seconds to wait. If None, uses the
-                ``timeout_seconds`` specified when creating the batch
-                (default: 7200 seconds). Must be positive if provided.
-            raise_on_timeout: If ``True`` (default), raises ``TimeoutError``
-                when the timeout is reached and some jobs are still running.
-                If ``False``, returns partial results instead — completed
-                jobs get their ``AgentJobResult``, incomplete jobs are
-                ``None``.
-
-        Returns:
-            List of ``AgentJobResult | None`` in the same order as
-            ``job_ids``.  When ``raise_on_timeout=True`` all entries are
-            guaranteed to be non-None (or a ``TimeoutError`` is raised).
-            When ``raise_on_timeout=False``, incomplete jobs are ``None``.
-
-        Raises:
-            TimeoutError: If ``raise_on_timeout=True`` and jobs don't
-                complete within the timeout.
-            ValueError: If timeout is not positive.
-
-        Examples:
-            # Default — raises on timeout
-            results = batch.wait()
-
-            # Return partial results instead of raising
-            results = batch.wait(raise_on_timeout=False)
-            completed = [r for r in results if r is not None]
-            print(f"{len(completed)} / {len(results)} jobs done")
-
-            # Figure out which are still running
-            for job_id, r in zip(batch.job_ids, results):
-                if r is None:
-                    print(f"{job_id} still in progress")
+        ``AgentJobResultItem.status`` (the int code) is already populated by
+        the batch results endpoint — no extra attachment needed.
         """
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
@@ -309,40 +212,31 @@ class JobBatch:
 
             status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
-            # Find jobs that moved to terminal states
             completed_in_this_batch: list[str] = []
             for status_item in status_batch:
-                job_id = status_item.id
-                if status_item.status in (
-                    JobStatus.SUCCESS,
-                    JobStatus.FAILURE,
-                    JobStatus.CANCELLED,
-                    JobStatus.CACHED,
-                ):
+                job_id = self._extract_id(status_item)
+                if job_id is None:
+                    continue
+                stat_code = self._extract_status(status_item)
+                if stat_code in _TERMINAL_STATUSES:
                     completed_in_this_batch.append(job_id)
-
-                # Update status cache (only if status is not None)
-                if status_item.status is not None:
-                    self._job_statuses[job_id] = AgentJobStatus(
-                        status=status_item.status,
-                        timestamp=status_item.timestamp,
-                        error_message=status_item.error_message,
-                    )
+                if stat_code is not None:
+                    self._job_statuses[job_id] = {
+                        "status": stat_code,
+                        "error_message": self._extract_error_message(status_item),
+                        "timestamp": self._extract_timestamp(status_item),
+                    }
 
             if completed_in_this_batch:
                 result_batch = self.agents_api.jobs.retrieve_result_many(
                     completed_in_this_batch
                 )
-
                 for result_item in result_batch:
-                    job_id = result_item.id
-                    # Use cached terminal status (reliable) instead of result_item.status (nullable)
-                    cached_status = self._job_statuses.get(job_id)
-                    is_failed = cached_status is not None and cached_status.status in (
-                        JobStatus.FAILURE,
-                        JobStatus.CANCELLED,
+                    job_id = str(result_item.id)
+                    cached = self._job_statuses.get(job_id)
+                    is_failed = (
+                        cached is not None and cached["status"] in _FAILED_STATUSES
                     )
-
                     if (
                         result_item.agent_id is None
                         or result_item.agent_version_id is None
@@ -351,45 +245,14 @@ class JobBatch:
                             raise NotFoundError(
                                 f"Job {job_id} not found or has been deleted"
                             )
-                        # Failed/cancelled jobs may lack agent identifiers
-                        cached_status = self._job_statuses.get(job_id)
-                        job_result = AgentJobResult(
-                            agent_id="",
-                            agent_version_id="",
-                            inputs=[],
-                            input_tokens=None,
-                            output_tokens=None,
-                            outputs=[],
-                            status=cached_status.status if cached_status else result_item.status,
-                            error_message=cached_status.error_message if cached_status else None,
-                        )
-                    else:
-                        cached_status = self._job_statuses.get(job_id)
-                        job_result = AgentJobResult(
-                            agent_id=result_item.agent_id,
-                            agent_version_id=result_item.agent_version_id,
-                            inputs=result_item.inputs or [],
-                            input_tokens=result_item.input_tokens,
-                            output_tokens=result_item.output_tokens,
-                            outputs=(
-                                result_item.result
-                                if isinstance(result_item.result, list)
-                                else []
-                            ),
-                            status=cached_status.status if cached_status else result_item.status,
-                            error_message=cached_status.error_message if cached_status else None,
-                        )
-
-                    self._completed_jobs[job_id] = job_result
+                    self._completed_jobs[job_id] = result_item
 
             if len(self._completed_jobs) < len(self._job_ids):
                 if (time.time() - start_time) > effective_timeout:
                     if raise_on_timeout:
-                        remaining_jobs = set(self._job_ids) - set(
-                            self._completed_jobs.keys()
-                        )
+                        remaining = set(self._job_ids) - set(self._completed_jobs)
                         raise TimeoutError(
-                            f"Jobs {remaining_jobs} did not complete within {effective_timeout} seconds"
+                            f"Jobs {remaining} did not complete within {effective_timeout} seconds"
                         )
                     break
 
@@ -398,43 +261,90 @@ class JobBatch:
         return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
 
     def retrieve_status(self) -> dict[str, AgentJobStatus]:
-        """Retrieve the current status of all jobs in the batch.
-
-        Returns:
-            Dictionary mapping job IDs to AgentJobStatus objects containing
-            status code, timestamp, and error_message.
-
-        Examples:
-            status_map = batch.retrieve_status()
-
-            for job_id, status in status_map.items():
-                if status.status == JobStatus.FAILURE:
-                    print(f"Job {job_id} failed: {status.error_message}")
-        """
-        # Return cached status for completed jobs, query for others
+        """Return a ``{job_id: AgentJobStatus}`` map, querying only uncached jobs."""
         status_map: dict[str, AgentJobStatus] = {}
-        jobs_to_query = []
+        jobs_to_query: list[str] = []
 
         for job_id in self._job_ids:
             cached = self._job_statuses.get(job_id)
-            if cached is not None and cached.status in (
-                JobStatus.SUCCESS, JobStatus.FAILURE, JobStatus.CANCELLED, JobStatus.CACHED
-            ):
-                status_map[job_id] = cached
+            if cached is not None and cached["status"] in _TERMINAL_STATUSES:
+                status_map[job_id] = AgentJobStatus(
+                    status=cached["status"],
+                    timestamp=cached.get("timestamp", 0),
+                    error_message=cached["error_message"]
+                    if cached["error_message"] is not None
+                    else _UNSET_SENTINEL(),
+                )
             else:
                 jobs_to_query.append(job_id)
 
-        # Query only jobs we don't have cached status for
         if jobs_to_query:
             status_batch = self.agents_api.jobs.retrieve_status_many(jobs_to_query)
             for status_item in status_batch:
-                if status_item.status is not None:
-                    job_status = AgentJobStatus(
-                        status=status_item.status,
-                        timestamp=status_item.timestamp,
-                        error_message=status_item.error_message,
-                    )
-                    status_map[status_item.id] = job_status
-                    self._job_statuses[status_item.id] = job_status
+                job_id = self._extract_id(status_item)
+                if job_id is None:
+                    continue
+                stat_code = self._extract_status(status_item)
+                if stat_code is None:
+                    continue
+                err = self._extract_error_message(status_item)
+                status_map[job_id] = AgentJobStatus(
+                    status=stat_code,
+                    timestamp=self._extract_timestamp(status_item),
+                    error_message=err if err is not None else _UNSET_SENTINEL(),
+                )
+                self._job_statuses[job_id] = {
+                    "status": stat_code,
+                    "error_message": err,
+                    "timestamp": self._extract_timestamp(status_item),
+                }
 
         return status_map
+
+    @staticmethod
+    def _extract_id(status_item: Any) -> str | None:
+        for key in ("id", "agent_job_id", "job_id"):
+            value = getattr(status_item, key, None)
+            if value is None:
+                value = (
+                    status_item.additional_properties.get(key)
+                    if hasattr(status_item, "additional_properties")
+                    else None
+                )
+            if value is not None:
+                return str(value)
+        return None
+
+    @staticmethod
+    def _extract_status(status_item: Any) -> int | None:
+        from roe._generated.types import Unset
+
+        value = getattr(status_item, "status", None)
+        if isinstance(value, Unset) or value is None:
+            return None
+        return int(value)
+
+    @staticmethod
+    def _extract_error_message(status_item: Any) -> str | None:
+        from roe._generated.types import Unset
+
+        value = getattr(status_item, "error_message", None)
+        if isinstance(value, Unset) or value is None:
+            return None
+        return str(value)
+
+    @staticmethod
+    def _extract_timestamp(status_item: Any) -> int:
+        from roe._generated.types import Unset
+
+        value = getattr(status_item, "timestamp", 0)
+        if isinstance(value, Unset) or value is None:
+            return 0
+        return int(value)
+
+
+def _UNSET_SENTINEL():  # noqa: N802 — match generated naming style
+    """Return the ``Unset`` sentinel from the generated types module."""
+    from roe._generated.types import UNSET
+
+    return UNSET
