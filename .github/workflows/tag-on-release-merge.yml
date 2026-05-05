@@ -27,6 +27,7 @@ jobs:
         uses: astral-sh/setup-uv@v6
         with:
           python-version: "3.11.9"
+          enable-cache: false
 
       - name: Read merged release version
         id: version
