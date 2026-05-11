@@ -10,15 +10,15 @@ from __future__ import annotations
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
-from roe._generated.api.v1 import (
-    v1_policies_create,
-    v1_policies_destroy,
-    v1_policies_list,
-    v1_policies_partial_update,
-    v1_policies_retrieve,
-    v1_policies_versions_create,
-    v1_policies_versions_list,
-    v1_policies_versions_retrieve,
+from roe._generated.api.policies import (
+    policies_create,
+    policies_destroy,
+    policies_list,
+    policies_partial_update,
+    policies_retrieve,
+    policies_versions_create,
+    policies_versions_list,
+    policies_versions_retrieve,
 )
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.create_policy import CreatePolicy
@@ -74,7 +74,7 @@ class PolicyVersionsAPI:
         """List versions of a policy."""
         response = request_raw(
             self._raw,
-            v1_policies_versions_list,
+            policies_versions_list,
             UUID(str(policy_id)),
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
@@ -92,7 +92,7 @@ class PolicyVersionsAPI:
         """Retrieve a specific version of a policy."""
         response = request_raw(
             self._raw,
-            v1_policies_versions_retrieve,
+            policies_versions_retrieve,
             UUID(str(policy_id)),
             UUID(str(version_id)),
             organization_id=UUID(str(self.config.organization_id)),
@@ -114,7 +114,7 @@ class PolicyVersionsAPI:
         )
         resp = request_json(
             self._raw,
-            v1_policies_versions_create,
+            policies_versions_create,
             UUID(str(policy_id)),
             body=body,
             organization_id=UUID(str(self.config.organization_id)),
@@ -145,7 +145,7 @@ class PoliciesAPI:
         page_size: int | None = None,
     ) -> PaginatedPolicyList:
         """List policies in the organization."""
-        resp = v1_policies_list.sync_detailed(
+        resp = policies_list.sync_detailed(
             client=self._raw,
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
@@ -156,7 +156,7 @@ class PoliciesAPI:
 
     def retrieve(self, policy_id: str) -> Policy:
         """Retrieve a specific policy by ID."""
-        resp = v1_policies_retrieve.sync_detailed(
+        resp = policies_retrieve.sync_detailed(
             id=UUID(str(policy_id)),
             client=self._raw,
             organization_id=UUID(str(self.config.organization_id)),
@@ -180,7 +180,7 @@ class PoliciesAPI:
         )
         resp = request_json(
             self._raw,
-            v1_policies_create,
+            policies_create,
             body=body,
             organization_id=UUID(str(self.config.organization_id)),
         )
@@ -199,7 +199,7 @@ class PoliciesAPI:
         )
         resp = request_json(
             self._raw,
-            v1_policies_partial_update,
+            policies_partial_update,
             UUID(str(policy_id)),
             body=body,
             organization_id=UUID(str(self.config.organization_id)),
@@ -208,7 +208,7 @@ class PoliciesAPI:
 
     def delete(self, policy_id: str) -> None:
         """Delete a policy and all its versions."""
-        resp = v1_policies_destroy.sync_detailed(
+        resp = policies_destroy.sync_detailed(
             id=UUID(str(policy_id)),
             client=self._raw,
             organization_id=UUID(str(self.config.organization_id)),

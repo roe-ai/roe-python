@@ -20,7 +20,7 @@ from uuid import UUID
 def _get_kwargs(
     agent_id: UUID,
     *,
-    body:    BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  | Unset = UNSET,
+    body: BaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -46,24 +46,10 @@ def _get_kwargs(
         "params": params,
     }
 
-    if isinstance(body, BaseAgentUpdateRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
-
-
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
         headers["Content-Type"] = "application/json"
-    if isinstance(body, BaseAgentUpdateRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, BaseAgentUpdateRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -118,7 +104,7 @@ def sync_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  | Unset = UNSET,
+    body: BaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
@@ -129,8 +115,6 @@ def sync_detailed(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
         body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
@@ -159,7 +143,7 @@ def sync(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  | Unset = UNSET,
+    body: BaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
@@ -170,8 +154,6 @@ def sync(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
         body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
@@ -195,7 +177,7 @@ async def asyncio_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  | Unset = UNSET,
+    body: BaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
@@ -206,8 +188,6 @@ async def asyncio_detailed(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
         body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
@@ -236,7 +216,7 @@ async def asyncio(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  |     BaseAgentUpdateRequest  | Unset = UNSET,
+    body: BaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
@@ -247,8 +227,6 @@ async def asyncio(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
         body (BaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:

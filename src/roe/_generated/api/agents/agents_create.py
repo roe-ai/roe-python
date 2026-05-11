@@ -19,7 +19,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: BaseAgentCreateRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -45,20 +45,10 @@ def _get_kwargs(
         "params": params,
     }
 
-    if isinstance(body, BaseAgentCreateRequest):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
 
-        headers["Content-Type"] = "application/json"
-    if isinstance(body, BaseAgentCreateRequest):
-        _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, BaseAgentCreateRequest):
-        _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
+    headers["Content-Type"] = "application/json"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -105,7 +95,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: BaseAgentCreateRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
@@ -115,10 +105,6 @@ def sync_detailed(
 
     Args:
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
         body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
             handling
 
@@ -146,7 +132,7 @@ organization_id=organization_id,
 def sync(
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: BaseAgentCreateRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
@@ -156,10 +142,6 @@ def sync(
 
     Args:
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
         body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
             handling
 
@@ -182,7 +164,7 @@ organization_id=organization_id,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: BaseAgentCreateRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
@@ -192,10 +174,6 @@ async def asyncio_detailed(
 
     Args:
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
         body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
             handling
 
@@ -223,7 +201,7 @@ organization_id=organization_id,
 async def asyncio(
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: BaseAgentCreateRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
@@ -233,10 +211,6 @@ async def asyncio(
 
     Args:
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
         body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
             handling
 

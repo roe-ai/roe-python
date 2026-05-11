@@ -20,7 +20,7 @@ def _get_kwargs(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    body:    PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  | Unset = UNSET,
+    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -46,24 +46,10 @@ def _get_kwargs(
         "params": params,
     }
 
-    if isinstance(body, PatchedPatchedAgentVersionUpdateRequestRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
-
-
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
         headers["Content-Type"] = "application/json"
-    if isinstance(body, PatchedPatchedAgentVersionUpdateRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, PatchedPatchedAgentVersionUpdateRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -109,7 +95,7 @@ def sync_detailed(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  | Unset = UNSET,
+    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[Any | ErrorResponse]:
@@ -121,8 +107,6 @@ def sync_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
         body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
 
     Raises:
@@ -153,7 +137,7 @@ def sync(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  | Unset = UNSET,
+    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Any | ErrorResponse | None:
@@ -165,8 +149,6 @@ def sync(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
         body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
 
     Raises:
@@ -192,7 +174,7 @@ async def asyncio_detailed(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  | Unset = UNSET,
+    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[Any | ErrorResponse]:
@@ -204,8 +186,6 @@ async def asyncio_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
         body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
 
     Raises:
@@ -236,7 +216,7 @@ async def asyncio(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  |     PatchedPatchedAgentVersionUpdateRequestRequest  | Unset = UNSET,
+    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Any | ErrorResponse | None:
@@ -248,8 +228,6 @@ async def asyncio(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
         body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
 
     Raises:

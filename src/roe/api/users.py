@@ -9,7 +9,7 @@ from __future__ import annotations
 
 import json as _json
 
-from roe._generated.api.v1 import v1_users_current_user_retrieve
+from roe._generated.api.users import users_current_user_retrieve
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.user_info import UserInfo
 from roe.config import RoeConfig
@@ -25,7 +25,7 @@ class UsersAPI:
 
     def me(self) -> UserInfo:
         """Return the currently-authenticated user."""
-        response = v1_users_current_user_retrieve.sync_detailed(client=self._raw)
+        response = users_current_user_retrieve.sync_detailed(client=self._raw)
         translate_response(response)
         content = response.content or b""
         try:

@@ -5,8 +5,6 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-import json
-from .. import types
 
 from ..types import UNSET, Unset
 
@@ -56,24 +54,6 @@ class AgentRunAsyncManyRequestRequest:
 
         return field_dict
 
-
-    def to_multipart(self) -> types.RequestFiles:
-        from ..models.agent_execution_request_request import AgentExecutionRequestRequest
-        files: types.RequestFiles = []
-
-        for inputs_item_element in self.inputs:
-            files.append(("inputs", (None, json.dumps( inputs_item_element.to_dict()).encode(), "application/json")))
-
-
-
-
-
-        for prop_name, prop in self.additional_properties.items():
-            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
-
-
-
-        return files
 
 
     @classmethod

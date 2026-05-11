@@ -17,32 +17,32 @@ import time
 from typing import Any
 from uuid import UUID
 
-from roe._generated.api.v1 import (
-    agents_run_2,
-    agents_run_async_many_5,
-    agents_run_version_2,
-    v1_agents_create,
-    v1_agents_destroy,
-    v1_agents_duplicate_create,
-    v1_agents_jobs_cancel_all_create,
-    v1_agents_jobs_cancel_create,
-    v1_agents_jobs_delete_data_create,
-    v1_agents_jobs_references_retrieve,
-    v1_agents_jobs_result_retrieve,
-    v1_agents_jobs_results_create,
-    v1_agents_jobs_status_retrieve,
-    v1_agents_jobs_statuses_create,
-    v1_agents_list,
-    v1_agents_partial_update,
-    v1_agents_retrieve,
-    v1_agents_run_async_create,
-    v1_agents_run_versions_async_create,
-    v1_agents_versions_create,
-    v1_agents_versions_current_retrieve,
-    v1_agents_versions_destroy,
-    v1_agents_versions_list,
-    v1_agents_versions_partial_update,
-    v1_agents_versions_retrieve,
+from roe._generated.api.agents import (
+    agents_create,
+    agents_destroy,
+    agents_duplicate_create,
+    agents_jobs_cancel_all_create,
+    agents_jobs_cancel_create,
+    agents_jobs_delete_data_create,
+    agents_jobs_references_retrieve,
+    agents_jobs_result_retrieve,
+    agents_jobs_results_create,
+    agents_jobs_status_retrieve,
+    agents_jobs_statuses_create,
+    agents_list,
+    agents_partial_update,
+    agents_retrieve,
+    agents_run,
+    agents_run_async_create,
+    agents_run_async_many,
+    agents_run_version,
+    agents_run_versions_async_create,
+    agents_versions_create,
+    agents_versions_current_retrieve,
+    agents_versions_destroy,
+    agents_versions_list,
+    agents_versions_partial_update,
+    agents_versions_retrieve,
 )
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.agent_datum import AgentDatum
@@ -111,7 +111,7 @@ class AgentVersionsAPI:
         return UUID(str(self._agents_api.config.organization_id))
 
     def list(self, agent_id: str) -> list[AgentVersion]:
-        resp = v1_agents_versions_list.sync_detailed(
+        resp = agents_versions_list.sync_detailed(
             agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -122,7 +122,7 @@ class AgentVersionsAPI:
     def retrieve(
         self, agent_id: str, version_id: str, get_supports_eval: bool | None = None
     ) -> AgentVersion:
-        resp = v1_agents_versions_retrieve.sync_detailed(
+        resp = agents_versions_retrieve.sync_detailed(
             agent_id=UUID(str(agent_id)),
             agent_version_id=UUID(str(version_id)),
             client=self._raw,
@@ -135,7 +135,7 @@ class AgentVersionsAPI:
         return resp.parsed  # type: ignore[return-value]
 
     def retrieve_current(self, agent_id: str) -> AgentVersion:
-        resp = v1_agents_versions_current_retrieve.sync_detailed(
+        resp = agents_versions_current_retrieve.sync_detailed(
             agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -159,7 +159,7 @@ class AgentVersionsAPI:
         )
         response = request_raw(
             self._raw,
-            v1_agents_versions_create,
+            agents_versions_create,
             UUID(str(agent_id)),
             body=body,
             organization_id=self._org_id,
@@ -187,7 +187,7 @@ class AgentVersionsAPI:
         )
         request_json(
             self._raw,
-            v1_agents_versions_partial_update,
+            agents_versions_partial_update,
             UUID(str(agent_id)),
             UUID(str(version_id)),
             body=body,
@@ -195,7 +195,7 @@ class AgentVersionsAPI:
         )
 
     def delete(self, agent_id: str, version_id: str) -> None:
-        resp = v1_agents_versions_destroy.sync_detailed(
+        resp = agents_versions_destroy.sync_detailed(
             agent_id=UUID(str(agent_id)),
             agent_version_id=UUID(str(version_id)),
             client=self._raw,
@@ -226,7 +226,7 @@ class AgentJobsAPI:
             yield items[i : i + chunk_size]
 
     def retrieve_status(self, job_id: str) -> AgentJobStatus:
-        resp = v1_agents_jobs_status_retrieve.sync_detailed(
+        resp = agents_jobs_status_retrieve.sync_detailed(
             job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -235,7 +235,7 @@ class AgentJobsAPI:
         return resp.parsed  # type: ignore[return-value]
 
     def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
-        resp = v1_agents_jobs_result_retrieve.sync_detailed(
+        resp = agents_jobs_result_retrieve.sync_detailed(
             agent_job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -257,7 +257,7 @@ class AgentJobsAPI:
             )
             resp = request_json(
                 self._raw,
-                v1_agents_jobs_statuses_create,
+                agents_jobs_statuses_create,
                 body=body,
                 organization_id=self._org_id,
             )
@@ -282,7 +282,7 @@ class AgentJobsAPI:
             )
             response = request_raw(
                 self._raw,
-                v1_agents_jobs_results_create,
+                agents_jobs_results_create,
                 body=body,
                 organization_id=self._org_id,
             )
@@ -298,7 +298,7 @@ class AgentJobsAPI:
     def download_reference(
         self, job_id: str, resource_id: str, as_attachment: bool = False
     ) -> bytes:
-        kwargs = v1_agents_jobs_references_retrieve._get_kwargs(
+        kwargs = agents_jobs_references_retrieve._get_kwargs(
             agent_job_id=UUID(str(job_id)),
             resource_id=resource_id,
             organization_id=self._org_id,
@@ -310,7 +310,7 @@ class AgentJobsAPI:
         return response.content
 
     def cancel(self, job_id: str) -> None:
-        resp = v1_agents_jobs_cancel_create.sync_detailed(
+        resp = agents_jobs_cancel_create.sync_detailed(
             job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -318,7 +318,7 @@ class AgentJobsAPI:
         translate_response(resp)
 
     def cancel_all(self, agent_id: str) -> None:
-        resp = v1_agents_jobs_cancel_all_create.sync_detailed(
+        resp = agents_jobs_cancel_all_create.sync_detailed(
             agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -326,7 +326,7 @@ class AgentJobsAPI:
         translate_response(resp)
 
     def delete_data(self, job_id: str) -> AgentJobDeleteDataResponse:
-        resp = v1_agents_jobs_delete_data_create.sync_detailed(
+        resp = agents_jobs_delete_data_create.sync_detailed(
             job_id=UUID(str(job_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -368,7 +368,7 @@ class AgentsAPI:
         page: int | None = None,
         page_size: int | None = None,
     ) -> PaginatedBaseAgentList:
-        resp = v1_agents_list.sync_detailed(
+        resp = agents_list.sync_detailed(
             client=self._raw,
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
@@ -380,7 +380,7 @@ class AgentsAPI:
     def retrieve(self, agent_id: str) -> BaseAgent:
         response = request_raw(
             self._raw,
-            v1_agents_retrieve,
+            agents_retrieve,
             UUID(str(agent_id)),
             organization_id=self._org_id,
         )
@@ -406,7 +406,7 @@ class AgentsAPI:
         )
         resp = request_json(
             self._raw,
-            v1_agents_create,
+            agents_create,
             body=body,
             organization_id=self._org_id,
         )
@@ -429,7 +429,7 @@ class AgentsAPI:
         )
         resp = request_json(
             self._raw,
-            v1_agents_partial_update,
+            agents_partial_update,
             UUID(str(agent_id)),
             body=body,
             organization_id=self._org_id,
@@ -437,7 +437,7 @@ class AgentsAPI:
         return resp.parsed  # type: ignore[return-value]
 
     def delete(self, agent_id: str) -> None:
-        resp = v1_agents_destroy.sync_detailed(
+        resp = agents_destroy.sync_detailed(
             agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -452,7 +452,7 @@ class AgentsAPI:
         response as ``AgentVersion`` directly. Callers wanting the new base
         agent should read ``result.base_agent`` (already populated).
         """
-        resp = v1_agents_duplicate_create.sync_detailed(
+        resp = agents_duplicate_create.sync_detailed(
             agent_id=UUID(str(agent_id)),
             client=self._raw,
             organization_id=self._org_id,
@@ -470,7 +470,7 @@ class AgentsAPI:
         """Run an agent asynchronously and return a ``Job`` handle."""
         response = call_dynamic(
             self._raw,
-            v1_agents_run_async_create,
+            agents_run_async_create,
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
@@ -506,7 +506,7 @@ class AgentsAPI:
                 body.additional_properties["metadata"] = metadata
             response = request_raw(
                 self._raw,
-                agents_run_async_many_5,
+                agents_run_async_many,
                 UUID(str(agent_id)),
                 body=body,
                 organization_id=self._org_id,
@@ -533,7 +533,7 @@ class AgentsAPI:
         """Run an agent synchronously and return the outputs."""
         response = call_dynamic(
             self._raw,
-            agents_run_2,
+            agents_run,
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
@@ -551,7 +551,7 @@ class AgentsAPI:
     ) -> Job:
         response = call_dynamic(
             self._raw,
-            v1_agents_run_versions_async_create,
+            agents_run_versions_async_create,
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
@@ -574,7 +574,7 @@ class AgentsAPI:
     ) -> list[AgentDatum]:
         response = call_dynamic(
             self._raw,
-            agents_run_version_2,
+            agents_run_version,
             inputs=inputs,
             metadata=metadata,
             organization_id=self._org_id,
