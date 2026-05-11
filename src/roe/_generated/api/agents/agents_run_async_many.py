@@ -9,7 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.agent_run_async_many_request_request import AgentRunAsyncManyRequestRequest
-from ...models.agents_run_async_many_5_response_200 import AgentsRunAsyncMany5Response200
+from ...models.agents_run_async_many_response_200 import AgentsRunAsyncManyResponse200
 from ...models.error_response import ErrorResponse
 from ...types import UNSET, Unset
 from typing import cast
@@ -66,9 +66,9 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsRunAsyncMany5Response200 | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsRunAsyncManyResponse200 | ErrorResponse | None:
     if response.status_code == 200:
-        response_200 = AgentsRunAsyncMany5Response200.from_dict(response.json())
+        response_200 = AgentsRunAsyncManyResponse200.from_dict(response.json())
 
 
 
@@ -108,7 +108,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsRunAsyncMany5Response200 | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsRunAsyncManyResponse200 | ErrorResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -124,7 +124,7 @@ def sync_detailed(
     body:    AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentsRunAsyncMany5Response200 | ErrorResponse]:
+) -> Response[AgentsRunAsyncManyResponse200 | ErrorResponse]:
     """ Run agent asynchronously with multiple inputs
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results.
@@ -144,7 +144,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentsRunAsyncMany5Response200 | ErrorResponse]
+        Response[AgentsRunAsyncManyResponse200 | ErrorResponse]
      """
 
 
@@ -168,7 +168,7 @@ def sync(
     body:    AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentsRunAsyncMany5Response200 | ErrorResponse | None:
+) -> AgentsRunAsyncManyResponse200 | ErrorResponse | None:
     """ Run agent asynchronously with multiple inputs
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results.
@@ -188,7 +188,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentsRunAsyncMany5Response200 | ErrorResponse
+        AgentsRunAsyncManyResponse200 | ErrorResponse
      """
 
 
@@ -207,7 +207,7 @@ async def asyncio_detailed(
     body:    AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentsRunAsyncMany5Response200 | ErrorResponse]:
+) -> Response[AgentsRunAsyncManyResponse200 | ErrorResponse]:
     """ Run agent asynchronously with multiple inputs
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results.
@@ -227,7 +227,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentsRunAsyncMany5Response200 | ErrorResponse]
+        Response[AgentsRunAsyncManyResponse200 | ErrorResponse]
      """
 
 
@@ -251,7 +251,7 @@ async def asyncio(
     body:    AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  |     AgentRunAsyncManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentsRunAsyncMany5Response200 | ErrorResponse | None:
+) -> AgentsRunAsyncManyResponse200 | ErrorResponse | None:
     """ Run agent asynchronously with multiple inputs
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results.
@@ -271,7 +271,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentsRunAsyncMany5Response200 | ErrorResponse
+        AgentsRunAsyncManyResponse200 | ErrorResponse
      """
 
 

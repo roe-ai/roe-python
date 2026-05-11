@@ -13,7 +13,7 @@ from .agent_run_async_many_request_request import AgentRunAsyncManyRequestReques
 from .agent_version import AgentVersion
 from .agent_version_create_request import AgentVersionCreateRequest
 from .agent_version_update_request_request import AgentVersionUpdateRequestRequest
-from .agents_run_async_many_5_response_200 import AgentsRunAsyncMany5Response200
+from .agents_run_async_many_response_200 import AgentsRunAsyncManyResponse200
 from .base_agent import BaseAgent
 from .base_agent_create_request import BaseAgentCreateRequest
 from .base_agent_update_request import BaseAgentUpdateRequest
@@ -47,7 +47,7 @@ __all__ = (
     "AgentJobStatus",
     "AgentJobStatusManyRequestRequest",
     "AgentRunAsyncManyRequestRequest",
-    "AgentsRunAsyncMany5Response200",
+    "AgentsRunAsyncManyResponse200",
     "AgentVersion",
     "AgentVersionCreateRequest",
     "AgentVersionUpdateRequestRequest",

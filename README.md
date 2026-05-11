@@ -2,7 +2,7 @@
 
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
-> **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
+> **v1.0.79** — The SDK delegates to OpenAPI-generated types and transports
 > (`roe._generated`); ergonomic wrappers on `client.agents` and
 > `client.policies` remain. Noteworthy API and behavioral changes compared
 > to earlier releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.

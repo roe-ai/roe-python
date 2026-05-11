@@ -14,12 +14,12 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="AgentsRunAsyncMany5Response200")
+T = TypeVar("T", bound="AgentsRunAsyncManyResponse200")
 
 
 
 @_attrs_define
-class AgentsRunAsyncMany5Response200:
+class AgentsRunAsyncManyResponse200:
     """ Unspecified response body
 
      """
@@ -42,12 +42,12 @@ class AgentsRunAsyncMany5Response200:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        agents_run_async_many_5_response_200 = cls(
+        agents_run_async_many_response_200 = cls(
         )
 
 
-        agents_run_async_many_5_response_200.additional_properties = d
-        return agents_run_async_many_5_response_200
+        agents_run_async_many_response_200.additional_properties = d
+        return agents_run_async_many_response_200
 
     @property
     def additional_keys(self) -> list[str]:

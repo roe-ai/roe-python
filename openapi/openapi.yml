@@ -6,7 +6,7 @@ info:
 paths:
   /v1/agents/:
     get:
-      operationId: v1_agents_list
+      operationId: agents_list
       description: Retrieve a list of agents or create a new agent.
       summary: List agents or create a new agent.
       parameters:
@@ -66,7 +66,7 @@ paths:
             type: string
         description: Filter agents by tag IDs. Can be provided multiple times.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -95,11 +95,11 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Organization not found.
     post:
-      operationId: v1_agents_create
+      operationId: agents_create
       description: Create a new base agent.
       summary: Create a new base agent.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -143,7 +143,7 @@ paths:
           be provided via query or request body depending on the endpoint.
   /v1/agents/{agent_id}/:
     get:
-      operationId: v1_agents_retrieve
+      operationId: agents_retrieve
       description: Retrieve details of a specific base agent.
       summary: Retrieve an agent.
       parameters:
@@ -163,7 +163,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -205,7 +205,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent not found.
     put:
-      operationId: v1_agents_update
+      operationId: agents_update
       description: Update a base agent's settings.
       summary: Update a base agent.
       parameters:
@@ -225,7 +225,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -265,7 +265,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent not found.
     patch:
-      operationId: v1_agents_partial_update
+      operationId: agents_partial_update
       description: Partially update details of a specific base agent.
       summary: Partially update an agent.
       parameters:
@@ -285,7 +285,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -325,7 +325,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent not found.
     delete:
-      operationId: v1_agents_destroy
+      operationId: agents_destroy
       description: Delete a specific base agent.
       summary: Delete a base agent.
       parameters:
@@ -345,7 +345,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '204':
@@ -371,7 +371,7 @@ paths:
           description: Failed to delete base agent or some Qdrant collections.
   /v1/agents/{agent_id}/duplicate/:
     post:
-      operationId: v1_agents_duplicate_create
+      operationId: agents_duplicate_create
       description: Create a new agent with the same attributes as the current version
         of the specified agent.
       summary: Duplicate an agent.
@@ -391,7 +391,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '201':
@@ -415,7 +415,7 @@ paths:
           description: Agent not found.
   /v1/agents/{agent_id}/jobs/cancel-all/:
     post:
-      operationId: v1_agents_jobs_cancel_all_create
+      operationId: agents_jobs_cancel_all_create
       description: Cancel all running jobs for a given agent.
       summary: Cancel all agent jobs
       parameters:
@@ -434,7 +434,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       deprecated: true
       responses:
@@ -454,7 +454,7 @@ paths:
           description: Agent not found
   /v1/agents/{agent_id}/versions/:
     get:
-      operationId: v1_agents_versions_list
+      operationId: agents_versions_list
       description: Retrieve a list of versions for a specific agent.
       summary: List agent versions.
       parameters:
@@ -474,7 +474,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -514,7 +514,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent not found.
     post:
-      operationId: v1_agents_versions_create
+      operationId: agents_versions_create
       description: Create a new version of an existing agent.
       summary: Create a new agent version.
       parameters:
@@ -534,7 +534,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -593,7 +593,7 @@ paths:
           description: Agent not found.
   /v1/agents/{agent_id}/versions/{agent_version_id}/:
     get:
-      operationId: v1_agents_versions_retrieve
+      operationId: agents_versions_retrieve
       description: Retrieve details of a specific agent version.
       summary: Retrieve an agent version.
       parameters:
@@ -625,7 +625,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -648,7 +648,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent version not found.
     put:
-      operationId: v1_agents_versions_update
+      operationId: agents_versions_update
       description: Update details of a specific agent version (only version name and
         description).
       summary: Update an agent version.
@@ -676,7 +676,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -706,7 +706,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent version not found.
     patch:
-      operationId: v1_agents_versions_partial_update
+      operationId: agents_versions_partial_update
       description: Partially update details of a specific agent version (only version
         name and description).
       summary: Partially update an agent version.
@@ -734,7 +734,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -764,7 +764,7 @@ paths:
                 $ref: '#/components/schemas/ErrorResponse'
           description: Agent version not found.
     delete:
-      operationId: v1_agents_versions_destroy
+      operationId: agents_versions_destroy
       description: Delete a specific agent version.
       summary: Delete an agent version.
       parameters:
@@ -791,7 +791,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '204':
@@ -811,7 +811,7 @@ paths:
           description: Agent version not found.
   /v1/agents/{agent_id}/versions/current/:
     get:
-      operationId: v1_agents_versions_current_retrieve
+      operationId: agents_versions_current_retrieve
       description: Retrieve details of the current version of a specific agent.
       summary: Retrieve the current version of an agent.
       parameters:
@@ -836,7 +836,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -904,15 +904,13 @@ paths:
           description: Agent not found.
   /v1/agents/jobs/{agent_job_id}/references/{resource_id}/:
     get:
-      operationId: v1_agents_jobs_references_retrieve
-      description: 'Token-authenticated proxy view for serving web resource references
-        from S3.
-
+      operationId: agents_jobs_references_retrieve
+      description: |-
+        Token-authenticated proxy view for serving web resource references from S3.
 
         Uses Organization API Key authentication (for external API consumers).
 
-
-        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/'
+        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/
       parameters:
       - in: path
         name: agent_job_id
@@ -934,14 +932,14 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
           description: No response body
   /v1/agents/jobs/{agent_job_id}/result/:
     get:
-      operationId: v1_agents_jobs_result_retrieve
+      operationId: agents_jobs_result_retrieve
       description: Get agent job result data.
       parameters:
       - in: path
@@ -959,7 +957,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -1018,7 +1016,7 @@ paths:
           description: Internal server error
   /v1/agents/jobs/{job_id}/cancel/:
     post:
-      operationId: v1_agents_jobs_cancel_create
+      operationId: agents_jobs_cancel_create
       description: Cancel a running agent job by its ID.
       summary: Cancel an agent job
       parameters:
@@ -1037,7 +1035,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       deprecated: true
       responses:
@@ -1057,7 +1055,7 @@ paths:
           description: Agent job not found
   /v1/agents/jobs/{job_id}/delete-data/:
     post:
-      operationId: v1_agents_jobs_delete_data_create
+      operationId: agents_jobs_delete_data_create
       description: Delete uploaded inputs from S3, sanitize stored blob data (outputs,
         steps, logs, trace), and delete workflow artifacts for an agent job without
         removing DB metadata.
@@ -1078,7 +1076,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       deprecated: true
       responses:
@@ -1114,7 +1112,7 @@ paths:
           description: Failed to delete data
   /v1/agents/jobs/{job_id}/status/:
     get:
-      operationId: v1_agents_jobs_status_retrieve
+      operationId: agents_jobs_status_retrieve
       description: Get agent job status.
       parameters:
       - in: path
@@ -1132,7 +1130,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       responses:
         '200':
@@ -1161,12 +1159,12 @@ paths:
           description: Agent job not found
   /v1/agents/jobs/results/:
     post:
-      operationId: v1_agents_jobs_results_create
+      operationId: agents_jobs_results_create
       description: Retrieve the detailed results for multiple agent jobs by providing
         a list of job IDs
       summary: Get results for multiple agent jobs
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1210,12 +1208,12 @@ paths:
           be provided via query or request body depending on the endpoint.
   /v1/agents/jobs/statuses/:
     post:
-      operationId: v1_agents_jobs_statuses_create
+      operationId: agents_jobs_statuses_create
       description: Retrieve the current status for multiple agent jobs by providing
         a list of job IDs
       summary: Get status for multiple agent jobs
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1261,7 +1259,7 @@ paths:
           be provided via query or request body depending on the endpoint.
   /v1/agents/run/{agent_id}/:
     post:
-      operationId: agents_run_2
+      operationId: agents_run
       description: Execute an agent with provided inputs and return results immediately.
       summary: Run agent synchronously
       parameters:
@@ -1280,7 +1278,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1329,7 +1327,7 @@ paths:
           description: Agent not found
   /v1/agents/run/{agent_id}/async/:
     post:
-      operationId: v1_agents_run_async_create
+      operationId: agents_run_async_create
       description: Run agent asynchronously. Returns agent job id which can be used
         to check status and get results.
       parameters:
@@ -1348,7 +1346,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1425,7 +1423,7 @@ paths:
           description: Internal server error
   /v1/agents/run/{agent_id}/async/many/:
     post:
-      operationId: agents_run_async_many_5
+      operationId: agents_run_async_many
       description: Execute an agent with multiple inputs asynchronously and return
         job IDs for tracking results.
       summary: Run agent asynchronously with multiple inputs
@@ -1445,7 +1443,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1526,7 +1524,7 @@ paths:
           description: Insufficient credits
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/:
     post:
-      operationId: agents_run_version_2
+      operationId: agents_run_version
       description: Execute a specific agent version with provided inputs and return
         results immediately.
       summary: Run agent version synchronously
@@ -1552,7 +1550,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1601,7 +1599,7 @@ paths:
           description: Agent not found
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/async/:
     post:
-      operationId: v1_agents_run_versions_async_create
+      operationId: agents_run_versions_async_create
       description: Run agent version asynchronously. Returns agent job id which can
         be used to check status and get results.
       parameters:
@@ -1626,7 +1624,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - agents
       - sdk
       requestBody:
         content:
@@ -1703,7 +1701,7 @@ paths:
           description: Internal server error
   /v1/policies/:
     get:
-      operationId: v1_policies_list
+      operationId: policies_list
       description: List all policies and create a new policy
       parameters:
       - name: ordering
@@ -1739,7 +1737,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       responses:
         '200':
@@ -1749,10 +1747,10 @@ paths:
                 $ref: '#/components/schemas/PaginatedPolicyList'
           description: ''
     post:
-      operationId: v1_policies_create
+      operationId: policies_create
       description: List all policies and create a new policy
       tags:
-      - v1
+      - policies
       - sdk
       requestBody:
         content:
@@ -1784,7 +1782,7 @@ paths:
           be provided via query or request body depending on the endpoint.
   /v1/policies/{id}/:
     get:
-      operationId: v1_policies_retrieve
+      operationId: policies_retrieve
       description: Retrieve, update, or delete a single policy by ID
       parameters:
       - in: path
@@ -1802,7 +1800,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       responses:
         '200':
@@ -1812,7 +1810,7 @@ paths:
                 $ref: '#/components/schemas/Policy'
           description: ''
     put:
-      operationId: v1_policies_update
+      operationId: policies_update
       description: Retrieve, update, or delete a single policy by ID
       parameters:
       - in: path
@@ -1830,7 +1828,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       requestBody:
         content:
@@ -1852,7 +1850,7 @@ paths:
                 $ref: '#/components/schemas/UpdatePolicy'
           description: ''
     patch:
-      operationId: v1_policies_partial_update
+      operationId: policies_partial_update
       description: Retrieve, update, or delete a single policy by ID
       parameters:
       - in: path
@@ -1870,7 +1868,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       requestBody:
         content:
@@ -1891,7 +1889,7 @@ paths:
                 $ref: '#/components/schemas/UpdatePolicy'
           description: ''
     delete:
-      operationId: v1_policies_destroy
+      operationId: policies_destroy
       description: Retrieve, update, or delete a single policy by ID
       parameters:
       - in: path
@@ -1909,14 +1907,14 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       responses:
         '204':
           description: No response body
   /v1/policies/{policy_id}/versions/:
     get:
-      operationId: v1_policies_versions_list
+      operationId: policies_versions_list
       description: Create a new policy version or list all versions of a specific
         policy
       parameters:
@@ -1947,7 +1945,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       responses:
         '200':
@@ -1957,7 +1955,7 @@ paths:
                 $ref: '#/components/schemas/PaginatedPolicyVersionList'
           description: ''
     post:
-      operationId: v1_policies_versions_create
+      operationId: policies_versions_create
       description: Create a new policy version or list all versions of a specific
         policy
       parameters:
@@ -1976,7 +1974,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       requestBody:
         content:
@@ -1999,10 +1997,10 @@ paths:
           description: ''
   /v1/policies/{policy_id}/versions/{version_id}/:
     get:
-      operationId: v1_policies_versions_retrieve
-      description: 'Get a specific policy version by policy_id and version_id.
-
-        Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/'
+      operationId: policies_versions_retrieve
+      description: |-
+        Get a specific policy version by policy_id and version_id.
+        Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
       parameters:
       - in: path
         name: policy_id
@@ -2025,7 +2023,7 @@ paths:
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
       tags:
-      - v1
+      - policies
       - sdk
       responses:
         '200':
@@ -2036,9 +2034,9 @@ paths:
           description: ''
   /v1/users/current_user/:
     get:
-      operationId: v1_users_current_user_retrieve
+      operationId: users_current_user_retrieve
       tags:
-      - v1
+      - users
       - sdk
       responses:
         '200':
@@ -2777,15 +2775,12 @@ components:
       - updated_at
     PolicyVersion:
       type: object
-      description: 'Policy version serializer for public API.
-
+      description: |-
+        Policy version serializer for public API.
 
         Exposes auto-generated structure IDs (category/rule/sub-rule IDs) in responses
-
-        so users can reference specific rules. IDs are immutable - any IDs provided
-        in
-
-        create/update requests are ignored and regenerated by the backend.'
+        so users can reference specific rules. IDs are immutable - any IDs provided in
+        create/update requests are ignored and regenerated by the backend.
       properties:
         id:
           type: string
@@ -2915,11 +2910,6 @@ components:
       - display_name
       - email
       - id
-  securitySchemes:
-    jwtAuth:
-      type: http
-      scheme: bearer
-      bearerFormat: JWT
 servers:
 - url: https://api.roe-ai.com
   description: Production API
