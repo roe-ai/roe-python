@@ -66,16 +66,23 @@ result["error_message"]  # Error string or None — set by Job.wait()
 
 ## Raw API Access
 
-The generated raw client is exposed as `client.raw`, and the generated package is available under `roe._generated`:
+When the ergonomic wrappers don't expose an endpoint you need, the generated
+client is available as `client.raw` and the operation modules live under
+`roe._generated.api.<tag>.<operation_id>`. Submodule names follow the
+upstream OpenAPI tags + `operationId`s and may shift across releases, so the
+portable form uses `client.raw.get_httpx_client()` to send a request through
+the same auth-configured `httpx.Client`:
 
 ```python
 from roe import RoeClient
-from roe._generated.api.v1 import v1_users_current_user_retrieve
 
 client = RoeClient(api_key="your-api-key", organization_id="your-org-uuid")
-response = v1_users_current_user_retrieve.sync_detailed(client=client.raw)
+response = client.raw.get_httpx_client().get("/v1/users/current_user/")
 print(response.status_code)
 ```
+
+For typed request/response models, call the generated operation module
+directly — see `roe/_generated/api/` for the current surface.
 
 ## Agent Examples
 
