@@ -64,6 +64,34 @@ result["status"]         # JobStatus code (int) — set by Job.wait()
 result["error_message"]  # Error string or None — set by Job.wait()
 ```
 
+## Errors
+
+Non-2xx responses raise typed exceptions from `roe.exceptions`, all
+subclasses of `RoeAPIException`. Use them to handle expected failures
+without parsing error strings:
+
+```python
+from roe.exceptions import (
+    RoeAPIException,
+    BadRequestError,            # 400 — validation / bad input
+    AuthenticationError,        # 401 — missing or invalid API key
+    InsufficientCreditsError,   # 402 — plan limit / billing
+    ForbiddenError,             # 403 — feature or resource forbidden
+    NotFoundError,              # 404 — resource not found
+    ServerError,                # 5xx — server-side
+)
+
+try:
+    client.agents.retrieve("00000000-0000-0000-0000-000000000000")
+except NotFoundError as exc:
+    print(exc.status_code, exc.message)
+```
+
+`job.wait()` does not raise on agent-side failures — instead the returned
+result carries `result["status"] == JobStatus.FAILURE` and
+`result["error_message"]`. Transport / HTTP errors hit the typed
+hierarchy above.
+
 ## Raw API Access
 
 When the ergonomic wrappers don't expose an endpoint you need, the generated
@@ -563,7 +591,12 @@ client.agents.update("uuid", name="New Name")
 client.agents.delete("uuid")
 
 # Duplicate
-new_agent = client.agents.duplicate("uuid")
+#
+# Note: client.agents.duplicate(...) returns an AgentVersion (the new agent's
+# first version), not a BaseAgent. The new agent's ID is not on the returned
+# object — to capture it, list agents before and after and diff the IDs, or
+# read it from the duplicated version's parent reference if present:
+duplicated_version = client.agents.duplicate("uuid")
 ```
 
 ## Version Management
@@ -612,30 +645,27 @@ client.agents.jobs.delete_data(job_id)
 
 | Model | Value |
 |-------|-------|
+| GPT-5.4 Pro | `gpt-5.4-pro-2026-03-05` |
 | GPT-5.4 | `gpt-5.4-2026-03-05` |
+| GPT-5.4 Mini | `gpt-5.4-mini-2026-03-17` |
+| GPT-5.4 Nano | `gpt-5.4-nano-2026-03-17` |
 | GPT-5.2 | `gpt-5.2-2025-12-11` |
-| GPT-5.1 | `gpt-5.1-2025-11-13` |
 | GPT-5 | `gpt-5-2025-08-07` |
-| GPT-5 Mini | `gpt-5-mini-2025-08-07` |
 | GPT-4.1 | `gpt-4.1-2025-04-14` |
-| GPT-4.1 Mini | `gpt-4.1-mini-2025-04-14` |
-| O3 Pro | `o3-pro-2025-06-10` |
-| O3 | `o3-2025-04-16` |
-| O4 Mini | `o4-mini-2025-04-16` |
+| Claude Opus 4.7 | `claude-opus-4-7` |
 | Claude Opus 4.6 | `claude-opus-4-6` |
 | Claude Sonnet 4.6 | `claude-sonnet-4-6` |
-| Claude Opus 4.5 | `claude-opus-4-5-20251101` |
-| Claude Sonnet 4.5 | `claude-sonnet-4-5-20250929` |
-| Claude Opus 4.1 | `claude-opus-4-1-20250805` |
-| Claude Opus 4 | `claude-opus-4-20250514` |
-| Claude Sonnet 4 | `claude-sonnet-4-20250514` |
 | Claude Haiku 4.5 | `claude-haiku-4-5-20251001` |
-| Gemini 3 Pro | `gemini-3-pro-preview` |
+| Gemini 3.1 Pro | `gemini-3.1-pro-preview` |
 | Gemini 3 Flash | `gemini-3-flash-preview` |
-| Gemini 2.5 Pro | `gemini-2.5-pro` |
-| Gemini 2.5 Flash | `gemini-2.5-flash` |
-| Grok 4 | `grok-4-0709` |
-| Grok 4.1 Fast Reasoning | `grok-4-1-fast-reasoning` |
+| Grok 4.20 Reasoning | `grok-4.20-0309-reasoning` |
+
+The canonical source for currently-supported vs deprecated model strings is
+`roe-llm/src/roe_llm/defs.py` (`DEPRECATED_MODELS`) in the platform repo.
+Mini / nano / 4o / o-series / Gemini 2.5 / Gemini 3 Pro / Claude 4.5 and
+older / Grok 4 and 4.1 rows were dropped from this table because new agents
+referencing them fail with `400: Model is deprecated and not allowed for
+new agents`.
 
 ## Engine Classes
 
