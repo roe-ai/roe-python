@@ -660,13 +660,6 @@ client.agents.jobs.delete_data(job_id)
 | Gemini 3 Flash | `gemini-3-flash-preview` |
 | Grok 4.20 Reasoning | `grok-4.20-0309-reasoning` |
 
-The canonical source for currently-supported vs deprecated model strings is
-`roe-llm/src/roe_llm/defs.py` (`DEPRECATED_MODELS`) in the platform repo.
-Mini / nano / 4o / o-series / Gemini 2.5 / Gemini 3 Pro / Claude 4.5 and
-older / Grok 4 and 4.1 rows were dropped from this table because new agents
-referencing them fail with `400: Model is deprecated and not allowed for
-new agents`.
-
 ## Engine Classes
 
 | Engine | ID |
