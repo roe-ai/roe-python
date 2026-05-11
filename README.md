@@ -593,10 +593,10 @@ client.agents.delete("uuid")
 # Duplicate
 #
 # Note: client.agents.duplicate(...) returns an AgentVersion (the new agent's
-# first version), not a BaseAgent. The new agent's ID is not on the returned
-# object — to capture it, list agents before and after and diff the IDs, or
-# read it from the duplicated version's parent reference if present:
+# first version), not a BaseAgent. The new agent's ID is reachable on the
+# returned object as `.base_agent.id`:
 duplicated_version = client.agents.duplicate("uuid")
+new_agent_id = duplicated_version.base_agent.id
 ```
 
 ## Version Management
