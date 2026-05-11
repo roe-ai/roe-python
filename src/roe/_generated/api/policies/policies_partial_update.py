@@ -8,8 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.create_policy import CreatePolicy
-from ...models.create_policy_request import CreatePolicyRequest
+from ...models.patched_update_policy_request import PatchedUpdatePolicyRequest
+from ...models.update_policy import UpdatePolicy
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -17,8 +17,9 @@ from uuid import UUID
 
 
 def _get_kwargs(
+    id: UUID,
     *,
-    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
+    body: PatchedUpdatePolicyRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -39,38 +40,28 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/v1/policies/",
+        "method": "patch",
+        "url": "/v1/policies/{id}/".format(id=quote(str(id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, CreatePolicyRequest):
+    
+    if not isinstance(body, Unset):
         _kwargs["json"] = body.to_dict()
-
-
         headers["Content-Type"] = "application/json"
-    if isinstance(body, CreatePolicyRequest):
-        _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, CreatePolicyRequest):
-        _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CreatePolicy | None:
-    if response.status_code == 201:
-        response_201 = CreatePolicy.from_dict(response.json())
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> UpdatePolicy | None:
+    if response.status_code == 200:
+        response_200 = UpdatePolicy.from_dict(response.json())
 
 
 
-        return response_201
+        return response_200
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -78,7 +69,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CreatePolicy]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[UpdatePolicy]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -88,31 +79,33 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
+    body: PatchedUpdatePolicyRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[CreatePolicy]:
-    """  List all policies and create a new policy
+) -> Response[UpdatePolicy]:
+    """  Retrieve, update, or delete a single policy by ID
 
     Args:
+        id (UUID):
         organization_id (UUID | Unset):
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
+            description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CreatePolicy]
+        Response[UpdatePolicy]
      """
 
 
     kwargs = _get_kwargs(
-        body=body,
+        id=id,
+body=body,
 organization_id=organization_id,
 
     )
@@ -124,62 +117,66 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
+    body: PatchedUpdatePolicyRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> CreatePolicy | None:
-    """  List all policies and create a new policy
+) -> UpdatePolicy | None:
+    """  Retrieve, update, or delete a single policy by ID
 
     Args:
+        id (UUID):
         organization_id (UUID | Unset):
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
+            description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CreatePolicy
+        UpdatePolicy
      """
 
 
     return sync_detailed(
-        client=client,
+        id=id,
+client=client,
 body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
+    body: PatchedUpdatePolicyRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[CreatePolicy]:
-    """  List all policies and create a new policy
+) -> Response[UpdatePolicy]:
+    """  Retrieve, update, or delete a single policy by ID
 
     Args:
+        id (UUID):
         organization_id (UUID | Unset):
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
+            description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CreatePolicy]
+        Response[UpdatePolicy]
      """
 
 
     kwargs = _get_kwargs(
-        body=body,
+        id=id,
+body=body,
 organization_id=organization_id,
 
     )
@@ -191,31 +188,33 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
+    body: PatchedUpdatePolicyRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> CreatePolicy | None:
-    """  List all policies and create a new policy
+) -> UpdatePolicy | None:
+    """  Retrieve, update, or delete a single policy by ID
 
     Args:
+        id (UUID):
         organization_id (UUID | Unset):
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
-        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
+            description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CreatePolicy
+        UpdatePolicy
      """
 
 
     return (await asyncio_detailed(
-        client=client,
+        id=id,
+client=client,
 body=body,
 organization_id=organization_id,
 

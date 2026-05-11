@@ -9,8 +9,8 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.base_agent import BaseAgent
-from ...models.base_agent_create_request import BaseAgentCreateRequest
 from ...models.error_response import ErrorResponse
+from ...models.patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -18,8 +18,9 @@ from uuid import UUID
 
 
 def _get_kwargs(
+    agent_id: UUID,
     *,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: PatchedBaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -40,25 +41,15 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/v1/agents/",
+        "method": "patch",
+        "url": "/v1/agents/{agent_id}/".format(agent_id=quote(str(agent_id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, BaseAgentCreateRequest):
+    
+    if not isinstance(body, Unset):
         _kwargs["json"] = body.to_dict()
-
-
         headers["Content-Type"] = "application/json"
-    if isinstance(body, BaseAgentCreateRequest):
-        _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, BaseAgentCreateRequest):
-        _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -66,12 +57,12 @@ def _get_kwargs(
 
 
 def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BaseAgent | ErrorResponse | None:
-    if response.status_code == 201:
-        response_201 = BaseAgent.from_dict(response.json())
+    if response.status_code == 200:
+        response_200 = BaseAgent.from_dict(response.json())
 
 
 
-        return response_201
+        return response_200
 
     if response.status_code == 400:
         response_400 = ErrorResponse.from_dict(response.json())
@@ -86,6 +77,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
         return response_403
+
+    if response.status_code == 404:
+        response_404 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_404
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -103,24 +101,21 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
+    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: PatchedBaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
-    """ Create a new base agent.
+    """ Partially update an agent.
 
-     Create a new base agent.
+     Partially update details of a specific base agent.
 
     Args:
+        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
+        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -132,7 +127,8 @@ def sync_detailed(
 
 
     kwargs = _get_kwargs(
-        body=body,
+        agent_id=agent_id,
+body=body,
 organization_id=organization_id,
 
     )
@@ -144,24 +140,21 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
+    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: PatchedBaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
-    """ Create a new base agent.
+    """ Partially update an agent.
 
-     Create a new base agent.
+     Partially update details of a specific base agent.
 
     Args:
+        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
+        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -173,31 +166,29 @@ def sync(
 
 
     return sync_detailed(
-        client=client,
+        agent_id=agent_id,
+client=client,
 body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
+    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: PatchedBaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[BaseAgent | ErrorResponse]:
-    """ Create a new base agent.
+    """ Partially update an agent.
 
-     Create a new base agent.
+     Partially update details of a specific base agent.
 
     Args:
+        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
+        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -209,7 +200,8 @@ async def asyncio_detailed(
 
 
     kwargs = _get_kwargs(
-        body=body,
+        agent_id=agent_id,
+body=body,
 organization_id=organization_id,
 
     )
@@ -221,24 +213,21 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
+    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    BaseAgentCreateRequest  |     BaseAgentCreateRequest  |     BaseAgentCreateRequest  | Unset = UNSET,
+    body: PatchedBaseAgentUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> BaseAgent | ErrorResponse | None:
-    """ Create a new base agent.
+    """ Partially update an agent.
 
-     Create a new base agent.
+     Partially update details of a specific base agent.
 
     Args:
+        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
-        body (BaseAgentCreateRequest): Serializer for creating base agents with proper JSON field
-            handling
+        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -250,7 +239,8 @@ async def asyncio(
 
 
     return (await asyncio_detailed(
-        client=client,
+        agent_id=agent_id,
+client=client,
 body=body,
 organization_id=organization_id,
 

@@ -5,8 +5,6 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-import json
-from .. import types
 
 from ..types import UNSET, Unset
 
@@ -61,32 +59,6 @@ class PatchedBaseAgentUpdateRequest:
 
         return field_dict
 
-
-    def to_multipart(self) -> types.RequestFiles:
-        files: types.RequestFiles = []
-
-        if not isinstance(self.name, Unset):
-            files.append(("name", (None, str(self.name).encode(), "text/plain")))
-
-
-
-        if not isinstance(self.disable_cache, Unset):
-            files.append(("disable_cache", (None, str(self.disable_cache).encode(), "text/plain")))
-
-
-
-        if not isinstance(self.cache_failed_jobs, Unset):
-            files.append(("cache_failed_jobs", (None, str(self.cache_failed_jobs).encode(), "text/plain")))
-
-
-
-
-        for prop_name, prop in self.additional_properties.items():
-            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
-
-
-
-        return files
 
 
     @classmethod

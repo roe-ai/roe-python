@@ -8,8 +8,9 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.update_policy import UpdatePolicy
-from ...models.update_policy_request import UpdatePolicyRequest
+from ...models.agent_job_status import AgentJobStatus
+from ...models.agent_job_status_many_request_request import AgentJobStatusManyRequestRequest
+from ...models.error_response import ErrorResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -17,9 +18,8 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    id: UUID,
     *,
-    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -40,38 +40,47 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "put",
-        "url": "/v1/policies/{id}/".format(id=quote(str(id), safe=""),),
+        "method": "post",
+        "url": "/v1/agents/jobs/statuses/",
         "params": params,
     }
 
-    if isinstance(body, UpdatePolicyRequest):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
 
-        headers["Content-Type"] = "application/json"
-    if isinstance(body, UpdatePolicyRequest):
-        _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, UpdatePolicyRequest):
-        _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
+    headers["Content-Type"] = "application/json"
 
     _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> UpdatePolicy | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | list[AgentJobStatus] | None:
     if response.status_code == 200:
-        response_200 = UpdatePolicy.from_dict(response.json())
+        response_200 = []
+        _response_200 = response.json()
+        for response_200_item_data in (_response_200):
+            response_200_item = AgentJobStatus.from_dict(response_200_item_data)
 
 
+
+            response_200.append(response_200_item)
 
         return response_200
+
+    if response.status_code == 400:
+        response_400 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_400
+
+    if response.status_code == 403:
+        response_403 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_403
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -79,7 +88,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[UpdatePolicy]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | list[AgentJobStatus]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -89,34 +98,31 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[UpdatePolicy]:
-    """  Retrieve, update, or delete a single policy by ID
+) -> Response[ErrorResponse | list[AgentJobStatus]]:
+    """ Get status for multiple agent jobs
+
+     Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
-        id (UUID):
         organization_id (UUID | Unset):
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[UpdatePolicy]
+        Response[ErrorResponse | list[AgentJobStatus]]
      """
 
 
     kwargs = _get_kwargs(
-        id=id,
-body=body,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -128,68 +134,62 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> UpdatePolicy | None:
-    """  Retrieve, update, or delete a single policy by ID
+) -> ErrorResponse | list[AgentJobStatus] | None:
+    """ Get status for multiple agent jobs
+
+     Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
-        id (UUID):
         organization_id (UUID | Unset):
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        UpdatePolicy
+        ErrorResponse | list[AgentJobStatus]
      """
 
 
     return sync_detailed(
-        id=id,
-client=client,
+        client=client,
 body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
-    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[UpdatePolicy]:
-    """  Retrieve, update, or delete a single policy by ID
+) -> Response[ErrorResponse | list[AgentJobStatus]]:
+    """ Get status for multiple agent jobs
+
+     Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
-        id (UUID):
         organization_id (UUID | Unset):
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[UpdatePolicy]
+        Response[ErrorResponse | list[AgentJobStatus]]
      """
 
 
     kwargs = _get_kwargs(
-        id=id,
-body=body,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -201,34 +201,31 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> UpdatePolicy | None:
-    """  Retrieve, update, or delete a single policy by ID
+) -> ErrorResponse | list[AgentJobStatus] | None:
+    """ Get status for multiple agent jobs
+
+     Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
-        id (UUID):
         organization_id (UUID | Unset):
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
-        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        UpdatePolicy
+        ErrorResponse | list[AgentJobStatus]
      """
 
 
     return (await asyncio_detailed(
-        id=id,
-client=client,
+        client=client,
 body=body,
 organization_id=organization_id,
 

@@ -18,8 +18,9 @@ from uuid import UUID
 
 def _get_kwargs(
     agent_id: UUID,
+    agent_version_id: UUID,
     *,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -41,28 +42,14 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/agents/run/{agent_id}/async/".format(agent_id=quote(str(agent_id), safe=""),),
+        "url": "/v1/agents/run/{agent_id}/versions/{agent_version_id}/async/".format(agent_id=quote(str(agent_id), safe=""),agent_version_id=quote(str(agent_version_id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, AgentExecutionRequestRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
-
-
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
         headers["Content-Type"] = "application/json"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -126,21 +113,20 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     agent_id: UUID,
+    agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | str]:
-    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
+    """  Run agent version asynchronously. Returns agent job id which can be used to check status and get
+    results.
 
     Args:
         agent_id (UUID):
+        agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -155,6 +141,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         agent_id=agent_id,
+agent_version_id=agent_version_id,
 body=body,
 organization_id=organization_id,
 
@@ -168,21 +155,20 @@ organization_id=organization_id,
 
 def sync(
     agent_id: UUID,
+    agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | str | None:
-    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
+    """  Run agent version asynchronously. Returns agent job id which can be used to check status and get
+    results.
 
     Args:
         agent_id (UUID):
+        agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -197,6 +183,7 @@ def sync(
 
     return sync_detailed(
         agent_id=agent_id,
+agent_version_id=agent_version_id,
 client=client,
 body=body,
 organization_id=organization_id,
@@ -205,21 +192,20 @@ organization_id=organization_id,
 
 async def asyncio_detailed(
     agent_id: UUID,
+    agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | str]:
-    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
+    """  Run agent version asynchronously. Returns agent job id which can be used to check status and get
+    results.
 
     Args:
         agent_id (UUID):
+        agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -234,6 +220,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         agent_id=agent_id,
+agent_version_id=agent_version_id,
 body=body,
 organization_id=organization_id,
 
@@ -247,21 +234,20 @@ organization_id=organization_id,
 
 async def asyncio(
     agent_id: UUID,
+    agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | str | None:
-    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
+    """  Run agent version asynchronously. Returns agent job id which can be used to check status and get
+    results.
 
     Args:
         agent_id (UUID):
+        agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -276,6 +262,7 @@ async def asyncio(
 
     return (await asyncio_detailed(
         agent_id=agent_id,
+agent_version_id=agent_version_id,
 client=client,
 body=body,
 organization_id=organization_id,

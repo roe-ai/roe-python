@@ -8,7 +8,6 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_datum import AgentDatum
 from ...models.agent_execution_request_request import AgentExecutionRequestRequest
 from ...models.error_response import ErrorResponse
 from ...types import UNSET, Unset
@@ -20,7 +19,7 @@ from uuid import UUID
 def _get_kwargs(
     agent_id: UUID,
     *,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -42,45 +41,23 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/agents/run/{agent_id}/".format(agent_id=quote(str(agent_id), safe=""),),
+        "url": "/v1/agents/run/{agent_id}/async/".format(agent_id=quote(str(agent_id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, AgentExecutionRequestRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
-
-
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
         headers["Content-Type"] = "application/json"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | list[AgentDatum] | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | str | None:
     if response.status_code == 200:
-        response_200 = []
-        _response_200 = response.json()
-        for response_200_item_data in (_response_200):
-            response_200_item = AgentDatum.from_dict(response_200_item_data)
-
-
-
-            response_200.append(response_200_item)
-
+        response_200 = cast(str, response.json())
         return response_200
 
     if response.status_code == 400:
@@ -111,13 +88,20 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_404
 
+    if response.status_code == 500:
+        response_500 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_500
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | list[AgentDatum]]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | str]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -130,21 +114,15 @@ def sync_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | list[AgentDatum]]:
-    """ Run agent synchronously
-
-     Execute an agent with provided inputs and return results immediately.
+) -> Response[ErrorResponse | str]:
+    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -153,7 +131,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | list[AgentDatum]]
+        Response[ErrorResponse | str]
      """
 
 
@@ -174,21 +152,15 @@ def sync(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | list[AgentDatum] | None:
-    """ Run agent synchronously
-
-     Execute an agent with provided inputs and return results immediately.
+) -> ErrorResponse | str | None:
+    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -197,7 +169,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | list[AgentDatum]
+        ErrorResponse | str
      """
 
 
@@ -213,21 +185,15 @@ async def asyncio_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | list[AgentDatum]]:
-    """ Run agent synchronously
-
-     Execute an agent with provided inputs and return results immediately.
+) -> Response[ErrorResponse | str]:
+    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -236,7 +202,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | list[AgentDatum]]
+        Response[ErrorResponse | str]
      """
 
 
@@ -257,21 +223,15 @@ async def asyncio(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | list[AgentDatum] | None:
-    """ Run agent synchronously
-
-     Execute an agent with provided inputs and return results immediately.
+) -> ErrorResponse | str | None:
+    """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -280,7 +240,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | list[AgentDatum]
+        ErrorResponse | str
      """
 
 

@@ -8,9 +8,9 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.base_agent import BaseAgent
+from ...models.agent_datum import AgentDatum
+from ...models.agent_execution_request_request import AgentExecutionRequestRequest
 from ...models.error_response import ErrorResponse
-from ...models.patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -20,7 +20,7 @@ from uuid import UUID
 def _get_kwargs(
     agent_id: UUID,
     *,
-    body:    PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -41,40 +41,31 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "patch",
-        "url": "/v1/agents/{agent_id}/".format(agent_id=quote(str(agent_id), safe=""),),
+        "method": "post",
+        "url": "/v1/agents/run/{agent_id}/".format(agent_id=quote(str(agent_id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, PatchedBaseAgentUpdateRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
-
-
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
         headers["Content-Type"] = "application/json"
-    if isinstance(body, PatchedBaseAgentUpdateRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, PatchedBaseAgentUpdateRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BaseAgent | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | list[AgentDatum] | None:
     if response.status_code == 200:
-        response_200 = BaseAgent.from_dict(response.json())
+        response_200 = []
+        _response_200 = response.json()
+        for response_200_item_data in (_response_200):
+            response_200_item = AgentDatum.from_dict(response_200_item_data)
 
 
+
+            response_200.append(response_200_item)
 
         return response_200
 
@@ -84,6 +75,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
         return response_400
+
+    if response.status_code == 402:
+        response_402 = ErrorResponse.from_dict(response.json())
+
+
+
+        return response_402
 
     if response.status_code == 403:
         response_403 = ErrorResponse.from_dict(response.json())
@@ -105,7 +103,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BaseAgent | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | list[AgentDatum]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -118,27 +116,26 @@ def sync_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[BaseAgent | ErrorResponse]:
-    """ Partially update an agent.
+) -> Response[ErrorResponse | list[AgentDatum]]:
+    """ Run agent synchronously
 
-     Partially update details of a specific base agent.
+     Execute an agent with provided inputs and return results immediately.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
+        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
+            dynamic input fields.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BaseAgent | ErrorResponse]
+        Response[ErrorResponse | list[AgentDatum]]
      """
 
 
@@ -159,27 +156,26 @@ def sync(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> BaseAgent | ErrorResponse | None:
-    """ Partially update an agent.
+) -> ErrorResponse | list[AgentDatum] | None:
+    """ Run agent synchronously
 
-     Partially update details of a specific base agent.
+     Execute an agent with provided inputs and return results immediately.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
+        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
+            dynamic input fields.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BaseAgent | ErrorResponse
+        ErrorResponse | list[AgentDatum]
      """
 
 
@@ -195,27 +191,26 @@ async def asyncio_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[BaseAgent | ErrorResponse]:
-    """ Partially update an agent.
+) -> Response[ErrorResponse | list[AgentDatum]]:
+    """ Run agent synchronously
 
-     Partially update details of a specific base agent.
+     Execute an agent with provided inputs and return results immediately.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
+        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
+            dynamic input fields.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BaseAgent | ErrorResponse]
+        Response[ErrorResponse | list[AgentDatum]]
      """
 
 
@@ -236,27 +231,26 @@ async def asyncio(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  |     PatchedBaseAgentUpdateRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> BaseAgent | ErrorResponse | None:
-    """ Partially update an agent.
+) -> ErrorResponse | list[AgentDatum] | None:
+    """ Run agent synchronously
 
-     Partially update details of a specific base agent.
+     Execute an agent with provided inputs and return results immediately.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
-        body (PatchedBaseAgentUpdateRequest | Unset): Serializer for updating BaseAgent
+        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
+            dynamic input fields.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BaseAgent | ErrorResponse
+        ErrorResponse | list[AgentDatum]
      """
 
 

@@ -8,8 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.patched_update_policy_request import PatchedUpdatePolicyRequest
 from ...models.update_policy import UpdatePolicy
+from ...models.update_policy_request import UpdatePolicyRequest
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -19,7 +19,7 @@ from uuid import UUID
 def _get_kwargs(
     id: UUID,
     *,
-    body:    PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  | Unset = UNSET,
+    body: UpdatePolicyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -40,29 +40,15 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "patch",
+        "method": "put",
         "url": "/v1/policies/{id}/".format(id=quote(str(id), safe=""),),
         "params": params,
     }
 
-    if isinstance(body, PatchedUpdatePolicyRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
 
-        headers["Content-Type"] = "application/json"
-    if isinstance(body, PatchedUpdatePolicyRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, PatchedUpdatePolicyRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
+    headers["Content-Type"] = "application/json"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -96,7 +82,7 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  | Unset = UNSET,
+    body: UpdatePolicyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[UpdatePolicy]:
@@ -105,12 +91,7 @@ def sync_detailed(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -138,7 +119,7 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  | Unset = UNSET,
+    body: UpdatePolicyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> UpdatePolicy | None:
@@ -147,12 +128,7 @@ def sync(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -175,7 +151,7 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  | Unset = UNSET,
+    body: UpdatePolicyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[UpdatePolicy]:
@@ -184,12 +160,7 @@ async def asyncio_detailed(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -217,7 +188,7 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  |     PatchedUpdatePolicyRequest  | Unset = UNSET,
+    body: UpdatePolicyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> UpdatePolicy | None:
@@ -226,12 +197,7 @@ async def asyncio(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
-        body (PatchedUpdatePolicyRequest | Unset): Serializer for updating policy metadata (name,
-            description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
