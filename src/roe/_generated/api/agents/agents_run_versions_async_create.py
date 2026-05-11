@@ -20,7 +20,7 @@ def _get_kwargs(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -46,24 +46,12 @@ def _get_kwargs(
         "params": params,
     }
 
-    if isinstance(body, AgentExecutionRequestRequest):
-        
-        if not isinstance(body, Unset):
-            _kwargs["json"] = body.to_dict()
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
 
 
-        headers["Content-Type"] = "application/json"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, AgentExecutionRequestRequest):
-        if not isinstance(body, Unset):
-            _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
+    headers["Content-Type"] = "application/json"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -130,7 +118,7 @@ def sync_detailed(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | str]:
@@ -141,10 +129,6 @@ def sync_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -176,7 +160,7 @@ def sync(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | str | None:
@@ -187,10 +171,6 @@ def sync(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -217,7 +197,7 @@ async def asyncio_detailed(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | str]:
@@ -228,10 +208,6 @@ async def asyncio_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 
@@ -263,7 +239,7 @@ async def asyncio(
     agent_version_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  |     AgentExecutionRequestRequest  | Unset = UNSET,
+    body: AgentExecutionRequestRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | str | None:
@@ -274,10 +250,6 @@ async def asyncio(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
         body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
             dynamic input fields.
 

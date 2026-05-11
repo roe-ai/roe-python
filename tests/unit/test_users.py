@@ -35,7 +35,7 @@ def test_users_me_returns_user_info():
     }
 
     with patch(
-        "roe.api.users.v1_users_current_user_retrieve.sync_detailed",
+        "roe.api.users.users_current_user_retrieve.sync_detailed",
         return_value=_fake_response(200, payload),
     ) as mocked:
         user = api.me()
@@ -58,7 +58,7 @@ def test_users_me_via_roe_client_property():
     }
 
     with patch(
-        "roe.api.users.v1_users_current_user_retrieve.sync_detailed",
+        "roe.api.users.users_current_user_retrieve.sync_detailed",
         return_value=_fake_response(200, payload),
     ):
         from roe import RoeClient

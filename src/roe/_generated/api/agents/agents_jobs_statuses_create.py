@@ -19,7 +19,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body:    AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -45,20 +45,10 @@ def _get_kwargs(
         "params": params,
     }
 
-    if isinstance(body, AgentJobStatusManyRequestRequest):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
 
-        headers["Content-Type"] = "application/json"
-    if isinstance(body, AgentJobStatusManyRequestRequest):
-        _kwargs["data"] = body.to_dict()
-
-        headers["Content-Type"] = "application/x-www-form-urlencoded"
-    if isinstance(body, AgentJobStatusManyRequestRequest):
-        _kwargs["files"] = body.to_multipart()
-
-
-        headers["Content-Type"] = "multipart/form-data"
+    headers["Content-Type"] = "application/json"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -110,7 +100,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | list[AgentJobStatus]]:
@@ -120,8 +110,6 @@ def sync_detailed(
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
         body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
@@ -148,7 +136,7 @@ organization_id=organization_id,
 def sync(
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | list[AgentJobStatus] | None:
@@ -158,8 +146,6 @@ def sync(
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
         body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
@@ -181,7 +167,7 @@ organization_id=organization_id,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | list[AgentJobStatus]]:
@@ -191,8 +177,6 @@ async def asyncio_detailed(
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
         body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:
@@ -219,7 +203,7 @@ organization_id=organization_id,
 async def asyncio(
     *,
     client: AuthenticatedClient | Client,
-    body:    AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  |     AgentJobStatusManyRequestRequest  | Unset = UNSET,
+    body: AgentJobStatusManyRequestRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | list[AgentJobStatus] | None:
@@ -229,8 +213,6 @@ async def asyncio(
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
         body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
 
     Raises:

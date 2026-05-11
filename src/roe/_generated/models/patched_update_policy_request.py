@@ -5,8 +5,6 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
-import json
-from .. import types
 
 from ..types import UNSET, Unset
 
@@ -55,27 +53,6 @@ class PatchedUpdatePolicyRequest:
 
         return field_dict
 
-
-    def to_multipart(self) -> types.RequestFiles:
-        files: types.RequestFiles = []
-
-        if not isinstance(self.name, Unset):
-            files.append(("name", (None, str(self.name).encode(), "text/plain")))
-
-
-
-        if not isinstance(self.description, Unset):
-            files.append(("description", (None, str(self.description).encode(), "text/plain")))
-
-
-
-
-        for prop_name, prop in self.additional_properties.items():
-            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
-
-
-
-        return files
 
 
     @classmethod

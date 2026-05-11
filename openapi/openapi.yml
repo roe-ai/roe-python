@@ -24,15 +24,12 @@ paths:
         name: include_job_stats
         schema:
           type: boolean
-        description: 'Include job_count and most_recent_job in response (default:
-          true). Set to false for faster response.'
+        description: 'Include job_count and most_recent_job in response (default: true). Set to false for faster response.'
       - in: query
         name: ordering
         schema:
           type: string
-        description: 'Field to order results by. Prefix with ''-'' for descending.
-          Options: name, created_at, most_recent_job, job_count, engine_class_id,
-          creator.'
+        description: 'Field to order results by. Prefix with ''-'' for descending. Options: name, created_at, most_recent_job, job_count, engine_class_id, creator.'
       - in: query
         name: organization_id
         schema:
@@ -56,8 +53,7 @@ paths:
         name: search
         schema:
           type: string
-        description: Search term to filter agents by name, ID, engine, creator, tags,
-          or version IDs (case-insensitive).
+        description: Search term to filter agents by name, ID, engine, creator, tags, or version IDs (case-insensitive).
       - in: query
         name: tags
         schema:
@@ -86,8 +82,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or organization access
-            denied.
+          description: Access to the Agents feature is forbidden or organization access denied.
         '404':
           content:
             application/json:
@@ -104,12 +99,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/BaseAgentCreateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BaseAgentCreateRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/BaseAgentCreateRequest'
         required: true
@@ -139,8 +128,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
   /v1/agents/{agent_id}/:
     get:
       operationId: agents_retrieve
@@ -160,8 +148,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -196,8 +183,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -222,20 +208,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/BaseAgentUpdateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/BaseAgentUpdateRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/BaseAgentUpdateRequest'
       responses:
@@ -256,8 +235,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -282,20 +260,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
       responses:
@@ -316,8 +287,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -342,8 +312,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -355,8 +324,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to delete this base agent denied or access to Agents
-            feature is forbidden.
+          description: Permission to delete this base agent denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -372,8 +340,7 @@ paths:
   /v1/agents/{agent_id}/duplicate/:
     post:
       operationId: agents_duplicate_create
-      description: Create a new agent with the same attributes as the current version
-        of the specified agent.
+      description: Create a new agent with the same attributes as the current version of the specified agent.
       summary: Duplicate an agent.
       parameters:
       - in: path
@@ -388,8 +355,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -405,8 +371,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -431,8 +396,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -471,8 +435,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -505,8 +468,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -531,20 +493,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentVersionCreateRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentVersionCreateRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentVersionCreateRequest'
         required: true
@@ -583,8 +538,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied.
+          description: Access to the Agents feature is forbidden or permission to access this agent denied.
         '404':
           content:
             application/json:
@@ -622,8 +576,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -639,8 +592,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to access this agent denied or access to Agents
-            feature is forbidden.
+          description: Permission to access this agent denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -649,8 +601,7 @@ paths:
           description: Agent version not found.
     put:
       operationId: agents_versions_update
-      description: Update details of a specific agent version (only version name and
-        description).
+      description: Update details of a specific agent version (only version name and description).
       summary: Update an agent version.
       parameters:
       - in: path
@@ -673,20 +624,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
       responses:
@@ -697,8 +641,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to access this agent denied or access to Agents
-            feature is forbidden.
+          description: Permission to access this agent denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -707,8 +650,7 @@ paths:
           description: Agent version not found.
     patch:
       operationId: agents_versions_partial_update
-      description: Partially update details of a specific agent version (only version
-        name and description).
+      description: Partially update details of a specific agent version (only version name and description).
       summary: Partially update an agent version.
       parameters:
       - in: path
@@ -731,20 +673,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
       responses:
@@ -755,8 +690,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to access this agent denied or access to Agents
-            feature is forbidden.
+          description: Permission to access this agent denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -788,8 +722,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -801,8 +734,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to delete this agent version denied or access to
-            Agents feature is forbidden.
+          description: Permission to delete this agent version denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -833,8 +765,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -894,8 +825,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Permission to access this agent denied or access to Agents
-            feature is forbidden.
+          description: Permission to access this agent denied or access to Agents feature is forbidden.
         '404':
           content:
             application/json:
@@ -905,12 +835,13 @@ paths:
   /v1/agents/jobs/{agent_job_id}/references/{resource_id}/:
     get:
       operationId: agents_jobs_references_retrieve
-      description: |-
-        Token-authenticated proxy view for serving web resource references from S3.
+      description: 'Token-authenticated proxy view for serving web resource references from S3.
+
 
         Uses Organization API Key authentication (for external API consumers).
 
-        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/
+
+        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/'
       parameters:
       - in: path
         name: agent_job_id
@@ -929,8 +860,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -954,8 +884,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -992,8 +921,7 @@ paths:
                 Example:
                   value:
                     error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent job denied
+          description: Access to the Agents feature is forbidden or permission to access this agent job denied
         '404':
           content:
             application/json:
@@ -1032,8 +960,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -1056,9 +983,7 @@ paths:
   /v1/agents/jobs/{job_id}/delete-data/:
     post:
       operationId: agents_jobs_delete_data_create
-      description: Delete uploaded inputs from S3, sanitize stored blob data (outputs,
-        steps, logs, trace), and delete workflow artifacts for an agent job without
-        removing DB metadata.
+      description: Delete uploaded inputs from S3, sanitize stored blob data (outputs, steps, logs, trace), and delete workflow artifacts for an agent job without removing DB metadata.
       summary: Delete agent job data
       parameters:
       - in: path
@@ -1073,8 +998,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -1127,8 +1051,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -1149,8 +1072,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent job denied
+          description: Access to the Agents feature is forbidden or permission to access this agent job denied
         '404':
           content:
             application/json:
@@ -1160,8 +1082,7 @@ paths:
   /v1/agents/jobs/results/:
     post:
       operationId: agents_jobs_results_create
-      description: Retrieve the detailed results for multiple agent jobs by providing
-        a list of job IDs
+      description: Retrieve the detailed results for multiple agent jobs by providing a list of job IDs
       summary: Get results for multiple agent jobs
       tags:
       - agents
@@ -1169,12 +1090,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
         required: true
@@ -1204,13 +1119,11 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
   /v1/agents/jobs/statuses/:
     post:
       operationId: agents_jobs_statuses_create
-      description: Retrieve the current status for multiple agent jobs by providing
-        a list of job IDs
+      description: Retrieve the current status for multiple agent jobs by providing a list of job IDs
       summary: Get status for multiple agent jobs
       tags:
       - agents
@@ -1218,12 +1131,6 @@ paths:
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
         required: true
@@ -1255,8 +1162,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
   /v1/agents/run/{agent_id}/:
     post:
       operationId: agents_run
@@ -1275,20 +1181,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentExecutionRequestRequest'
       responses:
@@ -1317,8 +1216,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+          description: Access to the Agents feature is forbidden or permission to access this agent denied
         '404':
           content:
             application/json:
@@ -1328,8 +1226,7 @@ paths:
   /v1/agents/run/{agent_id}/async/:
     post:
       operationId: agents_run_async_create
-      description: Run agent asynchronously. Returns agent job id which can be used
-        to check status and get results.
+      description: Run agent asynchronously. Returns agent job id which can be used to check status and get results.
       parameters:
       - in: path
         name: agent_id
@@ -1343,20 +1240,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentExecutionRequestRequest'
       responses:
@@ -1388,8 +1278,7 @@ paths:
                 Example:
                   value:
                     error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+          description: Access to the Agents feature is forbidden or permission to access this agent denied
         '404':
           content:
             application/json:
@@ -1424,8 +1313,7 @@ paths:
   /v1/agents/run/{agent_id}/async/many/:
     post:
       operationId: agents_run_async_many
-      description: Execute an agent with multiple inputs asynchronously and return
-        job IDs for tracking results.
+      description: Execute an agent with multiple inputs asynchronously and return job IDs for tracking results.
       summary: Run agent asynchronously with multiple inputs
       parameters:
       - in: path
@@ -1440,20 +1328,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
         required: true
@@ -1497,8 +1378,7 @@ paths:
                 Forbidden:
                   value:
                     error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+          description: Access to the Agents feature is forbidden or permission to access this agent denied
         '404':
           content:
             application/json:
@@ -1525,8 +1405,7 @@ paths:
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/:
     post:
       operationId: agents_run_version
-      description: Execute a specific agent version with provided inputs and return
-        results immediately.
+      description: Execute a specific agent version with provided inputs and return results immediately.
       summary: Run agent version synchronously
       parameters:
       - in: path
@@ -1547,20 +1426,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentExecutionRequestRequest'
       responses:
@@ -1589,8 +1461,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+          description: Access to the Agents feature is forbidden or permission to access this agent denied
         '404':
           content:
             application/json:
@@ -1600,8 +1471,7 @@ paths:
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/async/:
     post:
       operationId: agents_run_versions_async_create
-      description: Run agent version asynchronously. Returns agent job id which can
-        be used to check status and get results.
+      description: Run agent version asynchronously. Returns agent job id which can be used to check status and get results.
       parameters:
       - in: path
         name: agent_id
@@ -1621,20 +1491,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/AgentExecutionRequestRequest'
       responses:
@@ -1666,8 +1529,7 @@ paths:
                 Example:
                   value:
                     error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+          description: Access to the Agents feature is forbidden or permission to access this agent denied
         '404':
           content:
             application/json:
@@ -1734,8 +1596,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
@@ -1757,12 +1618,6 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/CreatePolicyRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CreatePolicyRequest'
-          multipart/form-data:
-            schema:
-              $ref: '#/components/schemas/CreatePolicyRequest'
         required: true
       responses:
         '201':
@@ -1778,8 +1633,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
   /v1/policies/{id}/:
     get:
       operationId: policies_retrieve
@@ -1797,8 +1651,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
@@ -1825,20 +1678,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/UpdatePolicyRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/UpdatePolicyRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/UpdatePolicyRequest'
         required: true
@@ -1865,20 +1711,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
       responses:
@@ -1904,8 +1743,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
@@ -1915,8 +1753,7 @@ paths:
   /v1/policies/{policy_id}/versions/:
     get:
       operationId: policies_versions_list
-      description: Create a new policy version or list all versions of a specific
-        policy
+      description: Create a new policy version or list all versions of a specific policy
       parameters:
       - name: page
         required: false
@@ -1942,8 +1779,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
@@ -1956,8 +1792,7 @@ paths:
           description: ''
     post:
       operationId: policies_versions_create
-      description: Create a new policy version or list all versions of a specific
-        policy
+      description: Create a new policy version or list all versions of a specific policy
       parameters:
       - in: path
         name: policy_id
@@ -1971,20 +1806,13 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
       requestBody:
         content:
           application/json:
-            schema:
-              $ref: '#/components/schemas/CreatePolicyVersionRequest'
-          application/x-www-form-urlencoded:
-            schema:
-              $ref: '#/components/schemas/CreatePolicyVersionRequest'
-          multipart/form-data:
             schema:
               $ref: '#/components/schemas/CreatePolicyVersionRequest'
         required: true
@@ -1998,9 +1826,9 @@ paths:
   /v1/policies/{policy_id}/versions/{version_id}/:
     get:
       operationId: policies_versions_retrieve
-      description: |-
-        Get a specific policy version by policy_id and version_id.
-        Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
+      description: 'Get a specific policy version by policy_id and version_id.
+
+        Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/'
       parameters:
       - in: path
         name: policy_id
@@ -2020,8 +1848,7 @@ paths:
         schema:
           type: string
           format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
+        description: Organization ID. This is required for access control. It can be provided via query or request body depending on the endpoint.
       tags:
       - policies
       - sdk
@@ -2075,8 +1902,7 @@ components:
         agent_input_key_example:
           type: string
           minLength: 1
-          description: Agent input keys are dynamic based on agent configuration.
-            Can be text or file.
+          description: Agent input keys are dynamic based on agent configuration. Can be text or file.
     AgentInputDefinition:
       type: object
       properties:
@@ -2113,8 +1939,7 @@ components:
           description: Number of input files that failed to delete
         blob_sanitized:
           type: boolean
-          description: Whether blob data (outputs, steps, logs, trace) was successfully
-            sanitized
+          description: Whether blob data (outputs, steps, logs, trace) was successfully sanitized
         artifacts_deleted_count:
           type: integer
           description: Number of workflow artifacts successfully deleted
@@ -2143,8 +1968,7 @@ components:
           type:
           - integer
           - 'null'
-          description: Job status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS,
-            4=FAILURE, 5=CANCELLED, 6=CACHED)
+          description: Job status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)
         result:
           type:
           - array
@@ -2182,8 +2006,7 @@ components:
           - array
           - 'null'
           items: {}
-          description: The input data provided to the agent (full version from blob
-            if available, truncated from DB otherwise)
+          description: The input data provided to the agent (full version from blob if available, truncated from DB otherwise)
         input_tokens:
           type:
           - integer
@@ -2259,8 +2082,7 @@ components:
       properties:
         status:
           type: integer
-          description: 'Status code. 0: PENDING, 1: STARTED, 2: RETRY, 3: SUCCESS,
-            4: FAILURE, 5: CANCELLED, 6: CACHED'
+          description: 'Status code. 0: PENDING, 1: STARTED, 2: RETRY, 3: SUCCESS, 4: FAILURE, 5: CANCELLED, 6: CACHED'
         timestamp:
           type: integer
           description: Unix timestamp in seconds
@@ -2307,8 +2129,7 @@ components:
           readOnly: true
         version_name:
           type: string
-          description: Version name for the agent version. Defaults to 'unnamed version'
-            if not provided.
+          description: Version name for the agent version. Defaults to 'unnamed version' if not provided.
         creator:
           oneOf:
           - $ref: '#/components/schemas/UserInfo'
@@ -2366,8 +2187,7 @@ components:
         version_name:
           type: string
           minLength: 1
-          description: Version name for the agent version. Defaults to 'unnamed version'
-            if not provided.
+          description: Version name for the agent version. Defaults to 'unnamed version' if not provided.
         description:
           type:
           - string
@@ -2775,12 +2595,14 @@ components:
       - updated_at
     PolicyVersion:
       type: object
-      description: |-
-        Policy version serializer for public API.
+      description: 'Policy version serializer for public API.
+
 
         Exposes auto-generated structure IDs (category/rule/sub-rule IDs) in responses
+
         so users can reference specific rules. IDs are immutable - any IDs provided in
-        create/update requests are ignored and regenerated by the backend.
+
+        create/update requests are ignored and regenerated by the backend.'
       properties:
         id:
           type: string
