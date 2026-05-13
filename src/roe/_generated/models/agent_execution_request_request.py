@@ -5,6 +5,8 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+import json
+from .. import types
 
 from ..types import UNSET, Unset
 
@@ -54,6 +56,27 @@ class AgentExecutionRequestRequest:
 
         return field_dict
 
+
+    def to_multipart(self) -> types.RequestFiles:
+        files: types.RequestFiles = []
+
+        if not isinstance(self.metadata, Unset):
+            files.append(("metadata", (None, str(self.metadata).encode(), "text/plain")))
+
+
+
+        if not isinstance(self.agent_input_key_example, Unset):
+            files.append(("agent_input_key_example", (None, str(self.agent_input_key_example).encode(), "text/plain")))
+
+
+
+
+        for prop_name, prop in self.additional_properties.items():
+            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
+
+
+
+        return files
 
 
     @classmethod

@@ -19,7 +19,7 @@ from uuid import UUID
 def _get_kwargs(
     id: UUID,
     *,
-    body: UpdatePolicyRequest,
+    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -45,10 +45,20 @@ def _get_kwargs(
         "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
+    if isinstance(body, UpdatePolicyRequest):
+        _kwargs["json"] = body.to_dict()
 
 
-    headers["Content-Type"] = "application/json"
+        headers["Content-Type"] = "application/json"
+    if isinstance(body, UpdatePolicyRequest):
+        _kwargs["data"] = body.to_dict()
+
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+    if isinstance(body, UpdatePolicyRequest):
+        _kwargs["files"] = body.to_multipart()
+
+
+        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -82,7 +92,7 @@ def sync_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: UpdatePolicyRequest,
+    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[UpdatePolicy]:
@@ -91,6 +101,8 @@ def sync_detailed(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
         body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
@@ -119,7 +131,7 @@ def sync(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: UpdatePolicyRequest,
+    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> UpdatePolicy | None:
@@ -128,6 +140,8 @@ def sync(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
         body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
@@ -151,7 +165,7 @@ async def asyncio_detailed(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: UpdatePolicyRequest,
+    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[UpdatePolicy]:
@@ -160,6 +174,8 @@ async def asyncio_detailed(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
         body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:
@@ -188,7 +204,7 @@ async def asyncio(
     id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: UpdatePolicyRequest,
+    body:    UpdatePolicyRequest  |     UpdatePolicyRequest  |     UpdatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> UpdatePolicy | None:
@@ -197,6 +213,8 @@ async def asyncio(
     Args:
         id (UUID):
         organization_id (UUID | Unset):
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
+        body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
         body (UpdatePolicyRequest): Serializer for updating policy metadata (name, description)
 
     Raises:

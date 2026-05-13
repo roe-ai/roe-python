@@ -19,7 +19,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body: AgentJobResultManyRequestRequest,
+    body:    AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -45,10 +45,20 @@ def _get_kwargs(
         "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
+    if isinstance(body, AgentJobResultManyRequestRequest):
+        _kwargs["json"] = body.to_dict()
 
 
-    headers["Content-Type"] = "application/json"
+        headers["Content-Type"] = "application/json"
+    if isinstance(body, AgentJobResultManyRequestRequest):
+        _kwargs["data"] = body.to_dict()
+
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+    if isinstance(body, AgentJobResultManyRequestRequest):
+        _kwargs["files"] = body.to_multipart()
+
+
+        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -95,7 +105,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    body:    AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | PaginatedAgentJobResultItemList]:
@@ -105,6 +115,8 @@ def sync_detailed(
 
     Args:
         organization_id (UUID | Unset):
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
         body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
 
     Raises:
@@ -131,7 +143,7 @@ organization_id=organization_id,
 def sync(
     *,
     client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    body:    AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | PaginatedAgentJobResultItemList | None:
@@ -141,6 +153,8 @@ def sync(
 
     Args:
         organization_id (UUID | Unset):
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
         body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
 
     Raises:
@@ -162,7 +176,7 @@ organization_id=organization_id,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    body:    AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[ErrorResponse | PaginatedAgentJobResultItemList]:
@@ -172,6 +186,8 @@ async def asyncio_detailed(
 
     Args:
         organization_id (UUID | Unset):
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
         body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
 
     Raises:
@@ -198,7 +214,7 @@ organization_id=organization_id,
 async def asyncio(
     *,
     client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    body:    AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  |     AgentJobResultManyRequestRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> ErrorResponse | PaginatedAgentJobResultItemList | None:
@@ -208,6 +224,8 @@ async def asyncio(
 
     Args:
         organization_id (UUID | Unset):
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
         body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
 
     Raises:

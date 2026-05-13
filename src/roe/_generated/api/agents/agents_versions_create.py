@@ -20,7 +20,7 @@ from uuid import UUID
 def _get_kwargs(
     agent_id: UUID,
     *,
-    body: AgentVersionCreateRequest,
+    body:    AgentVersionCreateRequest  |     AgentVersionCreateRequest  |     AgentVersionCreateRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -46,10 +46,20 @@ def _get_kwargs(
         "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
+    if isinstance(body, AgentVersionCreateRequest):
+        _kwargs["json"] = body.to_dict()
 
 
-    headers["Content-Type"] = "application/json"
+        headers["Content-Type"] = "application/json"
+    if isinstance(body, AgentVersionCreateRequest):
+        _kwargs["data"] = body.to_dict()
+
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+    if isinstance(body, AgentVersionCreateRequest):
+        _kwargs["files"] = body.to_multipart()
+
+
+        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -104,7 +114,7 @@ def sync_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest,
+    body:    AgentVersionCreateRequest  |     AgentVersionCreateRequest  |     AgentVersionCreateRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[AgentVersion | ErrorResponse]:
@@ -115,6 +125,8 @@ def sync_detailed(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
         body (AgentVersionCreateRequest): Serializer for creating new agent versions
 
     Raises:
@@ -143,7 +155,7 @@ def sync(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest,
+    body:    AgentVersionCreateRequest  |     AgentVersionCreateRequest  |     AgentVersionCreateRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> AgentVersion | ErrorResponse | None:
@@ -154,6 +166,8 @@ def sync(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
         body (AgentVersionCreateRequest): Serializer for creating new agent versions
 
     Raises:
@@ -177,7 +191,7 @@ async def asyncio_detailed(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest,
+    body:    AgentVersionCreateRequest  |     AgentVersionCreateRequest  |     AgentVersionCreateRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[AgentVersion | ErrorResponse]:
@@ -188,6 +202,8 @@ async def asyncio_detailed(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
         body (AgentVersionCreateRequest): Serializer for creating new agent versions
 
     Raises:
@@ -216,7 +232,7 @@ async def asyncio(
     agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest,
+    body:    AgentVersionCreateRequest  |     AgentVersionCreateRequest  |     AgentVersionCreateRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> AgentVersion | ErrorResponse | None:
@@ -227,6 +243,8 @@ async def asyncio(
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
+        body (AgentVersionCreateRequest): Serializer for creating new agent versions
         body (AgentVersionCreateRequest): Serializer for creating new agent versions
 
     Raises:

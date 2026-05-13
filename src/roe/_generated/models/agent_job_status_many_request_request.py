@@ -5,6 +5,8 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+import json
+from .. import types
 
 from ..types import UNSET, Unset
 
@@ -52,6 +54,23 @@ class AgentJobStatusManyRequestRequest:
 
         return field_dict
 
+
+    def to_multipart(self) -> types.RequestFiles:
+        files: types.RequestFiles = []
+
+        for job_ids_item_element in self.job_ids:
+            files.append(("job_ids", (None, str(job_ids_item_element), "text/plain")))
+
+
+
+
+
+        for prop_name, prop in self.additional_properties.items():
+            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
+
+
+
+        return files
 
 
     @classmethod

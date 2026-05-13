@@ -5,6 +5,8 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+import json
+from .. import types
 
 from ..types import UNSET, Unset
 
@@ -79,6 +81,47 @@ class BaseAgentCreateRequest:
 
         return field_dict
 
+
+    def to_multipart(self) -> types.RequestFiles:
+        files: types.RequestFiles = []
+
+        files.append(("name", (None, str(self.name).encode(), "text/plain")))
+
+
+
+        files.append(("engine_class_id", (None, str(self.engine_class_id).encode(), "text/plain")))
+
+
+
+        files.append(("organization_id", (None, str(self.organization_id), "text/plain")))
+
+
+
+        files.append(("input_definitions", (None, str(self.input_definitions).encode(), "text/plain")))
+
+
+
+        files.append(("engine_config", (None, str(self.engine_config).encode(), "text/plain")))
+
+
+
+        if not isinstance(self.version_name, Unset):
+            files.append(("version_name", (None, str(self.version_name).encode(), "text/plain")))
+
+
+
+        if not isinstance(self.description, Unset):
+            files.append(("description", (None, str(self.description).encode(), "text/plain")))
+
+
+
+
+        for prop_name, prop in self.additional_properties.items():
+            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
+
+
+
+        return files
 
 
     @classmethod

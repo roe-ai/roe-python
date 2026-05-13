@@ -5,6 +5,8 @@ from typing import Any, TypeVar, BinaryIO, TextIO, TYPE_CHECKING, Generator
 
 from attrs import define as _attrs_define
 from attrs import field as _attrs_field
+import json
+from .. import types
 
 from ..types import UNSET, Unset
 
@@ -68,6 +70,38 @@ class AgentVersionCreateRequest:
 
         return field_dict
 
+
+    def to_multipart(self) -> types.RequestFiles:
+        files: types.RequestFiles = []
+
+        files.append(("input_definitions", (None, str(self.input_definitions).encode(), "text/plain")))
+
+
+
+        files.append(("engine_config", (None, str(self.engine_config).encode(), "text/plain")))
+
+
+
+        if not isinstance(self.version_name, Unset):
+            files.append(("version_name", (None, str(self.version_name).encode(), "text/plain")))
+
+
+
+        if not isinstance(self.description, Unset):
+            if isinstance(self.description, str):
+
+                files.append(("description", (None, str(self.description).encode(), "text/plain")))
+            else:
+                files.append(("description", (None, str(self.description).encode(), "text/plain")))
+
+
+
+        for prop_name, prop in self.additional_properties.items():
+            files.append((prop_name, (None, str(prop).encode(), "text/plain")))
+
+
+
+        return files
 
 
     @classmethod

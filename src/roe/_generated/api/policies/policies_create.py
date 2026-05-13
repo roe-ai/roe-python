@@ -18,7 +18,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body: CreatePolicyRequest,
+    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -44,10 +44,20 @@ def _get_kwargs(
         "params": params,
     }
 
-    _kwargs["json"] = body.to_dict()
+    if isinstance(body, CreatePolicyRequest):
+        _kwargs["json"] = body.to_dict()
 
 
-    headers["Content-Type"] = "application/json"
+        headers["Content-Type"] = "application/json"
+    if isinstance(body, CreatePolicyRequest):
+        _kwargs["data"] = body.to_dict()
+
+        headers["Content-Type"] = "application/x-www-form-urlencoded"
+    if isinstance(body, CreatePolicyRequest):
+        _kwargs["files"] = body.to_multipart()
+
+
+        headers["Content-Type"] = "multipart/form-data"
 
     _kwargs["headers"] = headers
     return _kwargs
@@ -80,7 +90,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body: CreatePolicyRequest,
+    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[CreatePolicy]:
@@ -88,6 +98,8 @@ def sync_detailed(
 
     Args:
         organization_id (UUID | Unset):
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
         body (CreatePolicyRequest): Serializer for creating a new policy with initial version
 
     Raises:
@@ -114,7 +126,7 @@ organization_id=organization_id,
 def sync(
     *,
     client: AuthenticatedClient | Client,
-    body: CreatePolicyRequest,
+    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> CreatePolicy | None:
@@ -122,6 +134,8 @@ def sync(
 
     Args:
         organization_id (UUID | Unset):
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
         body (CreatePolicyRequest): Serializer for creating a new policy with initial version
 
     Raises:
@@ -143,7 +157,7 @@ organization_id=organization_id,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient | Client,
-    body: CreatePolicyRequest,
+    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> Response[CreatePolicy]:
@@ -151,6 +165,8 @@ async def asyncio_detailed(
 
     Args:
         organization_id (UUID | Unset):
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
         body (CreatePolicyRequest): Serializer for creating a new policy with initial version
 
     Raises:
@@ -177,7 +193,7 @@ organization_id=organization_id,
 async def asyncio(
     *,
     client: AuthenticatedClient | Client,
-    body: CreatePolicyRequest,
+    body:    CreatePolicyRequest  |     CreatePolicyRequest  |     CreatePolicyRequest  | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> CreatePolicy | None:
@@ -185,6 +201,8 @@ async def asyncio(
 
     Args:
         organization_id (UUID | Unset):
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
+        body (CreatePolicyRequest): Serializer for creating a new policy with initial version
         body (CreatePolicyRequest): Serializer for creating a new policy with initial version
 
     Raises:
