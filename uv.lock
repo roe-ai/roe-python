@@ -454,7 +454,7 @@ wheels = [
 
 [[package]]
 name = "roe-ai"
-version = "1.0.79"
+version = "1.0.80"
 source = { editable = "." }
 dependencies = [
     { name = "attrs" },
