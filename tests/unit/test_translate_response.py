@@ -120,7 +120,9 @@ def test_429_retry_after_http_date_preserved_in_headers():
     assert exc_info.value.headers.get("retry-after") == date
 
 
-def test_429_no_retry_after_header_yields_empty_map():
+def test_429_no_retry_after_header_when_absent():
+    """httpx still synthesises content-length etc., so the headers dict isn't
+    empty — but `retry-after` must not be present when the server didn't send it."""
     with pytest.raises(RoeAPIException) as exc_info:
         translate_response(_resp(429, b'{"detail":"throttled"}'))
     assert exc_info.value.headers is not None
@@ -137,6 +139,23 @@ def test_500_headers_preserved_general_feature():
     with pytest.raises(ServerError) as exc_info:
         translate_response(_resp_with_headers(500, {"x-trace": "t1"}))
     assert exc_info.value.headers.get("x-trace") == "t1"
+
+
+def test_generated_response_with_uppercased_headers_normalised_to_lowercase():
+    """The generated client's MutableMapping[str, str] preserves original HTTP
+    casing (e.g. "Retry-After"). Callers must still be able to look up by
+    lowercase, so __init__ normalises at store time."""
+
+    class GeneratedRespStub:
+        status_code = HTTPStatus(429)
+        content = b'{"detail": "throttled"}'
+        headers = {"Retry-After": "9", "X-Trace-Id": "abc"}
+
+    with pytest.raises(RoeAPIException) as exc_info:
+        translate_response(GeneratedRespStub())
+    assert exc_info.value.headers is not None
+    assert exc_info.value.headers.get("retry-after") == "9"
+    assert exc_info.value.headers.get("x-trace-id") == "abc"
 
 
 def test_response_without_headers_attribute_yields_none_headers():

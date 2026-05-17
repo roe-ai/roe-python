@@ -22,7 +22,14 @@ class RoeAPIException(Exception):
         self.message = message
         self.status_code = status_code
         self.response = response
-        self.headers = dict(headers) if headers is not None else None
+        # Normalise keys to lowercase so `.get("retry-after")` works regardless
+        # of which response type populated them: httpx.Headers iterates lowercased
+        # already, but the generated-client MutableMapping preserves original
+        # HTTP casing (e.g. "Retry-After"). Lowercasing at store time gives
+        # callers one consistent contract.
+        self.headers = (
+            {k.lower(): v for k, v in headers.items()} if headers is not None else None
+        )
 
 
 class BadRequestError(RoeAPIException):
