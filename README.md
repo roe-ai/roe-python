@@ -90,13 +90,13 @@ except NotFoundError as exc:
 Every `RoeAPIException` also carries `exc.headers` (lowercase-keyed dict
 of the upstream response headers). Use it to read `Retry-After` on 429s
 or `X-Request-Id` for support tickets, without falling back to the raw
-httpx layer:
+httpx layer. `Retry-After` is preserved exactly as sent, so it may be
+numeric seconds or an HTTP-date:
 
 ```python
 except RoeAPIException as exc:
     if exc.status_code == 429 and exc.headers:
-        retry_after = float(exc.headers.get("retry-after", "1"))
-        time.sleep(retry_after)
+        retry_after = exc.headers.get("retry-after")
 ```
 
 `job.wait()` does not raise on agent-side failures — instead the returned
