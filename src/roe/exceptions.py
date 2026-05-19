@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json as _json
+from collections.abc import Mapping
 from http import HTTPStatus
 from typing import Any
 
@@ -15,11 +16,20 @@ class RoeAPIException(Exception):
         message: str,
         status_code: int | None = None,
         response: dict[str, Any] | None = None,
+        headers: Mapping[str, str] | None = None,
     ):
         super().__init__(message)
         self.message = message
         self.status_code = status_code
         self.response = response
+        # Normalise keys to lowercase so `.get("retry-after")` works regardless
+        # of which response type populated them: httpx.Headers iterates lowercased
+        # already, but the generated-client MutableMapping preserves original
+        # HTTP casing (e.g. "Retry-After"). Lowercasing at store time gives
+        # callers one consistent contract.
+        self.headers = (
+            {k.lower(): v for k, v in headers.items()} if headers is not None else None
+        )
 
 
 class BadRequestError(RoeAPIException):
@@ -124,5 +134,6 @@ def translate_response(response: Any) -> None:
         snippet = content_str[:200] if content_str else ""
         message = f"HTTP {status_code}: {snippet}" if snippet else f"HTTP {status_code}"
 
+    raw_headers = getattr(response, "headers", None)
     cls = get_exception_for_status_code(status_code)
-    raise cls(message=message, status_code=status_code, response=error_data)
+    raise cls(message=message, status_code=status_code, response=error_data, headers=raw_headers)
