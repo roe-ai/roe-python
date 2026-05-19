@@ -4,6 +4,7 @@ import httpx
 
 from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api.agents import AgentsAPI
+from roe.api.discovery import DiscoveryAPI
 from roe.api.policies import PoliciesAPI
 from roe.api.users import UsersAPI
 from roe.auth import RoeAuth
@@ -92,6 +93,7 @@ class RoeClient:
 
         # Create API instances. All APIs delegate to the generated raw client.
         self._agents = AgentsAPI(self.config, self._raw)
+        self._discovery = DiscoveryAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
         self._users = UsersAPI(self.config, self._raw)
 
@@ -121,6 +123,11 @@ class RoeClient:
             )
         """
         return self._agents
+
+    @property
+    def discovery(self) -> DiscoveryAPI:
+        """Access discovery APIs for valid engine types and model IDs."""
+        return self._discovery
 
     @property
     def policies(self) -> PoliciesAPI:
