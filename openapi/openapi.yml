@@ -1930,6 +1930,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyVersion'
           description: ''
+  /v1/tables/upload/:
+    post:
+      operationId: upload_table
+      description: Create a Roe table in the authenticated organization from an uploaded
+        CSV file. Organization API keys are scoped to one organization; if organization_id
+        is supplied, it must match that organization.
+      summary: Upload a CSV as a Roe table
+      tags:
+      - tables
+      - sdk
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TableUploadRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableUploadResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad request
   /v1/users/current_user/:
     get:
       operationId: users_current_user_retrieve
@@ -2734,6 +2763,49 @@ components:
       - display_name
       - email
       - id
+    TableUploadRequest:
+      type: object
+      description: Serializer for public CSV table uploads.
+      properties:
+        table_name:
+          type: string
+          minLength: 1
+          description: Name of the Roe table to create from the uploaded CSV
+          maxLength: 128
+        file:
+          type: string
+          format: binary
+          description: CSV file to upload
+        with_headers:
+          type: boolean
+          default: true
+          description: Whether the first row of the CSV contains column headers
+        organization_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Optional organization ID. Organization API keys are already
+            scoped to one organization; if supplied, this must match that organization.
+      required:
+      - file
+      - table_name
+    TableUploadResponse:
+      type: object
+      description: Response payload for a public CSV table upload.
+      properties:
+        table_name:
+          type: string
+          description: Created Roe table name
+        organization_id:
+          type: string
+          format: uuid
+          description: Organization that owns the table
+        summary:
+          description: ClickHouse import summary for the uploaded file
+      required:
+      - organization_id
+      - table_name
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)

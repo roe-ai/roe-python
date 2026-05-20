@@ -5,6 +5,7 @@ import httpx
 from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api.agents import AgentsAPI
 from roe.api.policies import PoliciesAPI
+from roe.api.tables import TablesAPI
 from roe.api.users import UsersAPI
 from roe.auth import RoeAuth
 from roe.config import RoeConfig
@@ -93,6 +94,7 @@ class RoeClient:
         # Create API instances. All APIs delegate to the generated raw client.
         self._agents = AgentsAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
+        self._tables = TablesAPI(self.config, self._raw)
         self._users = UsersAPI(self.config, self._raw)
 
     @property
@@ -157,6 +159,15 @@ class RoeClient:
             me = client.users.me()
         """
         return self._users
+
+    @property
+    def tables(self) -> TablesAPI:
+        """Access the tables API.
+
+        Returns:
+            TablesAPI instance for uploading CSV files into Roe tables.
+        """
+        return self._tables
 
     @property
     def raw(self) -> RawClient:

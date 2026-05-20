@@ -35,6 +35,7 @@ from roe.exceptions import (
 )
 from roe.models import FileUpload
 from roe.models.job import Job, JobBatch, JobStatus
+from roe.api.tables import TablesAPI
 
 try:
     __version__ = version("roe-ai")
@@ -51,6 +52,7 @@ __all__ = [
     "JobStatus",
     # File upload helper
     "FileUpload",
+    "TablesAPI",
     # Exceptions
     "RoeAPIException",
     "AuthenticationError",

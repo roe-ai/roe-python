@@ -32,6 +32,8 @@ from .patched_update_policy_request import PatchedUpdatePolicyRequest
 from .policy import Policy
 from .policy_version import PolicyVersion
 from .policy_version_created_by import PolicyVersionCreatedBy
+from .table_upload_request import TableUploadRequest
+from .table_upload_response import TableUploadResponse
 from .update_policy import UpdatePolicy
 from .update_policy_request import UpdatePolicyRequest
 from .user_info import UserInfo
@@ -69,6 +71,8 @@ __all__ = (
     "Policy",
     "PolicyVersion",
     "PolicyVersionCreatedBy",
+    "TableUploadRequest",
+    "TableUploadResponse",
     "UpdatePolicy",
     "UpdatePolicyRequest",
     "UserInfo",
