@@ -24,7 +24,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/v1/discovery/agent-engine-types/",
+        "url": "/v1/agents/types/",
     }
 
 

@@ -33,7 +33,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/v1/discovery/supported-models/",
+        "url": "/v1/agents/models/",
         "params": params,
     }
 

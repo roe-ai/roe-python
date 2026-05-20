@@ -63,3 +63,66 @@ def test_list_supported_models_translates_bad_request():
     ):
         with pytest.raises(BadRequestError):
             api.list_supported_models(capability="spreadsheet")
+
+
+def test_agent_engine_type_list_deserializes_public_engine_payload():
+    """End-to-end deserialization of the exact backend response shape.
+
+    roe-main PR 3232 trimmed the public engine payload to six fields. Earlier
+    SDK builds typed `engines` as `TemporalWorkflow[]`, whose `from_dict`
+    popped fields no longer in the payload (`form_type`) and raised
+    `KeyError`. This guards against that regression.
+    """
+    backend_response = {
+        "engine_types": ["ResearchEngine"],
+        "total_count": 1,
+        "engines": [
+            {
+                "class_id": "ResearchEngine",
+                "display_name": "Research Engine",
+                "description": "Researches things.",
+                "summary": "Research workflow.",
+                "input_schema": {"type": "object", "properties": {}},
+                "default_values": {},
+            }
+        ],
+    }
+
+    parsed = AgentEngineTypeList.from_dict(backend_response)
+
+    assert parsed.engine_types == ["ResearchEngine"]
+    assert parsed.total_count == 1
+    assert len(parsed.engines) == 1
+    engine = parsed.engines[0]
+    assert engine["class_id"] == "ResearchEngine"
+    assert engine["display_name"] == "Research Engine"
+    assert engine["input_schema"] == {"type": "object", "properties": {}}
+    assert engine["default_values"] == {}
+
+
+def test_supported_llm_model_list_deserializes_public_model_payload():
+    backend_response = {
+        "models": [
+            {
+                "id": "gpt-5",
+                "providers": ["openai"],
+                "capabilities": ["text"],
+                "context_window": 200000,
+                "max_output_tokens": 8192,
+                "supports_system_message": True,
+                "supports_temperature": True,
+                "supports_reasoning_effort": False,
+                "supports_json_output": True,
+                "supports_json_schema": True,
+            }
+        ],
+        "total_count": 1,
+        "tenant_scope": "all_tenants",
+    }
+
+    parsed = SupportedLLMModelList.from_dict(backend_response)
+
+    assert parsed.tenant_scope == "all_tenants"
+    assert parsed.total_count == 1
+    assert parsed.models[0].id == "gpt-5"
+    assert parsed.models[0].capabilities == ["text"]

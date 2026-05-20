@@ -11,7 +11,7 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.temporal_workflow import TemporalWorkflow
+  from ..models.agent_engine_type_list_engines_item import AgentEngineTypeListEnginesItem
 
 
 
@@ -28,13 +28,13 @@ class AgentEngineTypeList:
         Attributes:
             engine_types (list[str]): Valid agent engine_class_id values accepted by create-agent APIs
             total_count (int): Number of engine types returned
-            engines (list[TemporalWorkflow]): Production agent engine metadata, including descriptions, input schemas, and
-                default engine_config values
+            engines (list[AgentEngineTypeListEnginesItem]): Production agent engine metadata, including descriptions, input
+                schemas, and default engine_config values
      """
 
     engine_types: list[str]
     total_count: int
-    engines: list[TemporalWorkflow]
+    engines: list[AgentEngineTypeListEnginesItem]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -42,7 +42,7 @@ class AgentEngineTypeList:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.temporal_workflow import TemporalWorkflow
+        from ..models.agent_engine_type_list_engines_item import AgentEngineTypeListEnginesItem
         engine_types = self.engine_types
 
 
@@ -71,7 +71,7 @@ class AgentEngineTypeList:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.temporal_workflow import TemporalWorkflow
+        from ..models.agent_engine_type_list_engines_item import AgentEngineTypeListEnginesItem
         d = dict(src_dict)
         engine_types = cast(list[str], d.pop("engine_types"))
 
@@ -81,7 +81,7 @@ class AgentEngineTypeList:
         engines = []
         _engines = d.pop("engines")
         for engines_item_data in (_engines):
-            engines_item = TemporalWorkflow.from_dict(engines_item_data)
+            engines_item = AgentEngineTypeListEnginesItem.from_dict(engines_item_data)
 
 
 

@@ -1209,6 +1209,31 @@ paths:
           format: uuid
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
+  /v1/agents/models/:
+    get:
+      operationId: discovery_supported_models_list
+      description: Returns non-deprecated text-capable model IDs accepted in engine_config.model,
+        with capability and context metadata. Use this before create_agent or create_agent_version
+        when choosing a model. The list is tenant-agnostic and excludes customer-specific
+        or deployment-specific providers.
+      summary: List supported model IDs
+      parameters:
+      - in: query
+        name: capability
+        schema:
+          type: string
+        description: 'Optional capability filter: image, audio, or video (text-capable
+          models are always included)'
+      tags:
+      - discovery
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportedLLMModelList'
+          description: ''
   /v1/agents/run/{agent_id}/:
     post:
       operationId: agents_run
@@ -1621,7 +1646,7 @@ paths:
                   value:
                     error: Internal server error
           description: Internal server error
-  /v1/discovery/agent-engine-types/:
+  /v1/agents/types/:
     get:
       operationId: discovery_agent_engine_types_list
       description: Returns the production engine_class_id values accepted by agent
@@ -1638,30 +1663,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/AgentEngineTypeList'
-          description: ''
-  /v1/discovery/supported-models/:
-    get:
-      operationId: discovery_supported_models_list
-      description: Returns non-deprecated text-capable model IDs accepted in engine_config.model,
-        with capability and context metadata. Use this before create_agent or create_agent_version
-        when choosing a model. The list is tenant-agnostic and excludes customer-specific
-        or deployment-specific providers.
-      summary: List supported model IDs
-      parameters:
-      - in: query
-        name: capability
-        schema:
-          type: string
-        description: 'Optional capability filter: text, image, audio, or video'
-      tags:
-      - discovery
-      - sdk
-      responses:
-        '200':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/SupportedLLMModelList'
           description: ''
   /v1/policies/:
     get:
@@ -2022,7 +2023,8 @@ components:
         engines:
           type: array
           items:
-            $ref: '#/components/schemas/TemporalWorkflow'
+            type: object
+            additionalProperties: {}
           description: Production agent engine metadata, including descriptions, input
             schemas, and default engine_config values
       required:
@@ -2861,54 +2863,6 @@ components:
       - models
       - tenant_scope
       - total_count
-    TemporalWorkflow:
-      type: object
-      description: |-
-        Serializer for Temporal Workflow engine information.
-
-        Matches the shape returned by fetch_all_temporal_workflows() in
-        agents/services/temporal_service.py.
-      properties:
-        type:
-          type: string
-          description: Engine type discriminator, always 'temporal_workflow'
-        class_id:
-          type: string
-          description: Unique class identifier for this workflow
-        workflow_type:
-          type: string
-          description: The temporal workflow type identifier
-        display_name:
-          type: string
-          description: Human-readable name of the workflow
-        description:
-          type: string
-          description: Detailed description of what the workflow does
-        summary:
-          type: string
-          description: Brief summary of the workflow's capabilities
-        input_schema:
-          description: Pydantic JSON Schema describing the workflow's input model
-        default_values:
-          description: Default values for the workflow input fields
-        category:
-          type: string
-          description: The workflow category
-        form_type:
-          type: string
-          description: The form type that determines which frontend create form to
-            render
-      required:
-      - category
-      - class_id
-      - default_values
-      - description
-      - display_name
-      - form_type
-      - input_schema
-      - summary
-      - type
-      - workflow_type
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)
