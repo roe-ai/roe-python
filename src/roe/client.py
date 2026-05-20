@@ -93,7 +93,7 @@ class RoeClient:
 
         # Create API instances. All APIs delegate to the generated raw client.
         self._agents = AgentsAPI(self.config, self._raw)
-        self._discovery = DiscoveryAPI(self.config, self._raw)
+        self._discovery = DiscoveryAPI(self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
         self._users = UsersAPI(self.config, self._raw)
 

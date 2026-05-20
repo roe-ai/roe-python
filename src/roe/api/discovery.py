@@ -10,15 +10,16 @@ from roe._generated.client import AuthenticatedClient
 from roe._generated.models.agent_engine_type_list import AgentEngineTypeList
 from roe._generated.models.supported_llm_model_list import SupportedLLMModelList
 from roe._generated.types import UNSET
-from roe.config import RoeConfig
 from roe.exceptions import RoeAPIException, translate_response
 
 
 class DiscoveryAPI:
-    """API for discovering valid agent engine types and model IDs."""
+    """API for discovering valid agent engine types and model IDs.
 
-    def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
-        self.config = config
+    Discovery endpoints are tenant-agnostic; no RoeConfig is required.
+    """
+
+    def __init__(self, raw_client: AuthenticatedClient):
         self._raw = raw_client
 
     def list_agent_engine_types(self) -> AgentEngineTypeList:

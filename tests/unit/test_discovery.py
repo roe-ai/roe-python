@@ -9,7 +9,7 @@ import pytest
 
 from roe._generated.models.agent_engine_type_list import AgentEngineTypeList
 from roe._generated.models.supported_llm_model_list import SupportedLLMModelList
-from roe._generated.types import Response
+from roe._generated.types import UNSET, Response
 from roe.api.discovery import DiscoveryAPI
 from roe.exceptions import BadRequestError
 
@@ -25,7 +25,7 @@ def _response(parsed, status: int = 200) -> Response:
 
 def test_list_agent_engine_types_calls_generated_endpoint():
     raw_client = MagicMock()
-    api = DiscoveryAPI(MagicMock(), raw_client)
+    api = DiscoveryAPI(raw_client)
     payload = AgentEngineTypeList(engine_types=["ResearchEngine"], total_count=1, engines=[])
 
     with patch(
@@ -40,7 +40,7 @@ def test_list_agent_engine_types_calls_generated_endpoint():
 
 def test_list_supported_models_passes_capability_filter():
     raw_client = MagicMock()
-    api = DiscoveryAPI(MagicMock(), raw_client)
+    api = DiscoveryAPI(raw_client)
     payload = SupportedLLMModelList(models=[], total_count=0, tenant_scope="all_tenants")
 
     with patch(
@@ -53,9 +53,25 @@ def test_list_supported_models_passes_capability_filter():
     assert result.tenant_scope == "all_tenants"
 
 
+def test_list_supported_models_translates_none_capability_to_unset():
+    # Greptile P2: guard the capability=None to UNSET translation, which is
+    # the main branch in list_supported_models that the other tests skip.
+    raw_client = MagicMock()
+    api = DiscoveryAPI(raw_client)
+    payload = SupportedLLMModelList(models=[], total_count=0, tenant_scope="all_tenants")
+
+    with patch(
+        "roe.api.discovery.discovery_supported_models_list.sync_detailed",
+        return_value=_response(payload),
+    ) as mocked:
+        api.list_supported_models()
+
+    mocked.assert_called_once_with(client=raw_client, capability=UNSET)
+
+
 def test_list_supported_models_translates_bad_request():
     raw_client = MagicMock()
-    api = DiscoveryAPI(MagicMock(), raw_client)
+    api = DiscoveryAPI(raw_client)
 
     with patch(
         "roe.api.discovery.discovery_supported_models_list.sync_detailed",
