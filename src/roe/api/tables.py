@@ -12,7 +12,7 @@ from roe._generated.api.tables import upload_table
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.table_upload_request import TableUploadRequest
 from roe._generated.models.table_upload_response import TableUploadResponse
-from roe._generated.types import File
+from roe._generated.types import UNSET, File, Unset
 from roe.config import RoeConfig
 from roe.exceptions import translate_response
 from roe.models import FileUpload
@@ -46,13 +46,21 @@ class TablesAPI:
             mime_type: MIME type override. Defaults to ``text/csv`` for ``.csv`` names.
         """
 
+        # Coerce to UUID once; pass UNSET (not None) when no org id is
+        # available so the generated multipart serializer omits the form
+        # field cleanly. Sending a literal "None" would hit the backend
+        # UUID validator and return 400.
+        resolved_org: UUID | Unset
+        candidate = organization_id or self.config.organization_id
+        resolved_org = UUID(str(candidate)) if candidate else UNSET
+
         upload_file, close_after = self._as_generated_file(file, filename, mime_type)
         try:
             body = TableUploadRequest(
                 table_name=table_name,
                 file=upload_file,
                 with_headers=with_headers,
-                organization_id=UUID(str(organization_id or self.config.organization_id)),
+                organization_id=resolved_org,
             )
             resp = upload_table.sync_detailed(client=self._raw, body=body)
             translate_response(resp)
