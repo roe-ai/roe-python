@@ -94,7 +94,7 @@ class TableUploadRequest:
 
 
 
-        if not isinstance(self.organization_id, Unset):
+        if not isinstance(self.organization_id, Unset) and self.organization_id is not None:
             if isinstance(self.organization_id, UUID):
 
                 files.append(("organization_id", (None, str(self.organization_id), "text/plain")))
