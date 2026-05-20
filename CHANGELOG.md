@@ -1,5 +1,15 @@
 # Changelog
 
+## 2.0.0
+
+Version synchronization across `roe-ai` (Python), `roe-typescript`,
+`roe-golang`, and `roe-mcp`. The four packages now share a single patch
+counter, driven by the SDK OpenAPI spec via the roe-main release pipeline
+(see `roe-main/roe-sdk/targets.yml`).
+
+**No API surface changes.** Code that worked on 1.0.79 / 1.0.80 / 1.0.801
+works on 2.0.0 unchanged — only the version number moves.
+
 ## 1.0.0
 
 **Generated-client migration.** The hand-written API surface
