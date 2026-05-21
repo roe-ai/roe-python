@@ -2,9 +2,10 @@
 
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
-> **v2.0.0** — Version synchronization across roe-ai (Python) / roe-typescript
-> / roe-golang / roe-mcp. No API surface changes vs. the 1.0.x line; the four
-> packages now share a single patch counter, driven by the SDK OpenAPI spec.
+> **v2.0.0** — Version synchronization across the public SDKs: roe-ai
+> (Python), roe-typescript, and roe-golang. No API surface changes vs. the
+> 1.0.x line; the public SDK packages now share a single patch counter,
+> driven by the SDK OpenAPI spec.
 
 > **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
 > (`roe._generated`); ergonomic wrappers on `client.agents` and
