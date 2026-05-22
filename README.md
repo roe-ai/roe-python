@@ -7,6 +7,8 @@ A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 > share a single patch counter, driven by the SDK OpenAPI spec. Python
 > friendly wrappers are generated from `openapi/wrappers.yml`; current
 > generated facades include `client.discovery` and `client.tables`.
+> The shared SDK release logic bumps patch versions only: `2.0.9` becomes
+> `2.0.10`, not `2.1.0`, unless the policy is intentionally changed.
 
 > **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
 > (`roe._generated`); ergonomic wrappers on `client.agents` and
