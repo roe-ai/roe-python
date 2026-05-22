@@ -1,8 +1,10 @@
-# Friendly SDK facades generated after the raw OpenAPI client.
+# Friendly Python SDK facades generated after the raw OpenAPI client.
 #
 # Add entries here when an OpenAPI operation should be exposed as
-# `client.<api>.<method>()`. `scripts/generate-sdk` reads this file and writes
-# the corresponding `src/roe/api/*.py` modules plus the generated API registry.
+# `client.<api>.<method>()`. The release fan-out copies this file into
+# `roe-python/openapi/wrappers.yml`; `roe-python/scripts/generate-sdk` then
+# writes the corresponding `src/roe/api/*.py` modules plus the generated API
+# registry.
 apis:
   discovery:
     class_name: DiscoveryAPI
