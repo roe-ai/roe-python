@@ -2,6 +2,7 @@ from __future__ import annotations
 
 from collections import defaultdict
 from pathlib import Path
+import re
 from typing import Any
 
 from ruamel.yaml import YAML
@@ -9,8 +10,12 @@ from ruamel.yaml import YAML
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT_DIR / "openapi" / "wrappers.yml"
+README_BLOCKS_PATH = ROOT_DIR / "openapi" / "readme_blocks.yml"
+README_PATH = ROOT_DIR / "README.md"
 API_DIR = ROOT_DIR / "src" / "roe" / "api"
 REGISTRY_PATH = API_DIR / "_generated_registry.py"
+README_BLOCK_START = "<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->"
+README_BLOCK_END = "<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:END -->"
 
 HEADER = (
     '"""Auto-generated friendly API facades for the Roe AI SDK."""\n'
@@ -29,6 +34,38 @@ def _load_contract() -> dict[str, Any]:
     if not isinstance(data, dict) or not isinstance(data.get("apis"), dict):
         raise ValueError(f"{CONTRACT_PATH} must contain an 'apis' mapping")
     return data
+
+
+def _load_readme_block() -> str:
+    yaml = YAML(typ="safe")
+    data = yaml.load(README_BLOCKS_PATH.read_text(encoding="utf-8"))
+    try:
+        block = data["blocks"]["generated_friendly_apis"]["python"]
+    except (KeyError, TypeError) as exc:
+        raise ValueError(
+            f"{README_BLOCKS_PATH} must contain blocks.generated_friendly_apis.python"
+        ) from exc
+    if not isinstance(block, str) or not block.strip():
+        raise ValueError(
+            f"{README_BLOCKS_PATH} blocks.generated_friendly_apis.python must be a non-empty string"
+        )
+    return block.strip()
+
+
+def _sync_readme_block() -> None:
+    block = _load_readme_block()
+    readme = README_PATH.read_text(encoding="utf-8")
+    replacement = f"{README_BLOCK_START}\n{block}\n{README_BLOCK_END}"
+    pattern = re.compile(
+        rf"{re.escape(README_BLOCK_START)}.*?{re.escape(README_BLOCK_END)}",
+        re.DOTALL,
+    )
+    updated, count = pattern.subn(replacement, readme, count=1)
+    if count != 1:
+        raise ValueError(
+            f"{README_PATH} must contain {README_BLOCK_START} and {README_BLOCK_END}"
+        )
+    README_PATH.write_text(updated, encoding="utf-8")
 
 
 def _module_import_parts(module_path: str) -> tuple[str, str]:
@@ -321,6 +358,7 @@ def main() -> None:
         target.write_text(_render_api_module(api_name, spec))
 
     REGISTRY_PATH.write_text(_render_registry(apis))
+    _sync_readme_block()
     print(
         f"Generated {len(apis)} friendly API wrapper modules from "
         f"{CONTRACT_PATH.relative_to(ROOT_DIR)}"

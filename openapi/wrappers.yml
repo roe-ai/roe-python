@@ -1,46 +1,41 @@
 # Friendly Python SDK facades generated after the raw OpenAPI client.
-#
-# Add entries here when an OpenAPI operation should be exposed as
-# `client.<api>.<method>()`. The release fan-out copies this file into
-# `roe-python/openapi/wrappers.yml`; `roe-python/scripts/generate-sdk` then
-# writes the corresponding `src/roe/api/*.py` modules plus the generated API
-# registry.
+# Generated from sdk_contract.yml by `uv run python -m roe_sdk sync-contract`.
+# The release fan-out copies this file into roe-python/openapi/wrappers.yml.
+
 apis:
   discovery:
     class_name: DiscoveryAPI
     docstring: API for discovering valid agent engine types and model IDs.
     operations:
-      - kind: simple
-        method_name: list_agent_engine_types
-        docstring: Return production engine_class_id values accepted by agent creation.
-        endpoint_module: roe._generated.api.discovery.discovery_agent_engine_types_list
-        return_type: AgentEngineTypeList
-        return_import: roe._generated.models.agent_engine_type_list.AgentEngineTypeList
-        empty_response_message: agent engine discovery returned an empty response
-
-      - kind: simple
-        method_name: list_supported_models
-        docstring: Return non-deprecated model IDs accepted in engine_config.model.
-        endpoint_module: roe._generated.api.discovery.discovery_supported_models_list
-        return_type: SupportedLLMModelList
-        return_import: roe._generated.models.supported_llm_model_list.SupportedLLMModelList
-        empty_response_message: model discovery returned an empty response
-        parameters:
-          - name: capability
-            annotation: str | None
-            default: null
-            pass_unset_when_none: true
-
+    - kind: simple
+      method_name: list_agent_engine_types
+      docstring: Return production engine_class_id values accepted by agent creation.
+      endpoint_module: roe._generated.api.discovery.discovery_agent_engine_types_list
+      return_type: AgentEngineTypeList
+      return_import: roe._generated.models.agent_engine_type_list.AgentEngineTypeList
+      empty_response_message: agent engine discovery returned an empty response
+    - kind: simple
+      method_name: list_supported_models
+      docstring: Return non-deprecated model IDs accepted in engine_config.model.
+      endpoint_module: roe._generated.api.discovery.discovery_supported_models_list
+      return_type: SupportedLLMModelList
+      return_import: roe._generated.models.supported_llm_model_list.SupportedLLMModelList
+      empty_response_message: model discovery returned an empty response
+      parameters:
+      - name: capability
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
   tables:
     class_name: TablesAPI
     docstring: API for uploading CSV files into Roe tables.
     operations:
-      - kind: table_upload
-        method_name: upload
-        docstring: Upload a CSV file and create a Roe table.
-        endpoint_module: roe._generated.api.tables.upload_table
-        body_type: TableUploadRequest
-        body_import: roe._generated.models.table_upload_request.TableUploadRequest
-        return_type: TableUploadResponse
-        return_import: roe._generated.models.table_upload_response.TableUploadResponse
-        empty_response_message: table upload returned an empty response
+    - kind: table_upload
+      method_name: upload
+      docstring: Upload a CSV file and create a Roe table.
+      endpoint_module: roe._generated.api.tables.upload_table
+      return_type: TableUploadResponse
+      return_import: roe._generated.models.table_upload_response.TableUploadResponse
+      empty_response_message: table upload returned an empty response
+      body_type: TableUploadRequest
+      body_import: roe._generated.models.table_upload_request.TableUploadRequest

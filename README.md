@@ -130,12 +130,10 @@ print(response.status_code)
 For typed request/response models, call the generated operation module
 directly — see `roe/_generated/api/` for the current surface.
 
+<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->
 ## Generated Friendly APIs
 
-Selected SDK-visible operations are exposed as ergonomic wrappers generated
-from `openapi/wrappers.yml` during `scripts/generate-sdk`. This keeps the
-raw OpenAPI client and friendly `RoeClient` surface in sync without writing
-new wrapper classes by hand.
+This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
 
 ```python
 engines = client.discovery.list_agent_engine_types()
@@ -147,6 +145,7 @@ upload = client.tables.upload(
     with_headers=True,
 )
 ```
+<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:END -->
 
 ## Agent Examples
 

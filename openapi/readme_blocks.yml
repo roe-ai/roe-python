@@ -1,0 +1,46 @@
+# README blocks synced into SDK target repos during release fan-out.
+# Generated from sdk_contract.yml by `uv run python -m roe_sdk sync-contract`.
+
+blocks:
+  generated_friendly_apis:
+    python: |
+      ## Generated Friendly APIs
+
+      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+
+      ```python
+      engines = client.discovery.list_agent_engine_types()
+      models = client.discovery.list_supported_models(capability="text")
+
+      upload = client.tables.upload(
+          table_name="customers",
+          file="customers.csv",
+          with_headers=True,
+      )
+      ```
+    typescript: |
+      ## Generated Friendly APIs
+
+      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+
+      ```typescript
+      const engines = await client.discovery.listAgentEngineTypes();
+      const models = await client.discovery.listSupportedModels("text");
+
+      const upload = await client.tables.upload({
+        tableName: "customers",
+        file: "customers.csv",
+        withHeaders: true,
+      });
+      ```
+    go: |
+      ## Generated Friendly APIs
+
+      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+
+      ```go
+      engines, err := client.Discovery.ListAgentEngineTypes()
+      models, err := client.Discovery.ListSupportedModels("text")
+
+      upload, err := client.Tables.Upload("customers", roe.FileUpload{Path: "customers.csv"}, true)
+      ```
