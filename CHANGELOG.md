@@ -1,9 +1,9 @@
 # Changelog
 
-## 2.0.0
+## 1.0.82
 
 Version synchronization across `roe-ai` (Python), `roe-typescript`,
-and `roe-golang`. The public SDK packages now share a single patch counter,
+and `roe-golang`. The public SDK packages now share a single 1.0.x patch counter,
 driven by the SDK OpenAPI spec via the roe-main release pipeline (see
 `roe-main/roe-sdk/targets.yml`).
 
@@ -17,6 +17,10 @@ SDK release target.
 - `client.discovery.list_agent_engine_types()`.
 - `client.discovery.list_supported_models(capability=...)`.
 - `client.tables.upload(...)`.
+- SDK wrappers used by `roe-mcp` now route common 404 cases through
+  `RoeAPIException` instead of generated error-body parsers.
+- `client.agents.run(..., idempotency_key=...)` and
+  `client.agents.run_version(..., idempotency_key=...)`.
 
 ## 1.0.0
 
