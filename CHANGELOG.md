@@ -3,12 +3,20 @@
 ## 2.0.0
 
 Version synchronization across `roe-ai` (Python), `roe-typescript`,
-`roe-golang`, and `roe-mcp`. The four packages now share a single patch
-counter, driven by the SDK OpenAPI spec via the roe-main release pipeline
-(see `roe-main/roe-sdk/targets.yml`).
+and `roe-golang`. The public SDK packages now share a single patch counter,
+driven by the SDK OpenAPI spec via the roe-main release pipeline (see
+`roe-main/roe-sdk/targets.yml`).
 
-**No API surface changes.** Code that worked on 1.0.79 / 1.0.80 / 1.0.801
-works on 2.0.0 unchanged — only the version number moves.
+`roe-mcp` is a private consumer of the published Python SDK, not a public
+SDK release target.
+
+### Added
+
+- Generated friendly wrapper support via `openapi/wrappers.yml` and
+  `scripts/generate-sdk`.
+- `client.discovery.list_agent_engine_types()`.
+- `client.discovery.list_supported_models(capability=...)`.
+- `client.tables.upload(...)`.
 
 ## 1.0.0
 

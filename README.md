@@ -3,9 +3,10 @@
 A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
 
 > **v2.0.0** — Version synchronization across the public SDKs: roe-ai
-> (Python), roe-typescript, and roe-golang. No API surface changes vs. the
-> 1.0.x line; the public SDK packages now share a single patch counter,
-> driven by the SDK OpenAPI spec.
+> (Python), roe-typescript, and roe-golang. The public SDK packages now
+> share a single patch counter, driven by the SDK OpenAPI spec. Python
+> friendly wrappers are generated from `openapi/wrappers.yml`; current
+> generated facades include `client.discovery` and `client.tables`.
 
 > **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
 > (`roe._generated`); ergonomic wrappers on `client.agents` and
@@ -128,6 +129,24 @@ print(response.status_code)
 
 For typed request/response models, call the generated operation module
 directly — see `roe/_generated/api/` for the current surface.
+
+## Generated Friendly APIs
+
+Selected SDK-visible operations are exposed as ergonomic wrappers generated
+from `openapi/wrappers.yml` during `scripts/generate-sdk`. This keeps the
+raw OpenAPI client and friendly `RoeClient` surface in sync without writing
+new wrapper classes by hand.
+
+```python
+engines = client.discovery.list_agent_engine_types()
+models = client.discovery.list_supported_models(capability="text")
+
+upload = client.tables.upload(
+    table_name="customers",
+    file="customers.csv",
+    with_headers=True,
+)
+```
 
 ## Agent Examples
 

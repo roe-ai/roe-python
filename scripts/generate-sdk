@@ -16,3 +16,5 @@ uv run --group codegen openapi-python-client generate \
 
 rm -rf src/roe/_generated
 mv "$TMP_DIR/generated" src/roe/_generated
+
+uv run --group codegen python scripts/generate_wrappers.py
