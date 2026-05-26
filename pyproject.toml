@@ -1,6 +1,6 @@
 [project]
 name = "roe-ai"
-version = "1.0.801"
+version = "1.0.802"
 authors = [
     { name = "Roe AI", email = "founders@roe-ai.com" },
 ]
@@ -33,7 +33,11 @@ dev = [
 ]
 codegen = [
     "openapi-python-client>=0.28,<0.29",
+    "ruamel-yaml>=0.18.15",
 ]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
+
+[tool.ruff]
+extend-exclude = ["src/roe/_generated"]

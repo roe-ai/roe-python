@@ -111,37 +111,42 @@ class AgentVersionsAPI:
         return UUID(str(self._agents_api.config.organization_id))
 
     def list(self, agent_id: str) -> list[AgentVersion]:
-        resp = agents_versions_list.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_versions_list,
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        data = response.json()
+        if not isinstance(data, list):
+            raise RoeAPIException(
+                f"agent versions returned unexpected response shape: {data!r}"
+            )
+        return [AgentVersion.from_dict(item) for item in data]
 
     def retrieve(
         self, agent_id: str, version_id: str, get_supports_eval: bool | None = None
     ) -> AgentVersion:
-        resp = agents_versions_retrieve.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            agent_version_id=UUID(str(version_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_versions_retrieve,
+            UUID(str(agent_id)),
+            UUID(str(version_id)),
             get_supports_eval=get_supports_eval
             if get_supports_eval is not None
             else UNSET,
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentVersion.from_dict(response.json())
 
     def retrieve_current(self, agent_id: str) -> AgentVersion:
-        resp = agents_versions_current_retrieve.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_versions_current_retrieve,
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentVersion.from_dict(response.json())
 
     def create(
         self,
@@ -195,13 +200,13 @@ class AgentVersionsAPI:
         )
 
     def delete(self, agent_id: str, version_id: str) -> None:
-        resp = agents_versions_destroy.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            agent_version_id=UUID(str(version_id)),
-            client=self._raw,
+        request_raw(
+            self._raw,
+            agents_versions_destroy,
+            UUID(str(agent_id)),
+            UUID(str(version_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
 
 
 class AgentJobsAPI:
@@ -226,22 +231,22 @@ class AgentJobsAPI:
             yield items[i : i + chunk_size]
 
     def retrieve_status(self, job_id: str) -> AgentJobStatus:
-        resp = agents_jobs_status_retrieve.sync_detailed(
-            job_id=UUID(str(job_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_jobs_status_retrieve,
+            UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentJobStatus.from_dict(response.json())
 
     def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
-        resp = agents_jobs_result_retrieve.sync_detailed(
-            agent_job_id=UUID(str(job_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_jobs_result_retrieve,
+            UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentJobResultResponse.from_dict(response.json())
 
     def retrieve_status_many(self, job_ids: list[str]) -> list[AgentJobStatus]:
         results: list[AgentJobStatus] = []
@@ -310,29 +315,29 @@ class AgentJobsAPI:
         return response.content
 
     def cancel(self, job_id: str) -> None:
-        resp = agents_jobs_cancel_create.sync_detailed(
-            job_id=UUID(str(job_id)),
-            client=self._raw,
+        request_raw(
+            self._raw,
+            agents_jobs_cancel_create,
+            UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
 
     def cancel_all(self, agent_id: str) -> None:
-        resp = agents_jobs_cancel_all_create.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            client=self._raw,
+        request_raw(
+            self._raw,
+            agents_jobs_cancel_all_create,
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
 
     def delete_data(self, job_id: str) -> AgentJobDeleteDataResponse:
-        resp = agents_jobs_delete_data_create.sync_detailed(
-            job_id=UUID(str(job_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_jobs_delete_data_create,
+            UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentJobDeleteDataResponse.from_dict(response.json())
 
 
 class AgentsAPI:
@@ -368,14 +373,14 @@ class AgentsAPI:
         page: int | None = None,
         page_size: int | None = None,
     ) -> PaginatedBaseAgentList:
-        resp = agents_list.sync_detailed(
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_list,
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return PaginatedBaseAgentList.from_dict(response.json())
 
     def retrieve(self, agent_id: str) -> BaseAgent:
         response = request_raw(
@@ -437,12 +442,12 @@ class AgentsAPI:
         return resp.parsed  # type: ignore[return-value]
 
     def delete(self, agent_id: str) -> None:
-        resp = agents_destroy.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            client=self._raw,
+        request_raw(
+            self._raw,
+            agents_destroy,
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
 
     def duplicate(self, agent_id: str) -> AgentVersion:
         """Duplicate an agent. Returns the resulting ``AgentVersion``.
@@ -452,19 +457,20 @@ class AgentsAPI:
         response as ``AgentVersion`` directly. Callers wanting the new base
         agent should read ``result.base_agent`` (already populated).
         """
-        resp = agents_duplicate_create.sync_detailed(
-            agent_id=UUID(str(agent_id)),
-            client=self._raw,
+        response = request_raw(
+            self._raw,
+            agents_duplicate_create,
+            UUID(str(agent_id)),
             organization_id=self._org_id,
         )
-        translate_response(resp)
-        return resp.parsed  # type: ignore[return-value]
+        return AgentVersion.from_dict(response.json())
 
     def run(
         self,
         agent_id: str,
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
         **inputs: Any,
     ) -> Job:
         """Run an agent asynchronously and return a ``Job`` handle."""
@@ -475,6 +481,9 @@ class AgentsAPI:
             metadata=metadata,
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
+            extra_headers=(
+                {"Idempotency-Key": idempotency_key} if idempotency_key else None
+            ),
         )
         job_id = response.json()
         if not isinstance(job_id, str):
@@ -547,6 +556,7 @@ class AgentsAPI:
         version_id: str,
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
+        idempotency_key: str | None = None,
         **inputs: Any,
     ) -> Job:
         response = call_dynamic(
@@ -557,6 +567,9 @@ class AgentsAPI:
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
             agent_version_id=UUID(str(version_id)),
+            extra_headers=(
+                {"Idempotency-Key": idempotency_key} if idempotency_key else None
+            ),
         )
         job_id = response.json()
         if not isinstance(job_id, str):

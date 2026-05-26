@@ -1,8 +1,11 @@
 """Main client for the Roe AI SDK."""
 
+from typing import Any
+
 import httpx
 
 from roe._generated.client import AuthenticatedClient as RawClient
+from roe.api._generated_registry import GENERATED_API_CLASSES
 from roe.api.agents import AgentsAPI
 from roe.api.policies import PoliciesAPI
 from roe.api.users import UsersAPI
@@ -94,6 +97,10 @@ class RoeClient:
         self._agents = AgentsAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
         self._users = UsersAPI(self.config, self._raw)
+        self._generated_apis = {
+            name: api_cls(self.config, self._raw)
+            for name, api_cls in GENERATED_API_CLASSES.items()
+        }
 
     @property
     def agents(self) -> AgentsAPI:
@@ -162,6 +169,15 @@ class RoeClient:
     def raw(self) -> RawClient:
         """Access the generated raw client."""
         return self._raw
+
+    def __getattr__(self, name: str) -> Any:
+        """Expose generated friendly API groups as ``client.<group>``."""
+        generated_apis = self.__dict__.get("_generated_apis", {})
+        if name in generated_apis:
+            return generated_apis[name]
+        raise AttributeError(
+            f"{type(self).__name__!s} object has no attribute {name!r}"
+        )
 
     def close(self) -> None:
         """Close the HTTP client and clean up resources."""

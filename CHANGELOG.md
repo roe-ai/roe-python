@@ -1,5 +1,24 @@
 # Changelog
 
+## 1.0.802
+
+Version synchronization across `roe-ai` (Python), `roe-typescript`,
+and `roe-golang`. The public SDK packages now share a single 1.0.x patch counter,
+driven by the SDK OpenAPI spec via the roe-main release pipeline (see
+`roe-main/roe-sdk/targets.yml`).
+
+### Added
+
+- Generated friendly wrapper support via `openapi/wrappers.yml` and
+  `scripts/generate-sdk`.
+- `client.discovery.list_agent_engine_types()`.
+- `client.discovery.list_supported_models(capability=...)`.
+- `client.tables.upload(...)`.
+- Public SDK wrappers now route common 404 cases through
+  `RoeAPIException` instead of generated error-body parsers.
+- `client.agents.run(..., idempotency_key=...)` and
+  `client.agents.run_version(..., idempotency_key=...)`.
+
 ## 1.0.0
 
 **Generated-client migration.** The hand-written API surface

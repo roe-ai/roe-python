@@ -27,6 +27,7 @@ def call_dynamic(
     inputs: dict[str, Any],
     metadata: dict[str, Any] | None,
     organization_id: UUID,
+    extra_headers: dict[str, str] | None = None,
     **path_params: Any,
 ) -> httpx.Response:
     """Send a multipart request through the generated endpoint's URL/auth machinery.
@@ -43,9 +44,13 @@ def call_dynamic(
     kwargs.pop("files", None)
     kwargs["data"] = data
     kwargs["files"] = files
-    headers = kwargs.setdefault("headers", {})
-    headers["x-roe-skip-retry"] = "1"  # multipart POST — do not replay (aligns with TS)
-    headers.pop("Content-Type", None)  # let httpx pick the boundary
+    request_headers = kwargs.setdefault("headers", {})
+    request_headers["x-roe-skip-retry"] = (
+        "1"  # multipart POST — do not replay (aligns with TS)
+    )
+    if extra_headers is not None:
+        request_headers.update(extra_headers)
+    request_headers.pop("Content-Type", None)  # let httpx pick the boundary
     response = raw.get_httpx_client().request(**kwargs)
     translate_response(response)
     return response
