@@ -1,6 +1,6 @@
 # Changelog
 
-## 1.0.82
+## 1.0.802
 
 Version synchronization across `roe-ai` (Python), `roe-typescript`,
 and `roe-golang`. The public SDK packages now share a single 1.0.x patch counter,
