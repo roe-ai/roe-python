@@ -1209,6 +1209,31 @@ paths:
           format: uuid
         description: Organization ID. This is required for access control. It can
           be provided via query or request body depending on the endpoint.
+  /v1/agents/models/:
+    get:
+      operationId: discovery_supported_models_list
+      description: Returns non-deprecated text-capable model IDs accepted in engine_config.model,
+        with capability and context metadata. Use this before create_agent or create_agent_version
+        when choosing a model. The list is tenant-agnostic and excludes customer-specific
+        or deployment-specific providers.
+      summary: List supported model IDs
+      parameters:
+      - in: query
+        name: capability
+        schema:
+          type: string
+        description: 'Optional capability filter: image, audio, or video (text-capable
+          models are always included)'
+      tags:
+      - discovery
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SupportedLLMModelList'
+          description: ''
   /v1/agents/run/{agent_id}/:
     post:
       operationId: agents_run
@@ -1621,6 +1646,24 @@ paths:
                   value:
                     error: Internal server error
           description: Internal server error
+  /v1/agents/types/:
+    get:
+      operationId: discovery_agent_engine_types_list
+      description: Returns the production engine_class_id values accepted by agent
+        creation APIs, plus human-readable metadata and input schemas. Use this before
+        create_agent or create_agent_version when choosing an engine and constructing
+        engine_config.
+      summary: List supported agent engine types
+      tags:
+      - discovery
+      - sdk
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentEngineTypeList'
+          description: ''
   /v1/policies/:
     get:
       operationId: policies_list
@@ -1930,6 +1973,35 @@ paths:
               schema:
                 $ref: '#/components/schemas/PolicyVersion'
           description: ''
+  /v1/tables/upload/:
+    post:
+      operationId: upload_table
+      description: Create a Roe table in the authenticated organization from an uploaded
+        CSV file. Organization API keys are scoped to one organization; if organization_id
+        is supplied, it must match that organization.
+      summary: Upload a CSV as a Roe table
+      tags:
+      - tables
+      - sdk
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/TableUploadRequest'
+        required: true
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TableUploadResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+          description: Bad request
   /v1/users/current_user/:
     get:
       operationId: users_current_user_retrieve
@@ -1964,6 +2036,30 @@ components:
       - data_type
       - key
       - value
+    AgentEngineTypeList:
+      type: object
+      description: Serializer for public agent engine type discovery.
+      properties:
+        engine_types:
+          type: array
+          items:
+            type: string
+          description: Valid agent engine_class_id values accepted by create-agent
+            APIs
+        total_count:
+          type: integer
+          description: Number of engine types returned
+        engines:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: Production agent engine metadata, including descriptions, input
+            schemas, and default engine_config values
+      required:
+      - engine_types
+      - engines
+      - total_count
     AgentExecutionRequestRequest:
       type: object
       description: Serializer for agent execution requests with dynamic input fields.
@@ -2734,6 +2830,111 @@ components:
       - display_name
       - email
       - id
+    SupportedLLMModel:
+      type: object
+      description: Serializer for tenant-agnostic supported LLM metadata.
+      properties:
+        id:
+          type: string
+          description: Model identifier accepted in engine_config.model
+        providers:
+          type: array
+          items:
+            type: string
+          description: Non-customer-specific providers registered for this model
+        capabilities:
+          type: array
+          items:
+            type: string
+          description: Input capabilities supported by this model
+        context_window:
+          type: integer
+          description: Largest context window across global providers
+        max_output_tokens:
+          type: integer
+          description: Largest max output token limit across global providers
+        supports_system_message:
+          type: boolean
+        supports_temperature:
+          type: boolean
+        supports_reasoning_effort:
+          type: boolean
+        supports_json_output:
+          type: boolean
+        supports_json_schema:
+          type: boolean
+      required:
+      - capabilities
+      - context_window
+      - id
+      - max_output_tokens
+      - providers
+      - supports_json_output
+      - supports_json_schema
+      - supports_reasoning_effort
+      - supports_system_message
+      - supports_temperature
+    SupportedLLMModelList:
+      type: object
+      description: Serializer for non-deprecated LLM discovery.
+      properties:
+        models:
+          type: array
+          items:
+            $ref: '#/components/schemas/SupportedLLMModel'
+        total_count:
+          type: integer
+        tenant_scope:
+          type: string
+          description: Scope of the model list; this endpoint returns all-tenants
+            models
+      required:
+      - models
+      - tenant_scope
+      - total_count
+    TableUploadRequest:
+      type: object
+      description: Serializer for public CSV table uploads.
+      properties:
+        table_name:
+          type: string
+          minLength: 1
+          description: Name of the Roe table to create from the uploaded CSV
+          maxLength: 128
+        file:
+          type: string
+          format: binary
+          description: CSV file to upload
+        with_headers:
+          type: boolean
+          default: true
+          description: Whether the first row of the CSV contains column headers
+        organization_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Optional organization ID. Organization API keys are already
+            scoped to one organization; if supplied, this must match that organization.
+      required:
+      - file
+      - table_name
+    TableUploadResponse:
+      type: object
+      description: Response payload for a public CSV table upload.
+      properties:
+        table_name:
+          type: string
+          description: Created Roe table name
+        organization_id:
+          type: string
+          format: uuid
+          description: Organization that owns the table
+        summary:
+          description: ClickHouse import summary for the uploaded file
+      required:
+      - organization_id
+      - table_name
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)
