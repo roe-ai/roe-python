@@ -7,9 +7,6 @@ and `roe-golang`. The public SDK packages now share a single 1.0.x patch counter
 driven by the SDK OpenAPI spec via the roe-main release pipeline (see
 `roe-main/roe-sdk/targets.yml`).
 
-`roe-mcp` is a private consumer of the published Python SDK, not a public
-SDK release target.
-
 ### Added
 
 - Generated friendly wrapper support via `openapi/wrappers.yml` and
@@ -17,7 +14,7 @@ SDK release target.
 - `client.discovery.list_agent_engine_types()`.
 - `client.discovery.list_supported_models(capability=...)`.
 - `client.tables.upload(...)`.
-- SDK wrappers used by `roe-mcp` now route common 404 cases through
+- Public SDK wrappers now route common 404 cases through
   `RoeAPIException` instead of generated error-body parsers.
 - `client.agents.run(..., idempotency_key=...)` and
   `client.agents.run_version(..., idempotency_key=...)`.

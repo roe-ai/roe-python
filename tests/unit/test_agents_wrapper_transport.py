@@ -1,4 +1,4 @@
-"""Regression tests for SDK wrappers that MCP depends on directly."""
+"""Regression tests for public SDK wrapper transport behavior."""
 
 from __future__ import annotations
 
