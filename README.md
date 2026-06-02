@@ -680,6 +680,8 @@ client.agents.jobs.delete_data(job_id)
 
 | Model | Value |
 |-------|-------|
+| GPT-5.5 Pro | `gpt-5.5-pro-2026-04-23` |
+| GPT-5.5 | `gpt-5.5-2026-04-23` |
 | GPT-5.4 Pro | `gpt-5.4-pro-2026-03-05` |
 | GPT-5.4 | `gpt-5.4-2026-03-05` |
 | GPT-5.4 Mini | `gpt-5.4-mini-2026-03-17` |
@@ -687,6 +689,7 @@ client.agents.jobs.delete_data(job_id)
 | GPT-5.2 | `gpt-5.2-2025-12-11` |
 | GPT-5 | `gpt-5-2025-08-07` |
 | GPT-4.1 | `gpt-4.1-2025-04-14` |
+| Claude Opus 4.8 | `claude-opus-4-8` |
 | Claude Opus 4.7 | `claude-opus-4-7` |
 | Claude Opus 4.6 | `claude-opus-4-6` |
 | Claude Sonnet 4.6 | `claude-sonnet-4-6` |
@@ -705,10 +708,10 @@ client.agents.jobs.delete_data(job_id)
 | Web Insights | `URLWebsiteExtractionEngine` |
 | Interactive Web | `InteractiveWebExtractionEngine` |
 | Web Search | `URLFinderEngine` |
-| Perplexity Search | `PerplexitySearchEngine` |
+| Research | `ResearchEngine` |
 | Maps Search | `GoogleMapsEntityExtractionEngine` |
-| LinkedIn Crawler | `LinkedInScraperEngine` |
 | Social Media | `SocialScraperEngine` |
+| Marketplace Storefront Analysis | `MarketplaceStorefrontAnalysisEngine` |
 | Product Compliance | `ProductPolicyEngine` |
 | Merchant Risk | `MerchantRiskEngine` |
 | AML Investigation | `AMLInvestigationEngine` |
