@@ -1,8 +1,8 @@
 openapi: 3.1.0
 info:
-  title: Roe AI API
+  title: Roe API
   version: 1.0.0
-  description: Complete API documentation for Roe AI platform
+  description: Complete API documentation for Roe platform
 paths:
   /v1/agents/:
     get:

@@ -1,6 +1,6 @@
-# Roe AI Python SDK
+# Roe Python SDK
 
-A Python SDK for the [Roe AI](https://www.roe-ai.com/) API.
+A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
 > **v1.0.802** — Version synchronization across the public SDKs: roe-ai
 > (Python), roe-typescript, and roe-golang. The public SDK packages now
@@ -719,7 +719,7 @@ client.agents.jobs.delete_data(job_id)
 
 ## Links
 
-- [Roe AI](https://www.roe-ai.com/)
+- [Roe](https://www.roe-ai.com/)
 - [API Documentation](https://docs.roe-ai.com)
 - [Changelog](CHANGELOG.md)
 - [Examples](examples/)

@@ -1,4 +1,4 @@
-"""Configuration management for the Roe AI SDK."""
+"""Configuration management for the Roe SDK."""
 
 import os
 
@@ -6,9 +6,9 @@ from pydantic import BaseModel, Field
 
 
 class RoeConfig(BaseModel):
-    """Configuration for the Roe AI SDK."""
+    """Configuration for the Roe SDK."""
 
-    api_key: str = Field(..., description="Roe AI API key")
+    api_key: str = Field(..., description="Roe API key")
     organization_id: str = Field(..., description="Organization ID")
     base_url: str = Field(
         default="https://api.roe-ai.com", description="Base URL for the API"
