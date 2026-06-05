@@ -17,7 +17,7 @@ import httpx
 
 from roe._generated.client import AuthenticatedClient
 from roe.exceptions import translate_response
-from roe.utils.inputs import build_execution_multipart
+from roe.utils.inputs import build_execution_multipart_payload
 
 
 def call_dynamic(
@@ -37,13 +37,13 @@ def call_dynamic(
     payload built from `build_execution_multipart`. Raises a typed
     `RoeAPIException` on non-2xx via `translate_response`.
     """
-    data, files = build_execution_multipart(inputs, metadata)
+    multipart = build_execution_multipart_payload(inputs, metadata)
     kwargs = ep_module._get_kwargs(organization_id=organization_id, **path_params)
     kwargs.pop("json", None)
     kwargs.pop("data", None)
     kwargs.pop("files", None)
-    kwargs["data"] = data
-    kwargs["files"] = files
+    kwargs["data"] = multipart.data
+    kwargs["files"] = multipart.files
     request_headers = kwargs.setdefault("headers", {})
     request_headers["x-roe-skip-retry"] = (
         "1"  # multipart POST — do not replay (aligns with TS)
@@ -51,6 +51,9 @@ def call_dynamic(
     if extra_headers is not None:
         request_headers.update(extra_headers)
     request_headers.pop("Content-Type", None)  # let httpx pick the boundary
-    response = raw.get_httpx_client().request(**kwargs)
-    translate_response(response)
-    return response
+    try:
+        response = raw.get_httpx_client().request(**kwargs)
+        translate_response(response)
+        return response
+    finally:
+        multipart.close()

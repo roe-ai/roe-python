@@ -14,6 +14,7 @@ from typing import Any
 
 from roe.client import RoeClient
 from roe.exceptions import RoeAPIException
+from roe.models import FileUpload
 
 DEFAULT_BASE_URL = "https://api.roe-ai.com"
 FAILED_TABLE_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
@@ -56,6 +57,87 @@ def _build_parser() -> argparse.ArgumentParser:
     _add_connection_options(whoami)
     whoami.add_argument("--json", action="store_true", help="Print JSON output.")
     whoami.set_defaults(func=_cmd_auth_whoami)
+
+    agent = subparsers.add_parser("agent", help="Run Roe agents.")
+    agent_subparsers = agent.add_subparsers(dest="agent_command", required=True)
+
+    run = agent_subparsers.add_parser(
+        "run",
+        help="Run an agent with text and local file inputs.",
+        description=(
+            "Run a Roe agent. Use --file pdf_files=./document.pdf for PDF inputs; "
+            "repeat --file with the same key for multi-file inputs."
+        ),
+    )
+    _add_connection_options(run)
+    run.add_argument("agent_id", help="Agent UUID.")
+    run.add_argument(
+        "--version",
+        dest="version_id",
+        help="Optional agent version UUID. Defaults to the current version.",
+    )
+    run.add_argument(
+        "--input",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Text/scalar agent input. Repeat for multiple input keys.",
+    )
+    run.add_argument(
+        "--file",
+        action="append",
+        default=[],
+        metavar="KEY=PATH",
+        help=(
+            "Local file input, for example pdf_files=./document.pdf. "
+            "Repeat with the same key for agents that accept multiple files."
+        ),
+    )
+    run.add_argument(
+        "--metadata",
+        action="append",
+        default=[],
+        metavar="KEY=VALUE",
+        help="Job metadata key/value. Repeat for multiple metadata fields.",
+    )
+    run.add_argument(
+        "--metadata-json",
+        help="Job metadata as a JSON object. Merged before --metadata values.",
+    )
+    run.add_argument("--idempotency-key", help="Optional idempotency key.")
+    run.add_argument("--wait", action="store_true", help="Poll until the job finishes.")
+    run.add_argument(
+        "--poll-interval",
+        type=float,
+        default=5.0,
+        help="Seconds between job status checks when --wait is used.",
+    )
+    run.add_argument(
+        "--job-timeout",
+        type=float,
+        default=None,
+        help="Maximum seconds to wait for job completion.",
+    )
+    run.add_argument("--json", action="store_true", help="Print JSON output.")
+    run.set_defaults(func=_cmd_agent_run)
+
+    agent_status = agent_subparsers.add_parser(
+        "status",
+        help="Show an agent job status.",
+    )
+    _add_connection_options(agent_status)
+    agent_status.add_argument("job_id", help="Agent job UUID.")
+    agent_status.add_argument("--json", action="store_true", help="Print JSON output.")
+    agent_status.set_defaults(func=_cmd_agent_status)
+
+    agent_result = agent_subparsers.add_parser(
+        "result",
+        help="Show an agent job result.",
+    )
+    _add_connection_options(agent_result)
+    agent_result.add_argument("job_id", help="Agent job UUID.")
+    agent_result.add_argument("--json", action="store_true", help="Print JSON output.")
+    agent_result.set_defaults(func=_cmd_agent_result)
 
     table = subparsers.add_parser("table", help="Manage Roe tables.")
     table_subparsers = table.add_subparsers(dest="table_command", required=True)
@@ -166,6 +248,52 @@ def _cmd_auth_login(args: argparse.Namespace) -> int:
 def _cmd_auth_whoami(args: argparse.Namespace) -> int:
     with _new_client(args) as client:
         result = client.users.me()
+    _print_result(result, as_json=args.json)
+    return 0
+
+
+def _cmd_agent_run(args: argparse.Namespace) -> int:
+    inputs = _parse_agent_inputs(args.input, args.file)
+    metadata = _parse_metadata(args.metadata_json, args.metadata)
+    with _new_client(args) as client:
+        if args.version_id:
+            job = client.agents.run_version(
+                args.agent_id,
+                args.version_id,
+                metadata=metadata,
+                idempotency_key=args.idempotency_key,
+                **inputs,
+            )
+        else:
+            job = client.agents.run(
+                args.agent_id,
+                metadata=metadata,
+                idempotency_key=args.idempotency_key,
+                **inputs,
+            )
+        result = (
+            job.wait(interval=args.poll_interval, timeout=args.job_timeout)
+            if args.wait
+            else {"job_id": job.id}
+        )
+
+    _print_result(result, as_json=args.json)
+    if not args.json and not args.wait:
+        print(f"Status: roe agent status {job.id} --json")
+        print(f"Result: roe agent result {job.id} --json")
+    return 0
+
+
+def _cmd_agent_status(args: argparse.Namespace) -> int:
+    with _new_client(args) as client:
+        result = client.agents.jobs.retrieve_status(args.job_id)
+    _print_result(result, as_json=args.json)
+    return 0
+
+
+def _cmd_agent_result(args: argparse.Namespace) -> int:
+    with _new_client(args) as client:
+        result = client.agents.jobs.retrieve_result(args.job_id)
     _print_result(result, as_json=args.json)
     return 0
 
@@ -309,6 +437,63 @@ def _first_present(*values: Any) -> Any:
 def _parse_float_env(name: str) -> float | None:
     value = os.getenv(name)
     return float(value) if value else None
+
+
+def _parse_agent_inputs(
+    raw_inputs: list[str],
+    raw_files: list[str],
+) -> dict[str, Any]:
+    parsed: dict[str, Any] = {}
+    for item in raw_inputs:
+        key, value = _parse_key_value(item, option="--input")
+        if key in parsed:
+            raise ValueError(f"Duplicate agent input key: {key}")
+        parsed[key] = value
+
+    grouped_files: dict[str, list[FileUpload]] = {}
+    for item in raw_files:
+        key, value = _parse_key_value(item, option="--file")
+        if key in parsed:
+            raise ValueError(
+                f"Agent input key {key!r} cannot be both --input and --file"
+            )
+        path = Path(value).expanduser()
+        if not path.is_file():
+            raise FileNotFoundError(f"Agent input file not found: {path}")
+        grouped_files.setdefault(key, []).append(FileUpload(path=str(path)))
+
+    for key, files in grouped_files.items():
+        parsed[key] = files[0] if len(files) == 1 else files
+    return parsed
+
+
+def _parse_metadata(
+    metadata_json: str | None,
+    raw_metadata: list[str],
+) -> dict[str, Any] | None:
+    metadata: dict[str, Any] = {}
+    if metadata_json:
+        try:
+            parsed = json.loads(metadata_json)
+        except json.JSONDecodeError as exc:
+            raise ValueError("--metadata-json must be valid JSON.") from exc
+        if not isinstance(parsed, dict):
+            raise ValueError("--metadata-json must be a JSON object.")
+        metadata.update(parsed)
+    for item in raw_metadata:
+        key, value = _parse_key_value(item, option="--metadata")
+        metadata[key] = value
+    return metadata or None
+
+
+def _parse_key_value(value: str, *, option: str) -> tuple[str, str]:
+    if "=" not in value:
+        raise ValueError(f"{option} must be in KEY=VALUE form.")
+    key, item = value.split("=", 1)
+    key = key.strip()
+    if not key:
+        raise ValueError(f"{option} key is required.")
+    return key, item
 
 
 def _print_result(value: Any, *, as_json: bool) -> None:

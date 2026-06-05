@@ -10,6 +10,7 @@ import pytest
 
 from roe.api.agents import AgentsAPI
 from roe.exceptions import NotFoundError
+from roe.models import FileUpload
 
 ORG_ID = "00000000-0000-0000-0000-000000000123"
 AGENT_ID = "00000000-0000-0000-0000-000000000111"
@@ -54,3 +55,27 @@ def test_run_passes_idempotency_key_through_dynamic_wrapper():
     assert kwargs["headers"]["Idempotency-Key"] == "idem-123"
     assert kwargs["headers"]["x-roe-skip-retry"] == "1"
     assert job.id == JOB_ID
+
+
+def test_run_sends_repeated_file_fields_for_multiple_pdf_inputs(tmp_path):
+    first = tmp_path / "first.pdf"
+    second = tmp_path / "second.pdf"
+    first.write_bytes(b"%PDF-1.4\nfirst\n")
+    second.write_bytes(b"%PDF-1.4\nsecond\n")
+    api, request = _api(httpx.Response(200, json=JOB_ID))
+
+    api.run(
+        AGENT_ID,
+        prompt="summarize",
+        pdf_files=[
+            FileUpload(path=str(first)),
+            FileUpload(path=str(second)),
+        ],
+    )
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["data"] == {"prompt": "summarize"}
+    pdf_parts = [part for key, part in kwargs["files"] if key == "pdf_files"]
+    assert [part[0] for part in pdf_parts] == ["first.pdf", "second.pdf"]
+    assert [part[2] for part in pdf_parts] == ["application/pdf", "application/pdf"]
+    assert all(part[1].closed for part in pdf_parts)

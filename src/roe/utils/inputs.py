@@ -17,35 +17,59 @@ Bypasses the generated request models' ``to_multipart()`` because
 
 from __future__ import annotations
 
+from dataclasses import dataclass, field
 import io
 import json as _json
 import mimetypes
 from pathlib import Path
-from typing import Any
+from typing import Any, BinaryIO
 
 from roe.models.file import FileUpload
 from roe.utils.file_detection import is_file_path, is_uuid_string
 
 
+@dataclass
+class ExecutionMultipart:
+    data: dict[str, Any]
+    files: list[tuple[str, Any]]
+    closeables: list[BinaryIO] = field(default_factory=list)
+
+    def close(self) -> None:
+        for file_obj in self.closeables:
+            file_obj.close()
+
+
 def build_execution_multipart(
     inputs: dict[str, Any],
     metadata: dict[str, Any] | None = None,
-) -> tuple[dict[str, Any], dict[str, Any]]:
+) -> tuple[dict[str, Any], list[tuple[str, Any]]]:
     """Split inputs into ``(form_data, files)`` for an httpx multipart request.
 
     Detects ``FileUpload``, file-like objects, file-path strings, UUID strings
     (treated as Roe file references — kept in form data, not opened), and
     plain scalars. ``metadata`` is JSON-encoded into the form when present.
     """
+    multipart = build_execution_multipart_payload(inputs, metadata)
+    return multipart.data, multipart.files
+
+
+def build_execution_multipart_payload(
+    inputs: dict[str, Any],
+    metadata: dict[str, Any] | None = None,
+) -> ExecutionMultipart:
+    """Build a multipart payload and track SDK-opened file objects."""
     form_data: dict[str, Any] = {}
-    files: dict[str, Any] = {}
+    files: list[tuple[str, Any]] = []
+    closeables: list[BinaryIO] = []
 
     for key, value in inputs.items():
         if isinstance(value, FileUpload):
-            filename, file_obj, mime_type = value.to_multipart_tuple()
-            files[key] = (filename, file_obj, mime_type)
+            _append_file(files, closeables, key, value)
+        elif _is_file_sequence(value):
+            for item in value:
+                _append_file(files, closeables, key, item)
         elif isinstance(value, (io.IOBase, io.BytesIO)) or hasattr(value, "read"):
-            files[key] = value
+            files.append((key, value))
         elif isinstance(value, str):
             if is_uuid_string(value):
                 form_data[key] = value
@@ -53,7 +77,9 @@ def build_execution_multipart(
                 p = Path(value)
                 mime, _ = mimetypes.guess_type(p.name)
                 with open(value, "rb") as fh:
-                    files[key] = (p.name, fh.read(), mime or "application/octet-stream")
+                    files.append(
+                        (key, (p.name, fh.read(), mime or "application/octet-stream"))
+                    )
             else:
                 form_data[key] = value
         else:
@@ -63,4 +89,33 @@ def build_execution_multipart(
     if metadata is not None:
         form_data["metadata"] = _json.dumps(metadata)
 
-    return form_data, files
+    return ExecutionMultipart(data=form_data, files=files, closeables=closeables)
+
+
+def _is_file_sequence(value: Any) -> bool:
+    if not isinstance(value, (list, tuple)):
+        return False
+    return bool(value) and all(_is_file_value(item) for item in value)
+
+
+def _is_file_value(value: Any) -> bool:
+    return (
+        isinstance(value, FileUpload)
+        or isinstance(value, (io.IOBase, io.BytesIO))
+        or hasattr(value, "read")
+    )
+
+
+def _append_file(
+    files: list[tuple[str, Any]],
+    closeables: list[BinaryIO],
+    key: str,
+    value: Any,
+) -> None:
+    if isinstance(value, FileUpload):
+        filename, file_obj, mime_type = value.to_multipart_tuple()
+        files.append((key, (filename, file_obj, mime_type)))
+        if value.path is not None:
+            closeables.append(file_obj)
+        return
+    files.append((key, value))
