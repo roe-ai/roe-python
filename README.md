@@ -44,6 +44,26 @@ export ROE_API_KEY="your-api-key"
 export ROE_ORGANIZATION_ID="your-org-uuid"
 ```
 
+## Authentication: CLI vs Python SDK
+
+The CLI and Python SDK use the same Roe credentials: a Roe API key,
+organization ID, and optional API base URL.
+
+They do not share the same local config storage today:
+
+| Client | How it reads credentials |
+| --- | --- |
+| Python SDK | Constructor args or environment variables such as `ROE_API_KEY` and `ROE_ORGANIZATION_ID` |
+| Roe CLI | Command flags, environment variables, or the config file written by `roe auth login` |
+
+`roe auth login` saves credentials for CLI commands. It does not change Python
+SDK constructor args, and the Python SDK does not read the CLI config file.
+To use one set of credentials for both, set `ROE_API_KEY` and
+`ROE_ORGANIZATION_ID` in your shell.
+
+MCP OAuth sign-in is separate. It authenticates MCP clients such as ChatGPT,
+Claude, Claude Code, Codex, or Cursor. It does not log in the Roe CLI.
+
 ## Job Result Inspection
 
 After waiting for a job, inspect its outcome using the `JobStatus` enum.
@@ -149,10 +169,51 @@ upload = client.tables.upload(
 
 ## CLI
 
-The `roe-ai` package installs a small `roe` command for local workflows:
+The `roe-ai` package includes the `roe` command for local workflows.
+
+Run it without installing globally:
 
 ```bash
-roe auth login
+uvx --from roe-ai roe --help
+```
+
+Or install it once:
+
+```bash
+uv tool install roe-ai
+```
+
+You can also use `pipx install roe-ai` or `pip install roe-ai`.
+
+### Sign in
+
+Create a Roe API key in the Roe app, then save it for CLI commands:
+
+```bash
+roe auth login \
+  --api-key "your-api-key" \
+  --organization-id "your-org-uuid"
+```
+
+The hosted default is `https://api.roe-ai.com`. For a tenant deployment, use
+`https://api.<tenant>.roe-ai.com`:
+
+```bash
+roe auth login \
+  --api-key "your-api-key" \
+  --organization-id "your-org-uuid" \
+  --base-url "https://api.<tenant>.roe-ai.com"
+```
+
+Confirm the CLI can authenticate:
+
+```bash
+roe auth whoami --json
+```
+
+### Upload a table
+
+```bash
 roe table upload ./flights.csv --table flights --wait --json
 roe table status <upload_id> --json
 ```
@@ -160,6 +221,35 @@ roe table status <upload_id> --json
 Use `roe table upload` for large local CSVs. It creates a presigned upload
 session, streams file bytes directly to Roe storage, completes the import, and
 can poll until the table is ready.
+
+### Run an agent with local files
+
+Use the file input key from the agent version. PDF agents usually use
+`pdf_files`.
+
+```bash
+roe agent run "<agent_id>" \
+  --file pdf_files=./document.pdf \
+  --wait \
+  --json
+```
+
+For multiple PDFs, repeat `--file` with the same key:
+
+```bash
+roe agent run "<agent_id>" \
+  --file pdf_files=./first.pdf \
+  --file pdf_files=./second.pdf \
+  --wait \
+  --json
+```
+
+For async follow-up:
+
+```bash
+roe agent status "<job_id>" --json
+roe agent result "<job_id>" --json
+```
 
 ## Agent Examples
 
