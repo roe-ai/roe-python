@@ -211,6 +211,16 @@ Confirm the CLI can authenticate:
 roe auth whoami --json
 ```
 
+### Choose the upload path
+
+| Input | Use |
+| --- | --- |
+| Local CSV that should become a queryable Roe table | `roe table upload ./flights.csv --table flights --wait --json` |
+| Small CSV bytes in Python | `client.tables.upload(...)` |
+| Local PDF, DOCX, image, or other agent file input | `roe agent run "<agent_id>" --file key=./file.pdf --wait --json` or `FileUpload(path="file.pdf")` |
+| PDF/document URL or existing Roe file ID | CLI `--input key=value` or SDK string input |
+| In-memory PDF/document bytes in Python | `FileUpload.from_bytes(data, filename="file.pdf", mime_type="application/pdf")` |
+
 ### Upload a table
 
 ```bash
@@ -222,10 +232,13 @@ Use `roe table upload` for large local CSVs. It creates a presigned upload
 session, streams file bytes directly to Roe storage, completes the import, and
 can poll until the table is ready.
 
+Table upload is only for CSV data that should become a queryable Roe table.
+Use agent file inputs for PDFs, DOCX files, images, and other documents.
+
 ### Run an agent with local files
 
 Use the file input key from the agent version. PDF agents usually use
-`pdf_files`.
+`pdf_files`. Document agents may use keys such as `documents` or `pdf_file`.
 
 ```bash
 roe agent run "<agent_id>" \
@@ -240,6 +253,24 @@ For multiple PDFs, repeat `--file` with the same key:
 roe agent run "<agent_id>" \
   --file pdf_files=./first.pdf \
   --file pdf_files=./second.pdf \
+  --wait \
+  --json
+```
+
+For DOCX or other local document files, use the agent's file input key:
+
+```bash
+roe agent run "<agent_id>" \
+  --file documents=./contract.docx \
+  --wait \
+  --json
+```
+
+For a PDF URL or an existing Roe file ID, pass the value as a scalar input:
+
+```bash
+roe agent run "<agent_id>" \
+  --input pdf_file=https://example.com/policy.pdf \
   --wait \
   --json
 ```
@@ -291,6 +322,8 @@ result = job.wait()
 Extract structured information from PDFs:
 
 ```python
+from roe import FileUpload
+
 agent = client.agents.create(
     name="Resume Parser",
     engine_class_id="PDFExtractionEngine",
@@ -312,8 +345,35 @@ agent = client.agents.create(
     }
 )
 
-job = client.agents.run(agent_id=str(agent.id), pdf_files="resume.pdf")
+# Local path: uploaded as multipart file bytes.
+job = client.agents.run(
+    agent_id=str(agent.id),
+    pdf_files=FileUpload(path="resume.pdf"),
+)
 result = job.wait()
+```
+
+PDF inputs can also be URLs, existing Roe file IDs, or in-memory bytes:
+
+```python
+job_from_url = client.agents.run(
+    agent_id="agent-uuid",
+    pdf_files="https://example.com/resume.pdf",
+)
+
+job_from_file_id = client.agents.run(
+    agent_id="agent-uuid",
+    pdf_files="00000000-0000-0000-0000-000000000999",
+)
+
+job_from_bytes = client.agents.run(
+    agent_id="agent-uuid",
+    pdf_files=FileUpload.from_bytes(
+        pdf_bytes,
+        filename="resume.pdf",
+        mime_type="application/pdf",
+    ),
+)
 ```
 
 ### Web Insights

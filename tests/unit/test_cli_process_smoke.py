@@ -16,6 +16,7 @@ AGENT_ID = "00000000-0000-0000-0000-000000000111"
 VERSION_ID = "00000000-0000-0000-0000-000000000222"
 JOB_ID = "00000000-0000-0000-0000-000000000333"
 UPLOAD_ID = "00000000-0000-0000-0000-000000000444"
+LARGE_DOCX_SIZE = 6 * 1024 * 1024
 
 
 def _write_config(path: Path, base_url: str) -> None:
@@ -101,8 +102,17 @@ def test_cli_process_agent_pdf_run_and_table_upload_round_trip(tmp_path):
                 assert b'filename="first.pdf"' in body
                 assert b'filename="second.pdf"' in body
                 assert body.count(b"Content-Type: application/pdf") == 2
+                assert body.count(b'name="documents"') == 1
+                assert b'filename="handbook.docx"' in body
+                assert (
+                    b"Content-Type: application/vnd.openxmlformats-officedocument."
+                    b"wordprocessingml.document"
+                ) in body
+                assert b"large-docx-marker" in body
                 assert b'name="prompt"' in body
                 assert b"Summarize these PDFs" in body
+                assert b'name="source_url"' in body
+                assert b"https://example.com/manual.pdf" in body
                 assert b'name="metadata"' in body
                 assert b'"flow": "process"' in body
                 assert b'"source": "cli"' in body
@@ -202,8 +212,13 @@ def test_cli_process_agent_pdf_run_and_table_upload_round_trip(tmp_path):
     try:
         first_pdf = tmp_path / "first.pdf"
         second_pdf = tmp_path / "second.pdf"
+        handbook = tmp_path / "handbook.docx"
         first_pdf.write_bytes(b"%PDF-1.4\nfirst\n")
         second_pdf.write_bytes(b"%PDF-1.4\nsecond\n")
+        handbook.write_bytes(
+            b"PK\x03\x04large-docx-marker\n"
+            + (b"x" * (LARGE_DOCX_SIZE - len(b"PK\x03\x04large-docx-marker\n")))
+        )
         agent = _run_cli(
             tmp_path,
             config_path,
@@ -212,10 +227,14 @@ def test_cli_process_agent_pdf_run_and_table_upload_round_trip(tmp_path):
             AGENT_ID,
             "--input",
             "prompt=Summarize these PDFs",
+            "--input",
+            "source_url=https://example.com/manual.pdf",
             "--file",
             f"pdf_files={first_pdf}",
             "--file",
             f"pdf_files={second_pdf}",
+            "--file",
+            f"documents={handbook}",
             "--metadata-json",
             '{"flow":"process"}',
             "--metadata",
@@ -265,3 +284,4 @@ def test_cli_process_agent_pdf_run_and_table_upload_round_trip(tmp_path):
         {"kind": "presigned_put", "bytes": 20},
         {"kind": "table_complete"},
     ]
+    assert events[0]["bytes"] > LARGE_DOCX_SIZE

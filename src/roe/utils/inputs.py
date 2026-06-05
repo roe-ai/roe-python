@@ -6,7 +6,7 @@ for ``httpx``'s ``data=`` and ``files=`` kwargs. Detects:
   * ``FileUpload`` instances → ``files``
   * file-like objects (``io.IOBase``, anything with ``.read()``) → ``files``
   * UUID strings → ``form_data`` (Roe file ID reference, never opened)
-  * existing file paths → ``files`` (auto-opened in binary mode)
+  * existing file paths → ``files`` (auto-opened in binary mode and streamed)
   * everything else → stringified into ``form_data``
 
 Bypasses the generated request models' ``to_multipart()`` because
@@ -62,32 +62,44 @@ def build_execution_multipart_payload(
     files: list[tuple[str, Any]] = []
     closeables: list[BinaryIO] = []
 
-    for key, value in inputs.items():
-        if isinstance(value, FileUpload):
-            _append_file(files, closeables, key, value)
-        elif _is_file_sequence(value):
-            for item in value:
-                _append_file(files, closeables, key, item)
-        elif isinstance(value, (io.IOBase, io.BytesIO)) or hasattr(value, "read"):
-            files.append((key, value))
-        elif isinstance(value, str):
-            if is_uuid_string(value):
-                form_data[key] = value
-            elif is_file_path(value):
-                p = Path(value)
-                mime, _ = mimetypes.guess_type(p.name)
-                with open(value, "rb") as fh:
-                    files.append(
-                        (key, (p.name, fh.read(), mime or "application/octet-stream"))
-                    )
+    try:
+        for key, value in inputs.items():
+            if isinstance(value, FileUpload):
+                _append_file(files, closeables, key, value)
+            elif _is_file_sequence(value):
+                for item in value:
+                    _append_file(files, closeables, key, item)
+            elif _is_ambiguous_file_sequence(value):
+                raise ValueError(
+                    f"Agent input {key!r} mixes local file uploads with scalar "
+                    "values. Use FileUpload/local paths for files, and pass URLs "
+                    "or Roe file IDs as scalar inputs."
+                )
+            elif _is_raw_bytes(value):
+                raise ValueError(
+                    f"Agent input {key!r} is raw bytes. Use "
+                    "FileUpload.from_bytes(..., filename=...) so Roe receives a "
+                    "filename and MIME type."
+                )
+            elif isinstance(value, (io.IOBase, io.BytesIO)) or hasattr(value, "read"):
+                files.append((key, value))
+            elif isinstance(value, str):
+                if is_uuid_string(value):
+                    form_data[key] = value
+                elif is_file_path(value):
+                    _append_path_file(files, closeables, key, value)
+                else:
+                    form_data[key] = value
             else:
-                form_data[key] = value
-        else:
-            if value is not None:
-                form_data[key] = str(value)
+                if value is not None:
+                    form_data[key] = str(value)
 
-    if metadata is not None:
-        form_data["metadata"] = _json.dumps(metadata)
+        if metadata is not None:
+            form_data["metadata"] = _json.dumps(metadata)
+    except Exception:
+        for file_obj in closeables:
+            file_obj.close()
+        raise
 
     return ExecutionMultipart(data=form_data, files=files, closeables=closeables)
 
@@ -95,7 +107,20 @@ def build_execution_multipart_payload(
 def _is_file_sequence(value: Any) -> bool:
     if not isinstance(value, (list, tuple)):
         return False
-    return bool(value) and all(_is_file_value(item) for item in value)
+    return bool(value) and all(
+        _is_file_value(item) or _is_file_path_string(item) for item in value
+    )
+
+
+def _is_ambiguous_file_sequence(value: Any) -> bool:
+    if not isinstance(value, (list, tuple)):
+        return False
+    if any(_is_raw_bytes(item) for item in value):
+        return True
+    has_file = any(_is_file_value(item) or _is_file_path_string(item) for item in value)
+    return has_file and not all(
+        _is_file_value(item) or _is_file_path_string(item) for item in value
+    )
 
 
 def _is_file_value(value: Any) -> bool:
@@ -104,6 +129,14 @@ def _is_file_value(value: Any) -> bool:
         or isinstance(value, (io.IOBase, io.BytesIO))
         or hasattr(value, "read")
     )
+
+
+def _is_file_path_string(value: Any) -> bool:
+    return isinstance(value, str) and is_file_path(value)
+
+
+def _is_raw_bytes(value: Any) -> bool:
+    return isinstance(value, (bytes, bytearray, memoryview))
 
 
 def _append_file(
@@ -118,4 +151,20 @@ def _append_file(
         if value.path is not None:
             closeables.append(file_obj)
         return
+    if _is_file_path_string(value):
+        _append_path_file(files, closeables, key, value)
+        return
     files.append((key, value))
+
+
+def _append_path_file(
+    files: list[tuple[str, Any]],
+    closeables: list[BinaryIO],
+    key: str,
+    path: str,
+) -> None:
+    p = Path(path)
+    mime, _ = mimetypes.guess_type(p.name)
+    file_obj = open(path, "rb")
+    files.append((key, (p.name, file_obj, mime or "application/octet-stream")))
+    closeables.append(file_obj)

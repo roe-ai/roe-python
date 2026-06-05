@@ -1,8 +1,9 @@
 """File upload helper model."""
 
+import io
 import mimetypes
 import os
-from typing import BinaryIO
+from typing import BinaryIO, cast
 
 from pydantic import BaseModel, Field, model_validator
 
@@ -11,7 +12,9 @@ class FileUpload(BaseModel):
     """Helper class for explicit file uploads with metadata."""
 
     path: str | None = Field(default=None, description="File path to upload")
-    file_obj: BinaryIO | None = Field(default=None, description="File object to upload")
+    file_obj: io.IOBase | None = Field(
+        default=None, description="File object to upload"
+    )
     filename: str | None = Field(default=None, description="Override filename")
     mime_type: str | None = Field(
         default=None, description="MIME type (auto-detected if not provided)"
@@ -19,6 +22,23 @@ class FileUpload(BaseModel):
 
     class Config:
         arbitrary_types_allowed = True
+
+    @classmethod
+    def from_bytes(
+        cls,
+        data: bytes | bytearray | memoryview,
+        *,
+        filename: str,
+        mime_type: str | None = None,
+    ) -> "FileUpload":
+        """Create an upload from in-memory bytes with explicit file metadata."""
+        if not filename:
+            raise ValueError("filename is required for byte uploads")
+        return cls(
+            file_obj=io.BytesIO(bytes(data)),
+            filename=filename,
+            mime_type=mime_type,
+        )
 
     @model_validator(mode="after")
     def validate_file_source(self):
@@ -61,7 +81,7 @@ class FileUpload(BaseModel):
     def open(self) -> BinaryIO:
         """Open the file for reading."""
         if self.file_obj:
-            return self.file_obj
+            return cast(BinaryIO, self.file_obj)
 
         if self.path:
             return open(self.path, "rb")

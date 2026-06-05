@@ -65,8 +65,10 @@ def _build_parser() -> argparse.ArgumentParser:
         "run",
         help="Run an agent with text and local file inputs.",
         description=(
-            "Run a Roe agent. Use --file pdf_files=./document.pdf for PDF inputs; "
-            "repeat --file with the same key for multi-file inputs."
+            "Run a Roe agent. Use --file pdf_files=./document.pdf or "
+            "--file documents=./contract.docx for local file inputs; repeat "
+            "--file with the same key for multi-file inputs. Use --input for "
+            "URLs and existing Roe file IDs."
         ),
     )
     _add_connection_options(run)
@@ -81,7 +83,10 @@ def _build_parser() -> argparse.ArgumentParser:
         action="append",
         default=[],
         metavar="KEY=VALUE",
-        help="Text/scalar agent input. Repeat for multiple input keys.",
+        help=(
+            "Text/scalar agent input, including URLs and existing Roe file IDs. "
+            "Repeat for multiple input keys."
+        ),
     )
     run.add_argument(
         "--file",
@@ -89,7 +94,8 @@ def _build_parser() -> argparse.ArgumentParser:
         default=[],
         metavar="KEY=PATH",
         help=(
-            "Local file input, for example pdf_files=./document.pdf. "
+            "Local file input, for example pdf_files=./document.pdf or "
+            "documents=./contract.docx. "
             "Repeat with the same key for agents that accept multiple files."
         ),
     )
