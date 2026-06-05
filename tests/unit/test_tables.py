@@ -626,7 +626,5 @@ def test_cli_table_status_routes_to_upload_status(monkeypatch, tmp_path, capsys)
     )
 
     assert result == 0
-    assert calls[1] == {
-        "upload_status": "00000000-0000-0000-0000-000000000555"
-    }
+    assert calls[1] == {"upload_status": "00000000-0000-0000-0000-000000000555"}
     assert json.loads(capsys.readouterr().out)["status"] == "COMPLETED"

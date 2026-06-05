@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import pytest
 from types import SimpleNamespace
 
 from roe import cli
@@ -177,6 +178,50 @@ def test_cli_agent_run_rejects_missing_file(tmp_path, monkeypatch, capsys):
 
     assert result == 1
     assert "Agent input file not found" in capsys.readouterr().err
+
+
+@pytest.mark.parametrize(
+    ("args", "expected_error"),
+    [
+        (["--input", "prompt"], "--input must be in KEY=VALUE form."),
+        (["--input", "=summarize"], "--input key is required."),
+        (["--file", "pdf_files"], "--file must be in KEY=VALUE form."),
+        (
+            ["--input", "prompt=one", "--input", "prompt=two"],
+            "Duplicate agent input key: prompt",
+        ),
+        (
+            ["--metadata-json", "[1, 2]"],
+            "--metadata-json must be a JSON object.",
+        ),
+        (
+            ["--metadata-json", "{"],
+            "--metadata-json must be valid JSON.",
+        ),
+    ],
+)
+def test_cli_agent_run_rejects_malformed_inputs(args, expected_error, capsys):
+    result = cli.main(["agent", "run", AGENT_ID, *args])
+
+    assert result == 1
+    assert expected_error in capsys.readouterr().err
+
+
+def test_cli_agent_run_rejects_scalar_and_file_for_same_key(capsys):
+    result = cli.main(
+        [
+            "agent",
+            "run",
+            AGENT_ID,
+            "--input",
+            "pdf_files=already-uploaded-file-id",
+            "--file",
+            "pdf_files=./document.pdf",
+        ]
+    )
+
+    assert result == 1
+    assert "cannot be both --input and --file" in capsys.readouterr().err
 
 
 def test_cli_agent_status_and_result_route_to_jobs_api(tmp_path, monkeypatch, capsys):
