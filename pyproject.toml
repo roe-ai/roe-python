@@ -2,9 +2,9 @@
 name = "roe-ai"
 version = "1.0.802"
 authors = [
-    { name = "Roe AI", email = "founders@roe-ai.com" },
+    { name = "Roe", email = "founders@roe-ai.com" },
 ]
-description = "Python SDK for the Roe AI API"
+description = "Python SDK for the Roe API"
 readme = "README.md"
 requires-python = ">=3.10"
 license = "Apache-2.0"

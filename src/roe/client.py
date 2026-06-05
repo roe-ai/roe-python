@@ -1,4 +1,4 @@
-"""Main client for the Roe AI SDK."""
+"""Main client for the Roe SDK."""
 
 from typing import Any
 
@@ -15,7 +15,7 @@ from roe.utils.transport import RoeRetryTransport
 
 
 class RoeClient:
-    """Main client for interacting with the Roe AI API."""
+    """Main client for interacting with the Roe API."""
 
     def __init__(
         self,
@@ -26,7 +26,7 @@ class RoeClient:
         max_retries: int | None = None,
         batch_chunk_delay: float | None = None,
     ):
-        """Initialize the Roe AI client.
+        """Initialize the Roe client.
 
         Args:
             api_key: API key for authentication. If not provided, will use ROE_API_KEY env var.

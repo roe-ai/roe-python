@@ -1,4 +1,4 @@
-"""API modules for the Roe AI SDK."""
+"""API modules for the Roe SDK."""
 
 from roe.api._generated_registry import GENERATED_API_CLASSES
 from roe.api.agents import AgentsAPI

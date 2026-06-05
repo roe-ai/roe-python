@@ -1,4 +1,4 @@
-"""Custom exceptions for the Roe AI SDK."""
+"""Custom exceptions for the Roe SDK."""
 
 from __future__ import annotations
 
@@ -9,7 +9,7 @@ from typing import Any
 
 
 class RoeAPIException(Exception):
-    """Base exception for all Roe AI API errors."""
+    """Base exception for all Roe API errors."""
 
     def __init__(
         self,

@@ -1,6 +1,6 @@
-"""Roe AI Python SDK
+"""Roe Python SDK
 
-A Python SDK for interacting with the Roe AI API.
+A Python SDK for interacting with the Roe API.
 
 Basic usage:
     from roe import RoeClient

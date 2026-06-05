@@ -1,10 +1,10 @@
-"""Authentication handling for the Roe AI SDK."""
+"""Authentication handling for the Roe SDK."""
 
 from roe.config import RoeConfig
 
 
 class RoeAuth:
-    """Handles authentication for Roe AI API requests."""
+    """Handles authentication for Roe API requests."""
 
     def __init__(self, config: RoeConfig):
         """Initialize authentication with config.

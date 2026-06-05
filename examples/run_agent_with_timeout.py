@@ -226,7 +226,7 @@ def example_checking_status_manually():
 def main():
     """Run all examples"""
     print("=" * 70)
-    print("ROE AI SDK - Timeout Configuration Examples")
+    print("Roe SDK - Timeout Configuration Examples")
     print("=" * 70)
 
     # Run examples
