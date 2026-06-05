@@ -3,12 +3,18 @@
 from __future__ import annotations
 
 import json
+import stat
 from http import HTTPStatus
+from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
+import httpx
+
+from roe import cli
 from roe._generated.models.table_upload_response import TableUploadResponse
 from roe._generated.types import UNSET, Response
 from roe.api.tables import TablesAPI
+from roe.client import RoeClient
 
 
 ORG_ID = "323e4567-e89b-12d3-a456-426614174002"
@@ -111,3 +117,251 @@ def test_tables_upload_via_roe_client_generated_registry():
             client.close()
 
     assert result.table_name == "events"
+
+
+def test_roe_client_sets_organization_headers_for_raw_table_helpers():
+    client = RoeClient(
+        api_key="test-key",
+        organization_id=ORG_ID,
+        base_url="https://example.invalid",
+    )
+    try:
+        headers = client.raw.get_httpx_client().headers
+        assert headers["X-Organization-Id"] == ORG_ID
+        assert headers["X-Roe-Organization-Id"] == ORG_ID
+    finally:
+        client.close()
+
+
+def test_tables_presigned_helpers_use_path_upload_id_endpoints():
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if request.url.path == "/v1/tables/upload/presigned-url/":
+            return httpx.Response(
+                201,
+                json={
+                    "upload_id": "00000000-0000-0000-0000-000000000555",
+                    "upload_url": "https://uploads.example.com/customers.csv",
+                    "upload_method": "PUT",
+                    "headers": {"Content-Type": "text/csv"},
+                    "expires_at": "2026-06-05T00:00:00Z",
+                    "max_bytes": 2147483648,
+                },
+            )
+        if (
+            request.url.path
+            == "/v1/tables/upload/00000000-0000-0000-0000-000000000555/complete/"
+        ):
+            return httpx.Response(
+                202,
+                json={
+                    "upload_id": "00000000-0000-0000-0000-000000000555",
+                    "status": "IMPORTING",
+                    "table_name": "customers",
+                    "organization_id": ORG_ID,
+                    "summary": None,
+                },
+            )
+        if (
+            request.url.path
+            == "/v1/tables/upload/00000000-0000-0000-0000-000000000555/status/"
+        ):
+            return httpx.Response(
+                200,
+                json={
+                    "upload_id": "00000000-0000-0000-0000-000000000555",
+                    "status": "COMPLETED",
+                    "table_name": "customers",
+                    "organization_id": ORG_ID,
+                    "summary": {"written_rows": 1},
+                },
+            )
+        return httpx.Response(404, json={"detail": "not found"})
+
+    httpx_client = httpx.Client(
+        base_url="http://backend",
+        transport=httpx.MockTransport(handler),
+    )
+    raw_client = MagicMock()
+    raw_client.get_httpx_client.return_value = httpx_client
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), raw_client)
+
+    created = api.create_upload(
+        table_name="customers",
+        filename="customers.csv",
+        content_type="text/csv",
+        with_headers=False,
+    )
+    completed = api.complete_upload(upload_id=created["upload_id"])
+    status = api.upload_status(upload_id=created["upload_id"])
+
+    assert created["upload_method"] == "PUT"
+    assert completed["status"] == "IMPORTING"
+    assert status["status"] == "COMPLETED"
+    assert json.loads(requests[0].content) == {
+        "table_name": "customers",
+        "filename": "customers.csv",
+        "content_type": "text/csv",
+        "with_headers": False,
+        "organization_id": ORG_ID,
+    }
+    assert requests[1].method == "POST"
+    assert requests[1].content == b""
+    assert requests[2].method == "GET"
+    assert requests[2].content == b""
+
+
+def test_tables_upload_large_uses_presigned_storage_path(tmp_path):
+    path = tmp_path / "customers.csv"
+    path.write_text("name,age\nAda,37\n")
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
+    put_calls = []
+
+    with (
+        patch.object(
+            api,
+            "create_upload",
+            return_value={
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "upload_url": "https://uploads.example.com/customers.csv",
+                "headers": {"Content-Type": "text/csv"},
+            },
+        ) as create_upload,
+        patch(
+            "roe.api.tables._put_presigned_upload",
+            side_effect=lambda **kwargs: put_calls.append(kwargs),
+        ) as put,
+        patch.object(
+            api,
+            "complete_upload",
+            return_value={
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "status": "COMPLETED",
+                "table_name": "customers",
+            },
+        ) as complete_upload,
+    ):
+        result = api.upload_large(path, table_name="customers", with_headers=False)
+
+    create_upload.assert_called_once_with(
+        table_name="customers",
+        filename="customers.csv",
+        content_type="text/csv",
+        with_headers=False,
+        organization_id=None,
+    )
+    put.assert_called_once()
+    assert put_calls == [
+        {
+            "upload_url": "https://uploads.example.com/customers.csv",
+            "headers": {"Content-Type": "text/csv"},
+            "file_path": path,
+        }
+    ]
+    complete_upload.assert_called_once_with(
+        upload_id="00000000-0000-0000-0000-000000000555"
+    )
+    assert result["status"] == "COMPLETED"
+
+
+def test_cli_auth_login_writes_config(tmp_path, monkeypatch, capsys):
+    config_path = tmp_path / "config.json"
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+
+    result = cli.main(
+        [
+            "auth",
+            "login",
+            "--api-key",
+            "test-key",
+            "--organization-id",
+            ORG_ID,
+            "--base-url",
+            "http://backend",
+            "--timeout",
+            "12",
+        ]
+    )
+
+    assert result == 0
+    assert "Saved Roe credentials" in capsys.readouterr().out
+    assert stat.S_IMODE(config_path.stat().st_mode) == 0o600
+    assert json.loads(config_path.read_text(encoding="utf-8")) == {
+        "api_key": "test-key",
+        "base_url": "http://backend",
+        "organization_id": ORG_ID,
+        "timeout": 12.0,
+    }
+
+
+def test_cli_table_upload_uses_large_upload_helper(tmp_path, monkeypatch, capsys):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "api_key": "test-key",
+                "organization_id": ORG_ID,
+                "base_url": "http://backend",
+            }
+        ),
+        encoding="utf-8",
+    )
+    csv_path = tmp_path / "customers.csv"
+    csv_path.write_text("name,age\nAda,37\n", encoding="utf-8")
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+    calls = []
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            calls.append({"client": kwargs})
+            self.tables = SimpleNamespace(upload_large=self.upload_large)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def upload_large(self, *args, **kwargs):
+            calls.append({"upload_large": {"args": args, "kwargs": kwargs}})
+            return {
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "status": "IMPORTING",
+                "table_name": "customers",
+            }
+
+    monkeypatch.setattr(cli, "RoeClient", FakeClient)
+
+    result = cli.main(
+        [
+            "table",
+            "upload",
+            str(csv_path),
+            "--table",
+            "customers",
+            "--no-headers",
+            "--wait",
+            "--json",
+        ]
+    )
+
+    assert result == 0
+    assert calls[0] == {
+        "client": {
+            "api_key": "test-key",
+            "organization_id": ORG_ID,
+            "base_url": "http://backend",
+            "timeout": None,
+        }
+    }
+    assert calls[1]["upload_large"]["args"] == (str(csv_path),)
+    assert calls[1]["upload_large"]["kwargs"] == {
+        "table_name": "customers",
+        "with_headers": False,
+        "wait": True,
+        "poll_interval": 2.0,
+        "timeout": None,
+    }
+    assert json.loads(capsys.readouterr().out)["status"] == "IMPORTING"

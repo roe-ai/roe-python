@@ -147,6 +147,20 @@ upload = client.tables.upload(
 ```
 <!-- ROE-SDK:GENERATED-FRIENDLY-APIS:END -->
 
+## CLI
+
+The `roe-ai` package installs a small `roe` command for local workflows:
+
+```bash
+roe auth login
+roe table upload ./flights.csv --table flights --wait --json
+roe table status <upload_id> --json
+```
+
+Use `roe table upload` for large local CSVs. It creates a presigned upload
+session, streams file bytes directly to Roe storage, completes the import, and
+can poll until the table is ready.
+
 ## Agent Examples
 
 ### Multimodal Extraction

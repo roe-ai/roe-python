@@ -22,5 +22,7 @@ class RoeAuth:
         """
         return {
             "Authorization": f"Bearer {self.config.api_key}",
+            "X-Organization-Id": self.config.organization_id,
+            "X-Roe-Organization-Id": self.config.organization_id,
             "User-Agent": "roe-python/0.1.0",
         }
