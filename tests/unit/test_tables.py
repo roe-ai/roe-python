@@ -9,10 +9,12 @@ from types import SimpleNamespace
 from unittest.mock import MagicMock, patch
 
 import httpx
+import pytest
 
 from roe import cli
 from roe._generated.models.table_upload_response import TableUploadResponse
 from roe._generated.types import UNSET, Response
+from roe.api import table_upload_helpers
 from roe.api.tables import TablesAPI
 from roe.client import RoeClient
 
@@ -213,6 +215,17 @@ def test_tables_presigned_helpers_use_path_upload_id_endpoints():
     assert requests[2].content == b""
 
 
+def test_tables_presigned_helpers_reject_invalid_upload_id_before_http():
+    raw_client = MagicMock()
+    raw_client.get_httpx_client.return_value = MagicMock()
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), raw_client)
+
+    with pytest.raises(ValueError):
+        api.upload_status(upload_id="../not-a-uuid")
+
+    raw_client.get_httpx_client.return_value.request.assert_not_called()
+
+
 def test_tables_upload_large_uses_presigned_storage_path(tmp_path):
     path = tmp_path / "customers.csv"
     path.write_text("name,age\nAda,37\n")
@@ -230,7 +243,7 @@ def test_tables_upload_large_uses_presigned_storage_path(tmp_path):
             },
         ) as create_upload,
         patch(
-            "roe.api.tables._put_presigned_upload",
+            "roe.api.table_upload_helpers._put_presigned_upload",
             side_effect=lambda **kwargs: put_calls.append(kwargs),
         ) as put,
         patch.object(
@@ -266,6 +279,119 @@ def test_tables_upload_large_uses_presigned_storage_path(tmp_path):
     assert result["status"] == "COMPLETED"
 
 
+def test_put_presigned_upload_retries_and_does_not_forward_roe_auth_headers(
+    tmp_path,
+    monkeypatch,
+):
+    path = tmp_path / "customers.csv"
+    path.write_text("name,age\nAda,37\n")
+    requests: list[httpx.Request] = []
+
+    def handler(request: httpx.Request) -> httpx.Response:
+        requests.append(request)
+        if len(requests) == 1:
+            return httpx.Response(503, json={"detail": "retry later"})
+        return httpx.Response(200)
+
+    real_client = httpx.Client
+
+    def fake_client(**kwargs):
+        assert kwargs["trust_env"] is False
+        return real_client(transport=httpx.MockTransport(handler))
+
+    monkeypatch.setattr(table_upload_helpers.httpx, "Client", fake_client)
+    monkeypatch.setattr(table_upload_helpers.time, "sleep", lambda _: None)
+
+    table_upload_helpers._put_presigned_upload(
+        upload_url="https://uploads.example.com/customers.csv",
+        headers={
+            "Content-Type": "text/csv",
+            "Authorization": "Bearer roe-token",
+            "X-Organization-Id": ORG_ID,
+            "X-Roe-Organization-Id": ORG_ID,
+        },
+        file_path=path,
+    )
+
+    assert len(requests) == 2
+    assert requests[0].headers["content-type"] == "text/csv"
+    assert requests[0].headers["content-length"] == str(path.stat().st_size)
+    assert "authorization" not in requests[0].headers
+    assert "x-organization-id" not in requests[0].headers
+    assert "x-roe-organization-id" not in requests[0].headers
+
+
+def test_tables_upload_large_waits_for_import_when_requested(tmp_path):
+    path = tmp_path / "customers.csv"
+    path.write_text("name,age\nAda,37\n")
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
+
+    with (
+        patch.object(
+            api,
+            "create_upload",
+            return_value={
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "upload_url": "https://uploads.example.com/customers.csv",
+                "headers": {},
+            },
+        ),
+        patch("roe.api.table_upload_helpers._put_presigned_upload"),
+        patch.object(
+            api,
+            "complete_upload",
+            return_value={
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "status": "IMPORTING",
+            },
+        ),
+        patch.object(
+            api,
+            "wait_for_upload",
+            return_value={
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "status": "COMPLETED",
+            },
+        ) as wait_for_upload,
+    ):
+        result = api.upload_large(
+            path,
+            table_name="customers",
+            wait=True,
+            poll_interval=0.5,
+            timeout=30,
+        )
+
+    wait_for_upload.assert_called_once_with(
+        upload_id="00000000-0000-0000-0000-000000000555",
+        poll_interval=0.5,
+        timeout=30,
+    )
+    assert result["status"] == "COMPLETED"
+
+
+def test_tables_wait_for_upload_rejects_invalid_poll_interval():
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
+
+    with pytest.raises(ValueError, match="poll_interval"):
+        api.wait_for_upload(
+            upload_id="00000000-0000-0000-0000-000000000555",
+            poll_interval=0,
+        )
+
+
+def test_tables_wait_for_upload_times_out():
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
+
+    with patch.object(api, "upload_status", return_value={"status": "IMPORTING"}):
+        with pytest.raises(TimeoutError, match="Timed out"):
+            api.wait_for_upload(
+                upload_id="00000000-0000-0000-0000-000000000555",
+                poll_interval=0.01,
+                timeout=0,
+            )
+
+
 def test_cli_auth_login_writes_config(tmp_path, monkeypatch, capsys):
     config_path = tmp_path / "config.json"
     monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
@@ -294,6 +420,41 @@ def test_cli_auth_login_writes_config(tmp_path, monkeypatch, capsys):
         "organization_id": ORG_ID,
         "timeout": 12.0,
     }
+
+
+def test_cli_auth_login_restricts_existing_config_permissions(
+    tmp_path, monkeypatch, capsys
+):
+    config_path = tmp_path / "config.json"
+    config_path.write_text("{}", encoding="utf-8")
+    config_path.chmod(0o644)
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+
+    result = cli.main(
+        [
+            "auth",
+            "login",
+            "--api-key",
+            "test-key",
+            "--organization-id",
+            ORG_ID,
+        ]
+    )
+
+    assert result == 0
+    assert "Saved Roe credentials" in capsys.readouterr().out
+    assert stat.S_IMODE(config_path.stat().st_mode) == 0o600
+
+
+def test_cli_table_upload_help_exposes_agent_friendly_command(capsys):
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["table", "upload", "--help"])
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "roe table upload" in output
+    assert "--table" in output
+    assert "--wait" in output
 
 
 def test_cli_table_upload_uses_large_upload_helper(tmp_path, monkeypatch, capsys):
@@ -365,3 +526,51 @@ def test_cli_table_upload_uses_large_upload_helper(tmp_path, monkeypatch, capsys
         "timeout": None,
     }
     assert json.loads(capsys.readouterr().out)["status"] == "IMPORTING"
+
+
+def test_cli_table_status_routes_to_upload_status(monkeypatch, tmp_path, capsys):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "api_key": "test-key",
+                "organization_id": ORG_ID,
+                "base_url": "http://backend",
+            }
+        ),
+        encoding="utf-8",
+    )
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+    calls = []
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            calls.append({"client": kwargs})
+            self.tables = SimpleNamespace(upload_status=self.upload_status)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def upload_status(self, *, upload_id):
+            calls.append({"upload_status": upload_id})
+            return {"upload_id": upload_id, "status": "COMPLETED"}
+
+    monkeypatch.setattr(cli, "RoeClient", FakeClient)
+
+    result = cli.main(
+        [
+            "table",
+            "status",
+            "00000000-0000-0000-0000-000000000555",
+            "--json",
+        ]
+    )
+
+    assert result == 0
+    assert calls[1] == {
+        "upload_status": "00000000-0000-0000-0000-000000000555"
+    }
+    assert json.loads(capsys.readouterr().out)["status"] == "COMPLETED"

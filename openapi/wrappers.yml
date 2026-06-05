@@ -29,6 +29,8 @@ apis:
   tables:
     class_name: TablesAPI
     docstring: API for uploading CSV files into Roe tables.
+    mixins:
+    - roe.api.table_upload_helpers.TableUploadHelpersMixin
     operations:
     - kind: table_upload
       method_name: upload

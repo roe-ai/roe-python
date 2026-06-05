@@ -235,6 +235,9 @@ def _table_upload_method(operation: dict[str, Any]) -> str:
 def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
     class_name = spec["class_name"]
     operations = spec.get("operations") or []
+    mixin_imports = [
+        _class_import_parts(import_path) for import_path in spec.get("mixins", [])
+    ]
 
     endpoint_imports: dict[str, list[str]] = defaultdict(list)
     model_imports: dict[str, list[str]] = defaultdict(list)
@@ -291,6 +294,8 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
     for module, names in sorted(model_imports.items()):
         joined = ", ".join(sorted(set(names)))
         lines.append(f"from {module} import {joined}\n")
+    for module, mixin_class in sorted(mixin_imports):
+        lines.append(f"from {module} import {mixin_class}\n")
     if needs_table_upload_helpers:
         lines.append("from roe._generated.types import File, UNSET, Unset\n")
     elif needs_unset:
@@ -304,7 +309,11 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
         lines.append("from roe.models import FileUpload\n")
 
     lines.append("\n\n")
-    lines.append(f"class {class_name}:\n")
+    base_classes = ", ".join(mixin_class for _, mixin_class in mixin_imports)
+    if base_classes:
+        lines.append(f"class {class_name}({base_classes}):\n")
+    else:
+        lines.append(f"class {class_name}:\n")
     lines.append(f'    """{spec.get("docstring", "")}"""\n')
     lines.append("\n")
     lines.append(

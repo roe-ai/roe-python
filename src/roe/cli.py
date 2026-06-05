@@ -8,6 +8,7 @@ import json
 import os
 import stat
 import sys
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -263,13 +264,17 @@ def _load_cli_config() -> dict[str, Any]:
 def _save_cli_config(data: dict[str, Any]) -> None:
     path = _config_path()
     path.parent.mkdir(parents=True, exist_ok=True)
-    fd = os.open(
-        path,
-        os.O_WRONLY | os.O_CREAT | os.O_TRUNC,
-        stat.S_IRUSR | stat.S_IWUSR,
-    )
-    with os.fdopen(fd, "w", encoding="utf-8") as out:
-        out.write(json.dumps(data, indent=2, sort_keys=True) + "\n")
+    fd, temp_name = tempfile.mkstemp(prefix=f".{path.name}.", dir=path.parent)
+    temp_path = Path(temp_name)
+    try:
+        with os.fdopen(fd, "w", encoding="utf-8") as out:
+            out.write(json.dumps(data, indent=2, sort_keys=True) + "\n")
+        os.chmod(temp_path, stat.S_IRUSR | stat.S_IWUSR)
+        os.replace(temp_path, path)
+        os.chmod(path, stat.S_IRUSR | stat.S_IWUSR)
+    finally:
+        if temp_path.exists():
+            temp_path.unlink()
 
 
 def _prompt_secret(prompt: str) -> str:
