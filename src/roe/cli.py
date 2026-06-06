@@ -16,6 +16,7 @@ from roe.client import RoeClient
 from roe.exceptions import RoeAPIException
 
 DEFAULT_BASE_URL = "https://api.roe-ai.com"
+FAILED_TABLE_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -182,6 +183,9 @@ def _cmd_table_upload(args: argparse.Namespace) -> int:
     _print_result(result, as_json=args.json)
     if not args.json and result.get("status") == "IMPORTING":
         print(f"Status: roe table status {result['upload_id']} --json")
+    if result.get("status") in FAILED_TABLE_UPLOAD_STATUSES:
+        _print_terminal_failure("Table upload", result.get("error"))
+        return 1
     return 0
 
 
@@ -337,6 +341,11 @@ def _print_error(exc: Exception) -> None:
         print(f"{prefix}: {exc.message}", file=sys.stderr)
         return
     print(str(exc), file=sys.stderr)
+
+
+def _print_terminal_failure(label: str, error: Any) -> None:
+    message = str(error) if error else "reached a failed terminal status"
+    print(f"{label} failed: {message}", file=sys.stderr)
 
 
 if __name__ == "__main__":  # pragma: no cover

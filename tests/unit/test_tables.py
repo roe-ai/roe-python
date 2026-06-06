@@ -528,6 +528,62 @@ def test_cli_table_upload_uses_large_upload_helper(tmp_path, monkeypatch, capsys
     assert json.loads(capsys.readouterr().out)["status"] == "IMPORTING"
 
 
+def test_cli_table_upload_wait_returns_nonzero_for_terminal_failure(
+    tmp_path, monkeypatch, capsys
+):
+    config_path = tmp_path / "config.json"
+    config_path.write_text(
+        json.dumps(
+            {
+                "api_key": "test-key",
+                "organization_id": ORG_ID,
+                "base_url": "http://backend",
+            }
+        ),
+        encoding="utf-8",
+    )
+    csv_path = tmp_path / "customers.csv"
+    csv_path.write_text("name,age\nAda,37\n", encoding="utf-8")
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            self.tables = SimpleNamespace(upload_large=self.upload_large)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def upload_large(self, *args, **kwargs):
+            return {
+                "upload_id": "00000000-0000-0000-0000-000000000555",
+                "status": "FAILED",
+                "table_name": "customers",
+                "error": "bad csv",
+            }
+
+    monkeypatch.setattr(cli, "RoeClient", FakeClient)
+
+    result = cli.main(
+        [
+            "table",
+            "upload",
+            str(csv_path),
+            "--table",
+            "customers",
+            "--wait",
+            "--json",
+        ]
+    )
+
+    assert result == 1
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["status"] == "FAILED"
+    assert "Table upload failed: bad csv" in captured.err
+
+
 def test_cli_table_status_routes_to_upload_status(monkeypatch, tmp_path, capsys):
     config_path = tmp_path / "config.json"
     config_path.write_text(
