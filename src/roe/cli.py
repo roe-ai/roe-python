@@ -15,9 +15,10 @@ from typing import Any
 
 from roe.client import RoeClient
 from roe.exceptions import RoeAPIException
-from roe.models import FileUpload
+from roe.models import FileUpload, JobStatus
 
 DEFAULT_BASE_URL = "https://api.roe-ai.com"
+FAILED_AGENT_JOB_STATUSES = frozenset({JobStatus.FAILURE, JobStatus.CANCELLED})
 FAILED_TABLE_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
 MIN_UPLOAD_CLI_VERSION = "1.0.803"
 
@@ -297,6 +298,9 @@ def _cmd_agent_run(args: argparse.Namespace) -> int:
     if not args.json and not args.wait:
         print(f"Status: roe agent status {job.id} --json")
         print(f"Result: roe agent result {job.id} --json")
+    if args.wait and _payload_value(result, "status") in FAILED_AGENT_JOB_STATUSES:
+        _print_terminal_failure("Agent job", _payload_error(result))
+        return 1
     return 0
 
 
@@ -532,6 +536,20 @@ def _to_jsonable(value: Any) -> Any:
     if isinstance(value, list):
         return [_to_jsonable(item) for item in value]
     return value
+
+
+def _payload_value(value: Any, key: str) -> Any:
+    payload = _to_jsonable(value)
+    if not isinstance(payload, dict):
+        return None
+    item = payload.get(key)
+    if key == "status" and item is not None:
+        return int(item)
+    return item
+
+
+def _payload_error(value: Any) -> Any:
+    return _payload_value(value, "error_message") or _payload_value(value, "error")
 
 
 def _print_error(exc: Exception) -> None:

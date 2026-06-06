@@ -7,7 +7,7 @@ import pytest
 from types import SimpleNamespace
 
 from roe import cli
-from roe.models import FileUpload
+from roe.models import FileUpload, JobStatus
 
 ORG_ID = "00000000-0000-0000-0000-000000000123"
 AGENT_ID = "00000000-0000-0000-0000-000000000111"
@@ -174,6 +174,58 @@ def test_cli_agent_run_wait_prints_result(tmp_path, monkeypatch, capsys):
         {"wait": {"args": (), "kwargs": {"interval": 0.5, "timeout": 30.0}}}
     ]
     assert json.loads(capsys.readouterr().out) == {"job_id": JOB_ID, "status": 3}
+
+
+def test_cli_agent_run_wait_returns_nonzero_for_failed_job(
+    tmp_path, monkeypatch, capsys
+):
+    config_path = tmp_path / "config.json"
+    _write_config(config_path)
+    pdf_path = tmp_path / "document.pdf"
+    pdf_path.write_bytes(b"%PDF-1.4\n")
+    monkeypatch.setenv("ROE_CONFIG_FILE", str(config_path))
+
+    class FakeJob:
+        id = JOB_ID
+
+        def wait(self, *args, **kwargs):
+            return {
+                "job_id": JOB_ID,
+                "status": JobStatus.FAILURE,
+                "error_message": "agent failed",
+            }
+
+    class FakeClient:
+        def __init__(self, **kwargs):
+            self.agents = SimpleNamespace(run=self.run)
+
+        def __enter__(self):
+            return self
+
+        def __exit__(self, exc_type, exc, tb):
+            return False
+
+        def run(self, *args, **kwargs):
+            return FakeJob()
+
+    monkeypatch.setattr(cli, "RoeClient", FakeClient)
+
+    result = cli.main(
+        [
+            "agent",
+            "run",
+            AGENT_ID,
+            "--file",
+            f"pdf_files={pdf_path}",
+            "--wait",
+            "--json",
+        ]
+    )
+
+    assert result == 1
+    captured = capsys.readouterr()
+    assert json.loads(captured.out)["status"] == JobStatus.FAILURE
+    assert "Agent job failed: agent failed" in captured.err
 
 
 def test_cli_agent_run_rejects_missing_file(tmp_path, monkeypatch, capsys):

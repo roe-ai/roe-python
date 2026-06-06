@@ -11,6 +11,7 @@ import pytest
 from roe.api.agents import AgentsAPI
 from roe.exceptions import NotFoundError
 from roe.models import FileUpload
+from roe.utils.inputs import build_execution_multipart
 
 ORG_ID = "00000000-0000-0000-0000-000000000123"
 AGENT_ID = "00000000-0000-0000-0000-000000000111"
@@ -133,6 +134,14 @@ def test_run_streams_existing_string_path_instead_of_reading_into_memory(tmp_pat
     assert part[1].name == str(document)
     assert part[1].closed
     assert part[2] == "application/pdf"
+
+
+def test_legacy_multipart_wrapper_rejects_sdk_opened_local_files(tmp_path):
+    document = tmp_path / "policy.pdf"
+    document.write_bytes(b"%PDF-1.4\nlocal path\n")
+
+    with pytest.raises(ValueError, match="build_execution_multipart_payload"):
+        build_execution_multipart({"pdf_file": str(document)})
 
 
 def test_run_sends_path_string_list_as_repeated_file_fields(tmp_path):

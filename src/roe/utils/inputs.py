@@ -43,13 +43,20 @@ def build_execution_multipart(
     inputs: dict[str, Any],
     metadata: dict[str, Any] | None = None,
 ) -> tuple[dict[str, Any], list[tuple[str, Any]]]:
-    """Split inputs into ``(form_data, files)`` for an httpx multipart request.
+    """Split caller-owned inputs into ``(form_data, files)`` for multipart.
 
-    Detects ``FileUpload``, file-like objects, file-path strings, UUID strings
-    (treated as Roe file references — kept in form data, not opened), and
-    plain scalars. ``metadata`` is JSON-encoded into the form when present.
+    Use ``build_execution_multipart_payload`` for local paths or ``FileUpload``
+    path values because it returns a payload object that can close SDK-opened
+    file handles after the request.
     """
     multipart = build_execution_multipart_payload(inputs, metadata)
+    if multipart.closeables:
+        multipart.close()
+        raise ValueError(
+            "build_execution_multipart cannot safely return SDK-opened file "
+            "handles. Use build_execution_multipart_payload(...) and call "
+            "payload.close() after the request."
+        )
     return multipart.data, multipart.files
 
 
