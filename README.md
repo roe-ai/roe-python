@@ -2,6 +2,11 @@
 
 A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
+> **v1.0.803** — Adds Roe CLI table uploads and agent local file inputs,
+> including multi-file agent runs via repeated `--file` flags. Use
+> `roe-ai>=1.0.803` for `roe table upload`, `roe table status`, and
+> `roe agent run --file`.
+>
 > **v1.0.802** — Version synchronization across the public SDKs: roe-ai
 > (Python), roe-typescript, and roe-golang. The public SDK packages now
 > share a single 1.0.x patch counter, driven by the SDK OpenAPI spec.
@@ -174,16 +179,17 @@ The `roe-ai` package includes the `roe` command for local workflows.
 Run it without installing globally:
 
 ```bash
-uvx --from roe-ai roe --help
+uvx --from "roe-ai>=1.0.803" roe --help
 ```
 
 Or install it once:
 
 ```bash
-uv tool install roe-ai
+uv tool install "roe-ai>=1.0.803"
 ```
 
-You can also use `pipx install roe-ai` or `pip install roe-ai`.
+You can also use `pipx install "roe-ai>=1.0.803"` or
+`pip install "roe-ai>=1.0.803"`.
 
 ### Sign in
 

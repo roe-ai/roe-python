@@ -9,6 +9,7 @@ import os
 import stat
 import sys
 import tempfile
+from importlib.metadata import PackageNotFoundError, version
 from pathlib import Path
 from typing import Any
 
@@ -18,6 +19,7 @@ from roe.models import FileUpload
 
 DEFAULT_BASE_URL = "https://api.roe-ai.com"
 FAILED_TABLE_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
+MIN_UPLOAD_CLI_VERSION = "1.0.803"
 
 
 def main(argv: list[str] | None = None) -> int:
@@ -36,7 +38,15 @@ def main(argv: list[str] | None = None) -> int:
 def _build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(
         prog="roe",
-        description="Roe AI command-line tools.",
+        description=(
+            "Roe AI command-line tools. Table uploads and agent local file uploads "
+            f"require roe-ai>={MIN_UPLOAD_CLI_VERSION}."
+        ),
+    )
+    parser.add_argument(
+        "--version",
+        action="version",
+        version=f"roe-ai {_package_version()}",
     )
     subparsers = parser.add_subparsers(dest="command", required=True)
 
@@ -537,6 +547,13 @@ def _print_error(exc: Exception) -> None:
 def _print_terminal_failure(label: str, error: Any) -> None:
     message = str(error) if error else "reached a failed terminal status"
     print(f"{label} failed: {message}", file=sys.stderr)
+
+
+def _package_version() -> str:
+    try:
+        return version("roe-ai")
+    except PackageNotFoundError:  # pragma: no cover - editable source tree fallback
+        return "0.0.0"
 
 
 if __name__ == "__main__":  # pragma: no cover

@@ -39,6 +39,21 @@ def test_cli_agent_run_help_exposes_pdf_file_inputs(capsys):
     assert "pdf_files=./document.pdf" in output
 
 
+def test_cli_top_level_help_and_version_explain_upload_version(capsys):
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["--help"])
+
+    assert exc.value.code == 0
+    output = capsys.readouterr().out
+    assert "roe-ai>=1.0.803" in output
+
+    with pytest.raises(SystemExit) as exc:
+        cli.main(["--version"])
+
+    assert exc.value.code == 0
+    assert "roe-ai " in capsys.readouterr().out
+
+
 def test_cli_agent_run_uploads_multiple_pdf_files(tmp_path, monkeypatch, capsys):
     config_path = tmp_path / "config.json"
     _write_config(config_path)
