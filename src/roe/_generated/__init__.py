@@ -1,5 +1,5 @@
 
-""" A client library for accessing Roe API """
+""" A client library for accessing Roe AI API """
 from .client import AuthenticatedClient, Client
 
 __all__ = (
