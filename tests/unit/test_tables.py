@@ -358,26 +358,49 @@ def test_tables_upload_large_waits_for_import_when_requested(tmp_path):
             path,
             table_name="customers",
             wait=True,
-            poll_interval=0.5,
+            interval=0.5,
             timeout=30,
         )
 
     wait_for_upload.assert_called_once_with(
         upload_id="00000000-0000-0000-0000-000000000555",
-        poll_interval=0.5,
+        interval=0.5,
         timeout=30,
     )
     assert result["status"] == "COMPLETED"
 
 
-def test_tables_wait_for_upload_rejects_invalid_poll_interval():
+def test_tables_wait_for_upload_rejects_invalid_interval():
     api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
 
-    with pytest.raises(ValueError, match="poll_interval"):
+    with pytest.raises(ValueError, match="interval"):
         api.wait_for_upload(
             upload_id="00000000-0000-0000-0000-000000000555",
-            poll_interval=0,
+            interval=0,
         )
+
+
+def test_tables_upload_large_validates_interval_before_uploading(tmp_path):
+    # A bad wait interval must fail before any bytes are uploaded or the
+    # import is started.
+    path = tmp_path / "customers.csv"
+    path.write_text("name,age\nAda,37\n")
+    api = TablesAPI(MagicMock(organization_id=ORG_ID), MagicMock())
+
+    with (
+        patch.object(api, "create_upload") as create_upload,
+        patch("roe.api.table_upload_helpers._put_presigned_upload") as put_upload,
+    ):
+        with pytest.raises(ValueError, match="interval"):
+            api.upload_large(
+                path,
+                table_name="customers",
+                wait=True,
+                interval=0,
+            )
+
+    create_upload.assert_not_called()
+    put_upload.assert_not_called()
 
 
 def test_tables_wait_for_upload_times_out():
@@ -387,7 +410,7 @@ def test_tables_wait_for_upload_times_out():
         with pytest.raises(TimeoutError, match="Timed out"):
             api.wait_for_upload(
                 upload_id="00000000-0000-0000-0000-000000000555",
-                poll_interval=0.01,
+                interval=0.01,
                 timeout=0,
             )
 
@@ -522,7 +545,7 @@ def test_cli_table_upload_uses_large_upload_helper(tmp_path, monkeypatch, capsys
         "table_name": "customers",
         "with_headers": False,
         "wait": True,
-        "poll_interval": 2.0,
+        "interval": 2.0,
         "timeout": None,
     }
     assert json.loads(capsys.readouterr().out)["status"] == "IMPORTING"

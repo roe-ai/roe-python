@@ -39,27 +39,6 @@ class ExecutionMultipart:
             file_obj.close()
 
 
-def build_execution_multipart(
-    inputs: dict[str, Any],
-    metadata: dict[str, Any] | None = None,
-) -> tuple[dict[str, Any], list[tuple[str, Any]]]:
-    """Split caller-owned inputs into ``(form_data, files)`` for multipart.
-
-    Use ``build_execution_multipart_payload`` for local paths or ``FileUpload``
-    path values because it returns a payload object that can close SDK-opened
-    file handles after the request.
-    """
-    multipart = build_execution_multipart_payload(inputs, metadata)
-    if multipart.closeables:
-        multipart.close()
-        raise ValueError(
-            "build_execution_multipart cannot safely return SDK-opened file "
-            "handles. Use build_execution_multipart_payload(...) and call "
-            "payload.close() after the request."
-        )
-    return multipart.data, multipart.files
-
-
 def build_execution_multipart_payload(
     inputs: dict[str, Any],
     metadata: dict[str, Any] | None = None,

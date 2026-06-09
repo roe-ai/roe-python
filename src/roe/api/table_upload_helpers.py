@@ -14,6 +14,7 @@ from roe.exceptions import RoeAPIException, translate_response
 from roe.utils.polling import poll_until
 
 TERMINAL_UPLOAD_STATUSES = frozenset({"COMPLETED", "FAILED", "EXPIRED"})
+FAILED_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
 PRESIGNED_UPLOAD_TIMEOUT_SECONDS = 300.0
 PRESIGNED_UPLOAD_MAX_RETRIES = 2
 PRESIGNED_UPLOAD_RETRY_STATUSES = frozenset({500, 502, 503, 504})
@@ -78,7 +79,7 @@ class TableUploadHelpersMixin:
         table_name: str,
         with_headers: bool = True,
         wait: bool = False,
-        poll_interval: float = 2.0,
+        interval: float = 2.0,
         timeout: float | None = None,
         organization_id: str | UUID | None = None,
         filename: str | None = None,
@@ -88,6 +89,10 @@ class TableUploadHelpersMixin:
         path = Path(file)
         if not path.is_file():
             raise FileNotFoundError(f"CSV file not found: {path}")
+        # Validate wait arguments before any side effects: the upload and
+        # import would otherwise proceed while the caller sees a failure.
+        if wait and interval <= 0:
+            raise ValueError("interval must be greater than 0")
 
         effective_filename = filename or path.name
         content_type = _mime_type(effective_filename, mime_type)
@@ -108,7 +113,7 @@ class TableUploadHelpersMixin:
             return completed
         return self.wait_for_upload(
             upload_id=created["upload_id"],
-            poll_interval=poll_interval,
+            interval=interval,
             timeout=timeout,
         )
 
@@ -116,17 +121,15 @@ class TableUploadHelpersMixin:
         self,
         *,
         upload_id: str | UUID,
-        poll_interval: float = 2.0,
+        interval: float = 2.0,
         timeout: float | None = None,
     ) -> dict[str, Any]:
         """Poll a table upload session until it reaches a terminal status.
 
-        ``poll_interval`` is the initial interval; ``poll_until`` applies
-        capped exponential backoff between checks.
+        ``interval`` is the initial interval; ``poll_until`` applies capped
+        exponential backoff between checks.
         """
         upload_id = _coerce_upload_id(upload_id)
-        if poll_interval <= 0:
-            raise ValueError("poll_interval must be greater than 0")
 
         def _check() -> dict[str, Any] | None:
             result = self.upload_status(upload_id=upload_id)
@@ -134,7 +137,7 @@ class TableUploadHelpersMixin:
 
         return poll_until(
             _check,
-            interval=poll_interval,
+            interval=interval,
             timeout=timeout,
             timeout_message=f"Timed out waiting for table upload {upload_id}",
         )
@@ -210,7 +213,6 @@ def _put_presigned_upload(
         read=60.0,
         write=PRESIGNED_UPLOAD_TIMEOUT_SECONDS,
     )
-    last_error: httpx.TransportError | None = None
     for attempt in range(PRESIGNED_UPLOAD_MAX_RETRIES + 1):
         try:
             with file_path.open("rb") as payload, httpx.Client(
@@ -223,7 +225,6 @@ def _put_presigned_upload(
                     content=payload,
                 )
         except httpx.TransportError as exc:
-            last_error = exc
             if attempt >= PRESIGNED_UPLOAD_MAX_RETRIES:
                 raise RoeAPIException(f"presigned upload failed: {exc}") from exc
             time.sleep(2**attempt)
@@ -236,5 +237,3 @@ def _put_presigned_upload(
             continue
         translate_response(response)
         return
-    if last_error is not None:
-        raise RoeAPIException(f"presigned upload failed: {last_error}") from last_error

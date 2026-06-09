@@ -14,12 +14,12 @@ from pathlib import Path
 from typing import Any
 
 from roe.client import RoeClient
+from roe.api.table_upload_helpers import FAILED_UPLOAD_STATUSES
 from roe.exceptions import RoeAPIException
 from roe.models import FileUpload, JobStatus
 
 DEFAULT_BASE_URL = "https://api.roe-ai.com"
 FAILED_AGENT_JOB_STATUSES = frozenset({JobStatus.FAILURE, JobStatus.CANCELLED})
-FAILED_TABLE_UPLOAD_STATUSES = frozenset({"FAILED", "EXPIRED"})
 MIN_UPLOAD_CLI_VERSION = "1.0.803"
 
 
@@ -325,13 +325,14 @@ def _cmd_table_upload(args: argparse.Namespace) -> int:
             table_name=args.table_name,
             with_headers=args.with_headers,
             wait=args.wait,
-            poll_interval=args.poll_interval,
+            interval=args.poll_interval,
             timeout=args.upload_timeout,
         )
     _print_result(result, as_json=args.json)
-    if not args.json and result.get("status") == "IMPORTING":
-        print(f"Status: roe table status {result['upload_id']} --json")
-    if result.get("status") in FAILED_TABLE_UPLOAD_STATUSES:
+    upload_id = result.get("upload_id")
+    if not args.json and result.get("status") == "IMPORTING" and upload_id:
+        print(f"Status: roe table status {upload_id} --json")
+    if result.get("status") in FAILED_UPLOAD_STATUSES:
         _print_terminal_failure("Table upload", result.get("error"))
         return 1
     return 0

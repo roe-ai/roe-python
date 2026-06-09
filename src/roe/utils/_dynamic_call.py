@@ -34,7 +34,7 @@ def call_dynamic(
 
     Calls `ep_module._get_kwargs(...)` to build the URL, query string and auth,
     then strips the generated body and replaces it with our own multipart
-    payload built from `build_execution_multipart`. Raises a typed
+    payload built from `build_execution_multipart_payload`. Raises a typed
     `RoeAPIException` on non-2xx via `translate_response`.
     """
     multipart = build_execution_multipart_payload(inputs, metadata)
