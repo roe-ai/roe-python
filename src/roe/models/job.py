@@ -8,7 +8,6 @@ returned to callers come from the generated client.
 
 from __future__ import annotations
 
-import time
 from typing import TYPE_CHECKING, Any
 from uuid import UUID
 
@@ -16,6 +15,7 @@ from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe.exceptions import NotFoundError, RoeAPIException
+from roe.utils.polling import poll_until
 
 if TYPE_CHECKING:
     from roe.api.agents import AgentsAPI
@@ -109,32 +109,33 @@ class Job:
             raise ValueError(f"timeout must be positive, got {timeout}")
 
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
-        start_time = time.time()
 
         from roe._generated.types import Unset
 
-        while True:
+        def _check() -> AgentJobResultResponse | None:
             status = self.retrieve_status()
+            if status.status not in _TERMINAL_STATUSES:
+                return None
             error_message = (
                 None if isinstance(status.error_message, Unset) else status.error_message
             )
+            is_failed = status.status in _FAILED_STATUSES
+            try:
+                result = self.retrieve_result()
+            except RoeAPIException:
+                if not is_failed:
+                    raise
+                return _empty_result(status.status, error_message)
+            return _attach_status(result, status.status, error_message)
 
-            if status.status in _TERMINAL_STATUSES:
-                is_failed = status.status in _FAILED_STATUSES
-                try:
-                    result = self.retrieve_result()
-                except RoeAPIException:
-                    if not is_failed:
-                        raise
-                    return _empty_result(status.status, error_message)
-                return _attach_status(result, status.status, error_message)
-
-            if (time.time() - start_time) > effective_timeout:
-                raise TimeoutError(
-                    f"Job {self._job_id} did not complete within {effective_timeout} seconds"
-                )
-
-            time.sleep(interval)
+        return poll_until(
+            _check,
+            interval=interval,
+            timeout=effective_timeout,
+            timeout_message=(
+                f"Job {self._job_id} did not complete within {effective_timeout} seconds"
+            ),
+        )
 
     def retrieve_status(self) -> AgentJobStatus:
         """Generated ``AgentJobStatus`` for the job."""
@@ -198,66 +199,68 @@ class JobBatch:
             raise ValueError(f"timeout must be positive, got {timeout}")
 
         effective_timeout = timeout if timeout is not None else self._timeout_seconds
-        start_time = time.time()
 
-        while len(self._completed_jobs) < len(self._job_ids):
-            pending_job_ids = [
-                job_id
-                for job_id in self._job_ids
-                if job_id not in self._completed_jobs
-            ]
+        try:
+            return poll_until(
+                self._poll_round,
+                interval=interval,
+                timeout=effective_timeout,
+            )
+        except TimeoutError:
+            if raise_on_timeout:
+                remaining = set(self._job_ids) - set(self._completed_jobs)
+                raise TimeoutError(
+                    f"Jobs {remaining} did not complete within {effective_timeout} seconds"
+                ) from None
+            return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
 
-            if not pending_job_ids:
-                break
+    def _poll_round(self) -> list[AgentJobResultItem | None] | None:
+        """One status/result fetch round; the full result list once all jobs finish."""
+        pending_job_ids = [
+            job_id for job_id in self._job_ids if job_id not in self._completed_jobs
+        ]
+        if not pending_job_ids:
+            return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
 
-            status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
+        status_batch = self.agents_api.jobs.retrieve_status_many(pending_job_ids)
 
-            completed_in_this_batch: list[str] = []
-            for status_item in status_batch:
-                job_id = self._extract_id(status_item)
-                if job_id is None:
-                    continue
-                stat_code = self._extract_status(status_item)
-                if stat_code in _TERMINAL_STATUSES:
-                    completed_in_this_batch.append(job_id)
-                if stat_code is not None:
-                    self._job_statuses[job_id] = {
-                        "status": stat_code,
-                        "error_message": self._extract_error_message(status_item),
-                        "timestamp": self._extract_timestamp(status_item),
-                    }
+        completed_in_this_batch: list[str] = []
+        for status_item in status_batch:
+            job_id = self._extract_id(status_item)
+            if job_id is None:
+                continue
+            stat_code = self._extract_status(status_item)
+            if stat_code in _TERMINAL_STATUSES:
+                completed_in_this_batch.append(job_id)
+            if stat_code is not None:
+                self._job_statuses[job_id] = {
+                    "status": stat_code,
+                    "error_message": self._extract_error_message(status_item),
+                    "timestamp": self._extract_timestamp(status_item),
+                }
 
-            if completed_in_this_batch:
-                result_batch = self.agents_api.jobs.retrieve_result_many(
-                    completed_in_this_batch
+        if completed_in_this_batch:
+            result_batch = self.agents_api.jobs.retrieve_result_many(
+                completed_in_this_batch
+            )
+            for result_item in result_batch:
+                job_id = str(result_item.id)
+                cached = self._job_statuses.get(job_id)
+                is_failed = (
+                    cached is not None and cached["status"] in _FAILED_STATUSES
                 )
-                for result_item in result_batch:
-                    job_id = str(result_item.id)
-                    cached = self._job_statuses.get(job_id)
-                    is_failed = (
-                        cached is not None and cached["status"] in _FAILED_STATUSES
-                    )
-                    if (
-                        result_item.agent_id is None
-                        or result_item.agent_version_id is None
-                    ):
-                        if not is_failed:
-                            raise NotFoundError(
-                                f"Job {job_id} not found or has been deleted"
-                            )
-                    self._completed_jobs[job_id] = result_item
-
-            if len(self._completed_jobs) < len(self._job_ids):
-                if (time.time() - start_time) > effective_timeout:
-                    if raise_on_timeout:
-                        remaining = set(self._job_ids) - set(self._completed_jobs)
-                        raise TimeoutError(
-                            f"Jobs {remaining} did not complete within {effective_timeout} seconds"
+                if (
+                    result_item.agent_id is None
+                    or result_item.agent_version_id is None
+                ):
+                    if not is_failed:
+                        raise NotFoundError(
+                            f"Job {job_id} not found or has been deleted"
                         )
-                    break
+                self._completed_jobs[job_id] = result_item
 
-                time.sleep(interval)
-
+        if len(self._completed_jobs) < len(self._job_ids):
+            return None
         return [self._completed_jobs.get(job_id) for job_id in self._job_ids]
 
     def retrieve_status(self) -> dict[str, AgentJobStatus]:

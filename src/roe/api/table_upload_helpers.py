@@ -11,6 +11,7 @@ from uuid import UUID
 import httpx
 
 from roe.exceptions import RoeAPIException, translate_response
+from roe.utils.polling import poll_until
 
 TERMINAL_UPLOAD_STATUSES = frozenset({"COMPLETED", "FAILED", "EXPIRED"})
 PRESIGNED_UPLOAD_TIMEOUT_SECONDS = 300.0
@@ -118,21 +119,25 @@ class TableUploadHelpersMixin:
         poll_interval: float = 2.0,
         timeout: float | None = None,
     ) -> dict[str, Any]:
-        """Poll a table upload session until it reaches a terminal status."""
+        """Poll a table upload session until it reaches a terminal status.
+
+        ``poll_interval`` is the initial interval; ``poll_until`` applies
+        capped exponential backoff between checks.
+        """
         upload_id = _coerce_upload_id(upload_id)
         if poll_interval <= 0:
             raise ValueError("poll_interval must be greater than 0")
-        deadline = time.monotonic() + timeout if timeout is not None else None
-        while True:
+
+        def _check() -> dict[str, Any] | None:
             result = self.upload_status(upload_id=upload_id)
-            if result.get("status") in TERMINAL_UPLOAD_STATUSES:
-                return result
-            if deadline is not None and time.monotonic() >= deadline:
-                raise TimeoutError(f"Timed out waiting for table upload {upload_id}")
-            sleep_for = poll_interval
-            if deadline is not None:
-                sleep_for = min(sleep_for, max(0.0, deadline - time.monotonic()))
-            time.sleep(sleep_for)
+            return result if result.get("status") in TERMINAL_UPLOAD_STATUSES else None
+
+        return poll_until(
+            _check,
+            interval=poll_interval,
+            timeout=timeout,
+            timeout_message=f"Timed out waiting for table upload {upload_id}",
+        )
 
     def _request_json(
         self,
