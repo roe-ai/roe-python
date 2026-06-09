@@ -29,9 +29,12 @@ def poll_until(
     to ``max_interval``, each randomized by +/- ``jitter`` fraction. Sleeps are
     clamped to the remaining ``timeout`` (measured from before the first
     check); when the deadline passes without a result, ``TimeoutError`` is
-    raised with ``timeout_message``. ``timeout=None`` polls forever. Callers
-    validate their own interval/timeout arguments.
+    raised with ``timeout_message``. ``timeout=None`` polls forever;
+    ``timeout=0`` checks exactly once. Callers validate ``timeout`` semantics
+    of their own public APIs.
     """
+    if interval <= 0:
+        raise ValueError("interval must be greater than 0")
     deadline = time.monotonic() + timeout if timeout is not None else None
     sleep_for = interval
     while True:

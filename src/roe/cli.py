@@ -127,7 +127,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--poll-interval",
         type=float,
         default=5.0,
-        help="Seconds between job status checks when --wait is used.",
+        help="Initial seconds between job status checks when --wait is used (backs off up to 15s).",
     )
     run.add_argument(
         "--job-timeout",
@@ -184,7 +184,7 @@ def _build_parser() -> argparse.ArgumentParser:
         "--poll-interval",
         type=float,
         default=2.0,
-        help="Seconds between status checks when --wait is used.",
+        help="Initial seconds between status checks when --wait is used (backs off up to 15s).",
     )
     upload.add_argument(
         "--upload-timeout",

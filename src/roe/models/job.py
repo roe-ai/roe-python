@@ -104,6 +104,9 @@ class Job:
         ``status`` (int code) and any ``error_message`` attached via the
         model's ``additional_properties`` dict — accessible as
         ``result["status"]`` and ``result["error_message"]``.
+
+        ``interval`` is the initial poll interval; subsequent polls back off
+        (capped at 15s, see ``roe.utils.polling.poll_until``).
         """
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")
@@ -194,6 +197,9 @@ class JobBatch:
 
         ``AgentJobResultItem.status`` (the int code) is already populated by
         the batch results endpoint — no extra attachment needed.
+
+        ``interval`` is the initial poll interval; subsequent polls back off
+        (capped at 15s, see ``roe.utils.polling.poll_until``).
         """
         if timeout is not None and timeout <= 0:
             raise ValueError(f"timeout must be positive, got {timeout}")

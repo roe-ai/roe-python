@@ -110,3 +110,10 @@ def test_poll_until_returns_empty_container_results(clock):
 
     assert result == []
     assert clock.sleeps == []
+
+
+def test_poll_until_rejects_non_positive_interval(clock):
+    with pytest.raises(ValueError, match="interval"):
+        poll_until(lambda: None, interval=0, timeout=5.0)
+
+    assert clock.sleeps == []
