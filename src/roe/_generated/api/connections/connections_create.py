@@ -8,8 +8,9 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_version import AgentVersion
-from ...models.agent_version_create_request import AgentVersionCreateRequest
+from ...models.connection import Connection
+from ...models.create_connection_request import CreateConnectionRequest
+from ...models.duplicate_connection_response import DuplicateConnectionResponse
 from ...models.error_response import ErrorResponse
 from ...types import UNSET, Unset
 from typing import cast
@@ -18,9 +19,8 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    agent_id: UUID,
     *,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -42,13 +42,11 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "post",
-        "url": "/v1/agents/{agent_id}/versions/".format(agent_id=quote(str(agent_id), safe=""),),
+        "url": "/v1/connections/",
         "params": params,
     }
 
-    
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
+    _kwargs["json"] = body.to_dict()
 
 
     headers["Content-Type"] = "application/json"
@@ -58,9 +56,9 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentVersion | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
     if response.status_code == 201:
-        response_201 = AgentVersion.from_dict(response.json())
+        response_201 = Connection.from_dict(response.json())
 
 
 
@@ -73,19 +71,12 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_400
 
-    if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+    if response.status_code == 409:
+        response_409 = DuplicateConnectionResponse.from_dict(response.json())
 
 
 
-        return response_403
-
-    if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_404
+        return response_409
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -93,7 +84,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentVersion | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -103,34 +94,30 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        body (CreateConnectionRequest): Serializer for creating connections.
+            Accepts full config, splits into config (DB) and auth (Secrets Manager).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[Connection | DuplicateConnectionResponse | ErrorResponse]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -142,68 +129,60 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        body (CreateConnectionRequest): Serializer for creating connections.
+            Accepts full config, splits into config (DB) and auth (Secrets Manager).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        Connection | DuplicateConnectionResponse | ErrorResponse
      """
 
 
     return sync_detailed(
-        agent_id=agent_id,
-client=client,
+        client=client,
 body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        body (CreateConnectionRequest): Serializer for creating connections.
+            Accepts full config, splits into config (DB) and auth (Secrets Manager).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[Connection | DuplicateConnectionResponse | ErrorResponse]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -215,34 +194,30 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        body (CreateConnectionRequest): Serializer for creating connections.
+            Accepts full config, splits into config (DB) and auth (Secrets Manager).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        Connection | DuplicateConnectionResponse | ErrorResponse
      """
 
 
     return (await asyncio_detailed(
-        agent_id=agent_id,
-client=client,
+        client=client,
 body=body,
 organization_id=organization_id,
 

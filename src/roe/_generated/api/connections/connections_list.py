@@ -8,9 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_version import AgentVersion
-from ...models.agent_version_create_request import AgentVersionCreateRequest
-from ...models.error_response import ErrorResponse
+from ...models.paginated_connection_list_list import PaginatedConnectionListList
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -18,74 +16,55 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    agent_id: UUID,
     *,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
 
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
-
+    
 
     
 
     params: dict[str, Any] = {}
+
+    params["connector_type"] = connector_type
 
     json_organization_id: str | Unset = UNSET
     if not isinstance(organization_id, Unset):
         json_organization_id = str(organization_id)
     params["organization_id"] = json_organization_id
 
+    params["page"] = page
+
+    params["page_size"] = page_size
+
+    params["search"] = search
+
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
 
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/v1/agents/{agent_id}/versions/".format(agent_id=quote(str(agent_id), safe=""),),
+        "method": "get",
+        "url": "/v1/connections/",
         "params": params,
     }
 
-    
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
 
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentVersion | ErrorResponse | None:
-    if response.status_code == 201:
-        response_201 = AgentVersion.from_dict(response.json())
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> PaginatedConnectionListList | None:
+    if response.status_code == 200:
+        response_200 = PaginatedConnectionListList.from_dict(response.json())
 
 
 
-        return response_201
-
-    if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_404
+        return response_200
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -93,7 +72,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentVersion | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[PaginatedConnectionListList]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -103,35 +82,39 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[PaginatedConnectionListList]:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
+        connector_type (str | Unset):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[PaginatedConnectionListList]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        connector_type=connector_type,
 organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
 
     )
 
@@ -142,69 +125,77 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> PaginatedConnectionListList | None:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
+        connector_type (str | Unset):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        PaginatedConnectionListList
      """
 
 
     return sync_detailed(
-        agent_id=agent_id,
-client=client,
-body=body,
+        client=client,
+connector_type=connector_type,
 organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
 
     ).parsed
 
 async def asyncio_detailed(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[PaginatedConnectionListList]:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
+        connector_type (str | Unset):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[PaginatedConnectionListList]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        connector_type=connector_type,
 organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
 
     )
 
@@ -215,35 +206,39 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    agent_id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
+    connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
+    page: int | Unset = UNSET,
+    page_size: int | Unset = UNSET,
+    search: str | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> PaginatedConnectionListList | None:
+    """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
-        agent_id (UUID):
+        connector_type (str | Unset):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
+        page (int | Unset):
+        page_size (int | Unset):
+        search (str | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        PaginatedConnectionListList
      """
 
 
     return (await asyncio_detailed(
-        agent_id=agent_id,
-client=client,
-body=body,
+        client=client,
+connector_type=connector_type,
 organization_id=organization_id,
+page=page,
+page_size=page_size,
+search=search,
 
     )).parsed

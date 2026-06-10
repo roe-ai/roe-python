@@ -8,9 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_version import AgentVersion
-from ...models.agent_version_create_request import AgentVersionCreateRequest
-from ...models.error_response import ErrorResponse
+from ...models.connection import Connection
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -18,14 +16,12 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    agent_id: UUID,
+    id: UUID,
     *,
-    body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
-    headers: dict[str, Any] = {}
-
+    
 
     
 
@@ -41,51 +37,23 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "post",
-        "url": "/v1/agents/{agent_id}/versions/".format(agent_id=quote(str(agent_id), safe=""),),
+        "method": "get",
+        "url": "/v1/connections/{id}/".format(id=quote(str(id), safe=""),),
         "params": params,
     }
 
-    
-    if not isinstance(body, Unset):
-        _kwargs["json"] = body.to_dict()
 
-
-    headers["Content-Type"] = "application/json"
-
-    _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentVersion | ErrorResponse | None:
-    if response.status_code == 201:
-        response_201 = AgentVersion.from_dict(response.json())
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | None:
+    if response.status_code == 200:
+        response_200 = Connection.from_dict(response.json())
 
 
 
-        return response_201
-
-    if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_400
-
-    if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_403
-
-    if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_404
+        return response_200
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -93,7 +61,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentVersion | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -103,34 +71,29 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    agent_id: UUID,
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[Connection]:
+    """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
-        agent_id (UUID):
+        id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[Connection]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        id=id,
 organization_id=organization_id,
 
     )
@@ -142,68 +105,58 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    agent_id: UUID,
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Connection | None:
+    """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
-        agent_id (UUID):
+        id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        Connection
      """
 
 
     return sync_detailed(
-        agent_id=agent_id,
+        id=id,
 client=client,
-body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
-    agent_id: UUID,
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Response[Connection]:
+    """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
-        agent_id (UUID):
+        id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[Connection]
      """
 
 
     kwargs = _get_kwargs(
-        agent_id=agent_id,
-body=body,
+        id=id,
 organization_id=organization_id,
 
     )
@@ -215,35 +168,30 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    agent_id: UUID,
+    id: UUID,
     *,
     client: AuthenticatedClient | Client,
-    body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
-    """ Create a new agent version.
-
-     Create a new version of an existing agent.
+) -> Connection | None:
+    """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
-        agent_id (UUID):
+        id (UUID):
         organization_id (UUID | Unset):
-        body (AgentVersionCreateRequest | Unset): Serializer for creating new agent versions
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        Connection
      """
 
 
     return (await asyncio_detailed(
-        agent_id=agent_id,
+        id=id,
 client=client,
-body=body,
 organization_id=organization_id,
 
     )).parsed

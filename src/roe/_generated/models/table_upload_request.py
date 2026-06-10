@@ -32,7 +32,8 @@ class TableUploadRequest:
         Attributes:
             table_name (str): Name of the Roe table to create from the uploaded CSV
             file (File): CSV file to upload
-            with_headers (bool | Unset): Whether the first row of the CSV contains column headers Default: True.
+            with_headers (bool | Unset): If true, the first CSV row contains column headers and is not inserted as data; if
+                false, every row is inserted as data and columns are named column_1, column_2, etc. Default: True.
             organization_id (None | Unset | UUID): Optional organization ID. Organization API keys are already scoped to one
                 organization; if supplied, this must match that organization.
      """
