@@ -8,9 +8,10 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_job_result_many_request_request import AgentJobResultManyRequestRequest
-from ...models.error_response import ErrorResponse
-from ...models.paginated_agent_job_result_item_list import PaginatedAgentJobResultItemList
+from ...models.agent_job_result_item import AgentJobResultItem
+from ...models.agent_job_result_many_request import AgentJobResultManyRequest
+from ...models.agents_jobs_results_create_response_400 import AgentsJobsResultsCreateResponse400
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -19,7 +20,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body: AgentJobResultManyRequestRequest,
+    body: AgentJobResultManyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -55,23 +56,28 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | PaginatedAgentJobResultItemList | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem] | None:
     if response.status_code == 200:
-        response_200 = PaginatedAgentJobResultItemList.from_dict(response.json())
+        response_200 = []
+        _response_200 = response.json()
+        for response_200_item_data in (_response_200):
+            response_200_item = AgentJobResultItem.from_dict(response_200_item_data)
 
 
+
+            response_200.append(response_200_item)
 
         return response_200
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        response_400 = AgentsJobsResultsCreateResponse400.from_dict(response.json())
 
 
 
         return response_400
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -83,7 +89,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | PaginatedAgentJobResultItemList]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -94,25 +100,25 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobResultManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | PaginatedAgentJobResultItemList]:
+) -> Response[AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]]:
     """ Get results for multiple agent jobs
 
      Retrieve the detailed results for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequest): Serializer for bulk agent job results request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | PaginatedAgentJobResultItemList]
+        Response[AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]]
      """
 
 
@@ -130,25 +136,25 @@ organization_id=organization_id,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobResultManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | PaginatedAgentJobResultItemList | None:
+) -> AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem] | None:
     """ Get results for multiple agent jobs
 
      Retrieve the detailed results for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequest): Serializer for bulk agent job results request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | PaginatedAgentJobResultItemList
+        AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]
      """
 
 
@@ -161,25 +167,25 @@ organization_id=organization_id,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobResultManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | PaginatedAgentJobResultItemList]:
+) -> Response[AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]]:
     """ Get results for multiple agent jobs
 
      Retrieve the detailed results for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequest): Serializer for bulk agent job results request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | PaginatedAgentJobResultItemList]
+        Response[AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]]
      """
 
 
@@ -197,25 +203,25 @@ organization_id=organization_id,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobResultManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobResultManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | PaginatedAgentJobResultItemList | None:
+) -> AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem] | None:
     """ Get results for multiple agent jobs
 
      Retrieve the detailed results for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobResultManyRequestRequest): Serializer for bulk agent job results request.
+        body (AgentJobResultManyRequest): Serializer for bulk agent job results request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | PaginatedAgentJobResultItemList
+        AgentsJobsResultsCreateResponse400 | ErrorDetailResponse | list[AgentJobResultItem]
      """
 
 

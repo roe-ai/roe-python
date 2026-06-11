@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.table_query_status_enum import TableQueryStatusEnum
 from ..types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -30,7 +31,12 @@ class TableQueryResultResponse:
 
         Attributes:
             table_query_id (UUID):
-            status (str):
+            status (TableQueryStatusEnum): * `PENDING` - PENDING
+                * `STARTED` - STARTED
+                * `RETRY` - RETRY
+                * `SUCCESS` - SUCCESS
+                * `FAILURE` - FAILURE
+                * `REVOKED` - REVOKED
             error (None | str | Unset):
             columns (list[TableQueryResultResponseColumnsItem] | Unset):
             rows (list[TableQueryResultResponseRowsItem] | Unset): Rows keyed by column name. When truncated is true, an
@@ -44,7 +50,7 @@ class TableQueryResultResponse:
      """
 
     table_query_id: UUID
-    status: str
+    status: TableQueryStatusEnum
     error: None | str | Unset = UNSET
     columns: list[TableQueryResultResponseColumnsItem] | Unset = UNSET
     rows: list[TableQueryResultResponseRowsItem] | Unset = UNSET
@@ -62,7 +68,7 @@ class TableQueryResultResponse:
         from ..models.table_query_result_response_rows_item import TableQueryResultResponseRowsItem
         table_query_id = str(self.table_query_id)
 
-        status = self.status
+        status = self.status.value
 
         error: None | str | Unset
         if isinstance(self.error, Unset):
@@ -128,7 +134,10 @@ class TableQueryResultResponse:
 
 
 
-        status = d.pop("status")
+        status = TableQueryStatusEnum(d.pop("status"))
+
+
+
 
         def _parse_error(data: object) -> None | str | Unset:
             if data is None:

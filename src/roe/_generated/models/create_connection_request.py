@@ -46,6 +46,7 @@ class CreateConnectionRequest:
                 * `plaid` - PLAID
                 * `checkout_com` - CHECKOUT_COM
                 * `socure` - SOCURE
+                * `custom_mcp` - CUSTOM_MCP
             name (str):
             config (CreateConnectionRequestConfig):
             description (str | Unset):

@@ -8,22 +8,29 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 
 
 
 
 
 
-T = TypeVar("T", bound="AgentsRunAsyncManyResponse200")
+T = TypeVar("T", bound="AgentJobSingleStatus")
 
 
 
 @_attrs_define
-class AgentsRunAsyncManyResponse200:
-    """ Unspecified response body
-
+class AgentJobSingleStatus:
+    """ 
+        Attributes:
+            status (int): Status code. 0: PENDING, 1: STARTED, 2: RETRY, 3: SUCCESS, 4: FAILURE, 5: CANCELLED, 6: CACHED
+            timestamp (float): Unix timestamp in seconds (fractional)
+            error_message (str | Unset): Error message if status is RETRY or FAILURE
      """
 
+    status: int
+    timestamp: float
+    error_message: str | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -31,9 +38,21 @@ class AgentsRunAsyncManyResponse200:
 
 
     def to_dict(self) -> dict[str, Any]:
-        
+        status = self.status
+
+        timestamp = self.timestamp
+
+        error_message = self.error_message
+
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update({
+            "status": status,
+            "timestamp": timestamp,
+        })
+        if error_message is not UNSET:
+            field_dict["error_message"] = error_message
 
         return field_dict
 
@@ -42,12 +61,21 @@ class AgentsRunAsyncManyResponse200:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        agents_run_async_many_response_200 = cls(
+        status = d.pop("status")
+
+        timestamp = d.pop("timestamp")
+
+        error_message = d.pop("error_message", UNSET)
+
+        agent_job_single_status = cls(
+            status=status,
+            timestamp=timestamp,
+            error_message=error_message,
         )
 
 
-        agents_run_async_many_response_200.additional_properties = d
-        return agents_run_async_many_response_200
+        agent_job_single_status.additional_properties = d
+        return agent_job_single_status
 
     @property
     def additional_keys(self) -> list[str]:

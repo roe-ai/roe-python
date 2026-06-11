@@ -9,26 +9,27 @@ from attrs import field as _attrs_field
 from ..types import UNSET, Unset
 
 from typing import cast
-from uuid import UUID
 
 
 
 
 
 
-T = TypeVar("T", bound="AgentJobResultManyRequestRequest")
+T = TypeVar("T", bound="QdrantCleanupErrorResponse")
 
 
 
 @_attrs_define
-class AgentJobResultManyRequestRequest:
-    """ Serializer for bulk agent job results request.
+class QdrantCleanupErrorResponse:
+    """ 500 body when deleting an agent/version fails Qdrant collection cleanup.
 
         Attributes:
-            job_ids (list[UUID]): List of agent job IDs to retrieve results for
+            detail (str): Human-readable error detail
+            failed_collections (list[str]): Qdrant collections that could not be deleted
      """
 
-    job_ids: list[UUID]
+    detail: str
+    failed_collections: list[str]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -36,10 +37,9 @@ class AgentJobResultManyRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        job_ids = []
-        for job_ids_item_data in self.job_ids:
-            job_ids_item = str(job_ids_item_data)
-            job_ids.append(job_ids_item)
+        detail = self.detail
+
+        failed_collections = self.failed_collections
 
 
 
@@ -47,7 +47,8 @@ class AgentJobResultManyRequestRequest:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "job_ids": job_ids,
+            "detail": detail,
+            "failed_collections": failed_collections,
         })
 
         return field_dict
@@ -57,23 +58,19 @@ class AgentJobResultManyRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        job_ids = []
-        _job_ids = d.pop("job_ids")
-        for job_ids_item_data in (_job_ids):
-            job_ids_item = UUID(job_ids_item_data)
+        detail = d.pop("detail")
+
+        failed_collections = cast(list[str], d.pop("failed_collections"))
 
 
-
-            job_ids.append(job_ids_item)
-
-
-        agent_job_result_many_request_request = cls(
-            job_ids=job_ids,
+        qdrant_cleanup_error_response = cls(
+            detail=detail,
+            failed_collections=failed_collections,
         )
 
 
-        agent_job_result_many_request_request.additional_properties = d
-        return agent_job_result_many_request_request
+        qdrant_cleanup_error_response.additional_properties = d
+        return qdrant_cleanup_error_response
 
     @property
     def additional_keys(self) -> list[str]:

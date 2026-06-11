@@ -8,27 +8,24 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..types import UNSET, Unset
 
 
 
 
 
 
-T = TypeVar("T", bound="PatchedPatchedAgentVersionUpdateRequestRequest")
+T = TypeVar("T", bound="ConnectionDeleteErrorResponse")
 
 
 
 @_attrs_define
-class PatchedPatchedAgentVersionUpdateRequestRequest:
+class ConnectionDeleteErrorResponse:
     """ 
         Attributes:
-            version_name (str | Unset): New version name for the agent version.
-            description (str | Unset): New description for the agent version.
+            error (str):
      """
 
-    version_name: str | Unset = UNSET
-    description: str | Unset = UNSET
+    error: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -36,19 +33,14 @@ class PatchedPatchedAgentVersionUpdateRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        version_name = self.version_name
-
-        description = self.description
+        error = self.error
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "error": error,
         })
-        if version_name is not UNSET:
-            field_dict["version_name"] = version_name
-        if description is not UNSET:
-            field_dict["description"] = description
 
         return field_dict
 
@@ -57,18 +49,15 @@ class PatchedPatchedAgentVersionUpdateRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        version_name = d.pop("version_name", UNSET)
+        error = d.pop("error")
 
-        description = d.pop("description", UNSET)
-
-        patched_patched_agent_version_update_request_request = cls(
-            version_name=version_name,
-            description=description,
+        connection_delete_error_response = cls(
+            error=error,
         )
 
 
-        patched_patched_agent_version_update_request_request.additional_properties = d
-        return patched_patched_agent_version_update_request_request
+        connection_delete_error_response.additional_properties = d
+        return connection_delete_error_response
 
     @property
     def additional_keys(self) -> list[str]:

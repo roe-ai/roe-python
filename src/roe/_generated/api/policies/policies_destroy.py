@@ -8,7 +8,10 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.error_detail_response import ErrorDetailResponse
+from ...models.policy_delete_conflict import PolicyDeleteConflict
 from ...types import UNSET, Unset
+from typing import cast
 from uuid import UUID
 
 
@@ -45,9 +48,24 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorDetailResponse | PolicyDeleteConflict | None:
     if response.status_code == 204:
-        return None
+        response_204 = cast(Any, None)
+        return response_204
+
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
+    if response.status_code == 409:
+        response_409 = PolicyDeleteConflict.from_dict(response.json())
+
+
+
+        return response_409
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -55,7 +73,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorDetailResponse | PolicyDeleteConflict]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,10 +85,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any]:
+) -> Response[Any | ErrorDetailResponse | PolicyDeleteConflict]:
     """  Retrieve, update, or delete a single policy by ID
 
     Args:
@@ -82,7 +100,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Response[Any | ErrorDetailResponse | PolicyDeleteConflict]
      """
 
 
@@ -98,14 +116,13 @@ organization_id=organization_id,
 
     return _build_response(client=client, response=response)
 
-
-async def asyncio_detailed(
+def sync(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any]:
+) -> Any | ErrorDetailResponse | PolicyDeleteConflict | None:
     """  Retrieve, update, or delete a single policy by ID
 
     Args:
@@ -117,7 +134,36 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any]
+        Any | ErrorDetailResponse | PolicyDeleteConflict
+     """
+
+
+    return sync_detailed(
+        id=id,
+client=client,
+organization_id=organization_id,
+
+    ).parsed
+
+async def asyncio_detailed(
+    id: UUID,
+    *,
+    client: AuthenticatedClient,
+    organization_id: UUID | Unset = UNSET,
+
+) -> Response[Any | ErrorDetailResponse | PolicyDeleteConflict]:
+    """  Retrieve, update, or delete a single policy by ID
+
+    Args:
+        id (UUID):
+        organization_id (UUID | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Response[Any | ErrorDetailResponse | PolicyDeleteConflict]
      """
 
 
@@ -133,3 +179,31 @@ organization_id=organization_id,
 
     return _build_response(client=client, response=response)
 
+async def asyncio(
+    id: UUID,
+    *,
+    client: AuthenticatedClient,
+    organization_id: UUID | Unset = UNSET,
+
+) -> Any | ErrorDetailResponse | PolicyDeleteConflict | None:
+    """  Retrieve, update, or delete a single policy by ID
+
+    Args:
+        id (UUID):
+        organization_id (UUID | Unset):
+
+    Raises:
+        errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
+        httpx.TimeoutException: If the request takes longer than Client.timeout.
+
+    Returns:
+        Any | ErrorDetailResponse | PolicyDeleteConflict
+     """
+
+
+    return (await asyncio_detailed(
+        id=id,
+client=client,
+organization_id=organization_id,
+
+    )).parsed

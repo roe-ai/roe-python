@@ -83,7 +83,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     ordering: str | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
@@ -126,7 +126,7 @@ organization_id=organization_id,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     ordering: str | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
@@ -164,7 +164,7 @@ organization_id=organization_id,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     ordering: str | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
@@ -207,7 +207,7 @@ organization_id=organization_id,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     ordering: str | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,

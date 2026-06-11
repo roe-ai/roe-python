@@ -8,27 +8,25 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from typing import cast
-from uuid import UUID
 
 
 
 
 
 
-T = TypeVar("T", bound="AgentJobStatusManyRequestRequest")
+T = TypeVar("T", bound="AgentsRunVersionResponse400Type2")
 
 
 
 @_attrs_define
-class AgentJobStatusManyRequestRequest:
-    """ Serializer for bulk agent job status request.
+class AgentsRunVersionResponse400Type2:
+    """ Hand-built application error body.
 
         Attributes:
-            job_ids (list[UUID]): List of agent job IDs to retrieve statuses for
+            error (str):
      """
 
-    job_ids: list[UUID]
+    error: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -36,18 +34,13 @@ class AgentJobStatusManyRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        job_ids = []
-        for job_ids_item_data in self.job_ids:
-            job_ids_item = str(job_ids_item_data)
-            job_ids.append(job_ids_item)
-
-
+        error = self.error
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "job_ids": job_ids,
+            "error": error,
         })
 
         return field_dict
@@ -57,23 +50,15 @@ class AgentJobStatusManyRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        job_ids = []
-        _job_ids = d.pop("job_ids")
-        for job_ids_item_data in (_job_ids):
-            job_ids_item = UUID(job_ids_item_data)
+        error = d.pop("error")
 
-
-
-            job_ids.append(job_ids_item)
-
-
-        agent_job_status_many_request_request = cls(
-            job_ids=job_ids,
+        agents_run_version_response_400_type_2 = cls(
+            error=error,
         )
 
 
-        agent_job_status_many_request_request.additional_properties = d
-        return agent_job_status_many_request_request
+        agents_run_version_response_400_type_2.additional_properties = d
+        return agents_run_version_response_400_type_2
 
     @property
     def additional_keys(self) -> list[str]:

@@ -15,20 +15,21 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="AgentVersionUpdateRequestRequest")
+T = TypeVar("T", bound="TableQueryRequest")
 
 
 
 @_attrs_define
-class AgentVersionUpdateRequestRequest:
-    """ 
+class TableQueryRequest:
+    """ Request payload for running a public Roe table query.
+
         Attributes:
-            version_name (str | Unset): New version name for the agent version.
-            description (str | Unset): New description for the agent version.
+            sql (str): Single read-only ClickHouse SELECT or WITH ... SELECT query.
+            limit (int | Unset): Maximum rows returned. Defaults to 1000; maximum 1000. Default: 1000.
      """
 
-    version_name: str | Unset = UNSET
-    description: str | Unset = UNSET
+    sql: str
+    limit: int | Unset = 1000
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -36,19 +37,18 @@ class AgentVersionUpdateRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        version_name = self.version_name
+        sql = self.sql
 
-        description = self.description
+        limit = self.limit
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "sql": sql,
         })
-        if version_name is not UNSET:
-            field_dict["version_name"] = version_name
-        if description is not UNSET:
-            field_dict["description"] = description
+        if limit is not UNSET:
+            field_dict["limit"] = limit
 
         return field_dict
 
@@ -57,18 +57,18 @@ class AgentVersionUpdateRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        version_name = d.pop("version_name", UNSET)
+        sql = d.pop("sql")
 
-        description = d.pop("description", UNSET)
+        limit = d.pop("limit", UNSET)
 
-        agent_version_update_request_request = cls(
-            version_name=version_name,
-            description=description,
+        table_query_request = cls(
+            sql=sql,
+            limit=limit,
         )
 
 
-        agent_version_update_request_request.additional_properties = d
-        return agent_version_update_request_request
+        table_query_request.additional_properties = d
+        return table_query_request
 
     @property
     def additional_keys(self) -> list[str]:

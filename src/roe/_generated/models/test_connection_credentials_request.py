@@ -44,6 +44,7 @@ class TestConnectionCredentialsRequest:
                 * `plaid` - PLAID
                 * `checkout_com` - CHECKOUT_COM
                 * `socure` - SOCURE
+                * `custom_mcp` - CUSTOM_MCP
             config (TestConnectionCredentialsRequestConfig):
             auth_config (TestConnectionCredentialsRequestAuthConfig | Unset):
      """

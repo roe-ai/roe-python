@@ -8,28 +8,25 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..types import UNSET, Unset
 
 
 
 
 
 
-T = TypeVar("T", bound="TableQueryRequestRequest")
+T = TypeVar("T", bound="ConnectionsPartialUpdateResponse400Type2")
 
 
 
 @_attrs_define
-class TableQueryRequestRequest:
-    """ Request payload for running a public Roe table query.
+class ConnectionsPartialUpdateResponse400Type2:
+    """ Hand-built application error body.
 
         Attributes:
-            sql (str): Single read-only ClickHouse SELECT or WITH ... SELECT query.
-            limit (int | Unset): Maximum rows returned. Defaults to 1000; maximum 1000. Default: 1000.
+            error (str):
      """
 
-    sql: str
-    limit: int | Unset = 1000
+    error: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -37,18 +34,14 @@ class TableQueryRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        sql = self.sql
-
-        limit = self.limit
+        error = self.error
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "sql": sql,
+            "error": error,
         })
-        if limit is not UNSET:
-            field_dict["limit"] = limit
 
         return field_dict
 
@@ -57,18 +50,15 @@ class TableQueryRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        sql = d.pop("sql")
+        error = d.pop("error")
 
-        limit = d.pop("limit", UNSET)
-
-        table_query_request_request = cls(
-            sql=sql,
-            limit=limit,
+        connections_partial_update_response_400_type_2 = cls(
+            error=error,
         )
 
 
-        table_query_request_request.additional_properties = d
-        return table_query_request_request
+        connections_partial_update_response_400_type_2.additional_properties = d
+        return connections_partial_update_response_400_type_2
 
     @property
     def additional_keys(self) -> list[str]:

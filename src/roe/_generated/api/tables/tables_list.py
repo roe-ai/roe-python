@@ -8,7 +8,6 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
 from ...models.table_list_response import TableListResponse
 from typing import cast
 
@@ -33,7 +32,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | TableListResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> TableListResponse | None:
     if response.status_code == 200:
         response_200 = TableListResponse.from_dict(response.json())
 
@@ -41,20 +40,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
-    if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_400
-
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | TableListResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[TableListResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -65,9 +57,9 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[ErrorResponse | TableListResponse]:
+) -> Response[TableListResponse]:
     """ List Roe tables
 
      List Roe tables in the authenticated organization with column information.
@@ -77,7 +69,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | TableListResponse]
+        Response[TableListResponse]
      """
 
 
@@ -93,9 +85,9 @@ def sync_detailed(
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> ErrorResponse | TableListResponse | None:
+) -> TableListResponse | None:
     """ List Roe tables
 
      List Roe tables in the authenticated organization with column information.
@@ -105,7 +97,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | TableListResponse
+        TableListResponse
      """
 
 
@@ -116,9 +108,9 @@ def sync(
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[ErrorResponse | TableListResponse]:
+) -> Response[TableListResponse]:
     """ List Roe tables
 
      List Roe tables in the authenticated organization with column information.
@@ -128,7 +120,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | TableListResponse]
+        Response[TableListResponse]
      """
 
 
@@ -144,9 +136,9 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> ErrorResponse | TableListResponse | None:
+) -> TableListResponse | None:
     """ List Roe tables
 
      List Roe tables in the authenticated organization with column information.
@@ -156,7 +148,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | TableListResponse
+        TableListResponse
      """
 
 

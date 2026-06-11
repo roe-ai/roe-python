@@ -15,6 +15,7 @@ from uuid import UUID
 import datetime
 
 if TYPE_CHECKING:
+  from ..models.agent_tag import AgentTag
   from ..models.user_info import UserInfo
 
 
@@ -39,9 +40,9 @@ class BaseAgent:
             engine_class_id (str):
             current_version_id (UUID): UUID of the current agent version.
             job_count (int | None): Job count from annotation, or None when not fetched (use /agents/job-stats/).
-            most_recent_job (str):
+            most_recent_job (datetime.datetime | None):
             engine_name (str): Engine Display Name
-            tags (str):
+            tags (list[AgentTag]):
             creator (None | Unset | UserInfo):
      """
 
@@ -54,9 +55,9 @@ class BaseAgent:
     engine_class_id: str
     current_version_id: UUID
     job_count: int | None
-    most_recent_job: str
+    most_recent_job: datetime.datetime | None
     engine_name: str
-    tags: str
+    tags: list[AgentTag]
     creator: None | Unset | UserInfo = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -65,6 +66,7 @@ class BaseAgent:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.agent_tag import AgentTag
         from ..models.user_info import UserInfo
         id = str(self.id)
 
@@ -85,11 +87,20 @@ class BaseAgent:
         job_count: int | None
         job_count = self.job_count
 
-        most_recent_job = self.most_recent_job
+        most_recent_job: None | str
+        if isinstance(self.most_recent_job, datetime.datetime):
+            most_recent_job = self.most_recent_job.isoformat()
+        else:
+            most_recent_job = self.most_recent_job
 
         engine_name = self.engine_name
 
-        tags = self.tags
+        tags = []
+        for tags_item_data in self.tags:
+            tags_item = tags_item_data.to_dict()
+            tags.append(tags_item)
+
+
 
         creator: dict[str, Any] | None | Unset
         if isinstance(self.creator, Unset):
@@ -125,6 +136,7 @@ class BaseAgent:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.agent_tag import AgentTag
         from ..models.user_info import UserInfo
         d = dict(src_dict)
         id = UUID(d.pop("id"))
@@ -163,11 +175,35 @@ class BaseAgent:
         job_count = _parse_job_count(d.pop("job_count"))
 
 
-        most_recent_job = d.pop("most_recent_job")
+        def _parse_most_recent_job(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                most_recent_job_type_0 = isoparse(data)
+
+
+
+                return most_recent_job_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        most_recent_job = _parse_most_recent_job(d.pop("most_recent_job"))
+
 
         engine_name = d.pop("engine_name")
 
-        tags = d.pop("tags")
+        tags = []
+        _tags = d.pop("tags")
+        for tags_item_data in (_tags):
+            tags_item = AgentTag.from_dict(tags_item_data)
+
+
+
+            tags.append(tags_item)
+
 
         def _parse_creator(data: object) -> None | Unset | UserInfo:
             if data is None:

@@ -8,8 +8,10 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_execution_request_request import AgentExecutionRequestRequest
-from ...models.error_response import ErrorResponse
+from ...models.agent_execution_request import AgentExecutionRequest
+from ...models.agents_run_async_create_response_400_type_1 import AgentsRunAsyncCreateResponse400Type1
+from ...models.agents_run_async_create_response_400_type_2 import AgentsRunAsyncCreateResponse400Type2
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -19,7 +21,7 @@ from uuid import UUID
 def _get_kwargs(
     agent_id: UUID,
     *,
-    body: AgentExecutionRequestRequest | Unset = UNSET,
+    body: AgentExecutionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -57,41 +59,59 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | str | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str | None:
     if response.status_code == 200:
         response_200 = cast(str, response.json())
         return response_200
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        def _parse_response_400(data: object) -> AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str]:
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                response_400_type_0 = cast(list[str], data)
+
+                return response_400_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                response_400_type_1 = AgentsRunAsyncCreateResponse400Type1.from_dict(data)
 
 
+
+                return response_400_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            response_400_type_2 = AgentsRunAsyncCreateResponse400Type2.from_dict(data)
+
+
+
+            return response_400_type_2
+
+        response_400 = _parse_response_400(response.json())
 
         return response_400
 
-    if response.status_code == 402:
-        response_402 = ErrorResponse.from_dict(response.json())
-
-
-
-        return response_402
-
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_404
 
     if response.status_code == 500:
-        response_500 = ErrorResponse.from_dict(response.json())
+        response_500 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -103,7 +123,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | str]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -115,25 +135,26 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentExecutionRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: AgentExecutionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | str]:
+) -> Response[AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str]:
     """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
+        body (AgentExecutionRequest | Unset): Agent execution request. In addition to `metadata`,
+            every key of the agent's input definitions is accepted as a property (text value or file
+            upload).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | str]
+        Response[AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str]
      """
 
 
@@ -153,25 +174,26 @@ organization_id=organization_id,
 def sync(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentExecutionRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: AgentExecutionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | str | None:
+) -> AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str | None:
     """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
+        body (AgentExecutionRequest | Unset): Agent execution request. In addition to `metadata`,
+            every key of the agent's input definitions is accepted as a property (text value or file
+            upload).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | str
+        AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str
      """
 
 
@@ -186,25 +208,26 @@ organization_id=organization_id,
 async def asyncio_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentExecutionRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: AgentExecutionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | str]:
+) -> Response[AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str]:
     """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
+        body (AgentExecutionRequest | Unset): Agent execution request. In addition to `metadata`,
+            every key of the agent's input definitions is accepted as a property (text value or file
+            upload).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | str]
+        Response[AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str]
      """
 
 
@@ -224,25 +247,26 @@ organization_id=organization_id,
 async def asyncio(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentExecutionRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: AgentExecutionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | str | None:
+) -> AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str | None:
     """  Run agent asynchronously. Returns agent job id which can be used to check status and get results.
 
     Args:
         agent_id (UUID):
         organization_id (UUID | Unset):
-        body (AgentExecutionRequestRequest | Unset): Serializer for agent execution requests with
-            dynamic input fields.
+        body (AgentExecutionRequest | Unset): Agent execution request. In addition to `metadata`,
+            every key of the agent's input definitions is accepted as a property (text value or file
+            upload).
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | str
+        AgentsRunAsyncCreateResponse400Type1 | AgentsRunAsyncCreateResponse400Type2 | list[str] | ErrorDetailResponse | str
      """
 
 

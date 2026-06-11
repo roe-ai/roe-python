@@ -8,9 +8,10 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
 from ...models.table_upload_request import TableUploadRequest
 from ...models.table_upload_response import TableUploadResponse
+from ...models.upload_table_response_400_type_1 import UploadTableResponse400Type1
+from ...models.upload_table_response_400_type_2 import UploadTableResponse400Type2
 from typing import cast
 
 
@@ -41,7 +42,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | TableUploadResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2 | None:
     if response.status_code == 201:
         response_201 = TableUploadResponse.from_dict(response.json())
 
@@ -50,9 +51,34 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_201
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        def _parse_response_400(data: object) -> list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2:
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                response_400_type_0 = cast(list[str], data)
+
+                return response_400_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                response_400_type_1 = UploadTableResponse400Type1.from_dict(data)
 
 
+
+                return response_400_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            response_400_type_2 = UploadTableResponse400Type2.from_dict(data)
+
+
+
+            return response_400_type_2
+
+        response_400 = _parse_response_400(response.json())
 
         return response_400
 
@@ -62,7 +88,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | TableUploadResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -73,10 +99,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: TableUploadRequest,
 
-) -> Response[ErrorResponse | TableUploadResponse]:
+) -> Response[TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2]:
     """ Upload a CSV as a Roe table
 
      Create a Roe table in the authenticated organization from an uploaded CSV file. Organization API
@@ -91,7 +117,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | TableUploadResponse]
+        Response[TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2]
      """
 
 
@@ -108,10 +134,10 @@ def sync_detailed(
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: TableUploadRequest,
 
-) -> ErrorResponse | TableUploadResponse | None:
+) -> TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2 | None:
     """ Upload a CSV as a Roe table
 
      Create a Roe table in the authenticated organization from an uploaded CSV file. Organization API
@@ -126,7 +152,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | TableUploadResponse
+        TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2
      """
 
 
@@ -138,10 +164,10 @@ body=body,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: TableUploadRequest,
 
-) -> Response[ErrorResponse | TableUploadResponse]:
+) -> Response[TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2]:
     """ Upload a CSV as a Roe table
 
      Create a Roe table in the authenticated organization from an uploaded CSV file. Organization API
@@ -156,7 +182,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | TableUploadResponse]
+        Response[TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2]
      """
 
 
@@ -173,10 +199,10 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: TableUploadRequest,
 
-) -> ErrorResponse | TableUploadResponse | None:
+) -> TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2 | None:
     """ Upload a CSV as a Roe table
 
      Create a Roe table in the authenticated organization from an uploaded CSV file. Organization API
@@ -191,7 +217,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | TableUploadResponse
+        TableUploadResponse | list[str] | UploadTableResponse400Type1 | UploadTableResponse400Type2
      """
 
 

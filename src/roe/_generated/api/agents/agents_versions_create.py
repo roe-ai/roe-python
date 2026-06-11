@@ -10,7 +10,8 @@ from ... import errors
 
 from ...models.agent_version import AgentVersion
 from ...models.agent_version_create_request import AgentVersionCreateRequest
-from ...models.error_response import ErrorResponse
+from ...models.agents_versions_create_response_400 import AgentsVersionsCreateResponse400
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -58,7 +59,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentVersion | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse | None:
     if response.status_code == 201:
         response_201 = AgentVersion.from_dict(response.json())
 
@@ -67,21 +68,21 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_201
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        response_400 = AgentsVersionsCreateResponse400.from_dict(response.json())
 
 
 
         return response_400
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -93,7 +94,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentVersion | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -105,11 +106,11 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
+) -> Response[AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse]:
     """ Create a new agent version.
 
      Create a new version of an existing agent.
@@ -124,7 +125,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse]
      """
 
 
@@ -144,11 +145,11 @@ organization_id=organization_id,
 def sync(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
+) -> AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse | None:
     """ Create a new agent version.
 
      Create a new version of an existing agent.
@@ -163,7 +164,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse
      """
 
 
@@ -178,11 +179,11 @@ organization_id=organization_id,
 async def asyncio_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentVersion | ErrorResponse]:
+) -> Response[AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse]:
     """ Create a new agent version.
 
      Create a new version of an existing agent.
@@ -197,7 +198,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentVersion | ErrorResponse]
+        Response[AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse]
      """
 
 
@@ -217,11 +218,11 @@ organization_id=organization_id,
 async def asyncio(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: AgentVersionCreateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentVersion | ErrorResponse | None:
+) -> AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse | None:
     """ Create a new agent version.
 
      Create a new version of an existing agent.
@@ -236,7 +237,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentVersion | ErrorResponse
+        AgentVersion | AgentsVersionsCreateResponse400 | ErrorDetailResponse
      """
 
 

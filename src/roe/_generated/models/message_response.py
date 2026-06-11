@@ -8,29 +8,25 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from ..types import UNSET, Unset
 
 
 
 
 
 
-T = TypeVar("T", bound="AgentExecutionRequestRequest")
+T = TypeVar("T", bound="MessageResponse")
 
 
 
 @_attrs_define
-class AgentExecutionRequestRequest:
-    """ Serializer for agent execution requests with dynamic input fields.
+class MessageResponse:
+    """ Simple success acknowledgement body: `{"message": ...}`.
 
         Attributes:
-            metadata (Any | Unset): Optional metadata as JSON object or JSON string
-            agent_input_key_example (str | Unset): Agent input keys are dynamic based on agent configuration. Can be text or
-                file.
+            message (str):
      """
 
-    metadata: Any | Unset = UNSET
-    agent_input_key_example: str | Unset = UNSET
+    message: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -38,19 +34,14 @@ class AgentExecutionRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        metadata = self.metadata
-
-        agent_input_key_example = self.agent_input_key_example
+        message = self.message
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "message": message,
         })
-        if metadata is not UNSET:
-            field_dict["metadata"] = metadata
-        if agent_input_key_example is not UNSET:
-            field_dict["agent_input_key_example"] = agent_input_key_example
 
         return field_dict
 
@@ -59,18 +50,15 @@ class AgentExecutionRequestRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        metadata = d.pop("metadata", UNSET)
+        message = d.pop("message")
 
-        agent_input_key_example = d.pop("agent_input_key_example", UNSET)
-
-        agent_execution_request_request = cls(
-            metadata=metadata,
-            agent_input_key_example=agent_input_key_example,
+        message_response = cls(
+            message=message,
         )
 
 
-        agent_execution_request_request.additional_properties = d
-        return agent_execution_request_request
+        message_response.additional_properties = d
+        return message_response
 
     @property
     def additional_keys(self) -> list[str]:

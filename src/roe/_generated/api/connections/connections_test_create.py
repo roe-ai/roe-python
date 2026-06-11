@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.error_detail_response import ErrorDetailResponse
 from ...models.test_connection import TestConnection
 from ...types import UNSET, Unset
 from typing import cast
@@ -47,7 +48,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | TestConnection | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorDetailResponse | TestConnection | None:
     if response.status_code == 200:
         response_200 = TestConnection.from_dict(response.json())
 
@@ -63,7 +64,10 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_400
 
     if response.status_code == 404:
-        response_404 = cast(Any, None)
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
         return response_404
 
     if client.raise_on_unexpected_status:
@@ -72,7 +76,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | TestConnection]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorDetailResponse | TestConnection]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -84,10 +88,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | TestConnection]:
+) -> Response[ErrorDetailResponse | TestConnection]:
     """  Public API: POST /api/v1/connections/{id}/test/ - Test connection.
 
     Args:
@@ -99,7 +103,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | TestConnection]
+        Response[ErrorDetailResponse | TestConnection]
      """
 
 
@@ -118,10 +122,10 @@ organization_id=organization_id,
 def sync(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | TestConnection | None:
+) -> ErrorDetailResponse | TestConnection | None:
     """  Public API: POST /api/v1/connections/{id}/test/ - Test connection.
 
     Args:
@@ -133,7 +137,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | TestConnection
+        ErrorDetailResponse | TestConnection
      """
 
 
@@ -147,10 +151,10 @@ organization_id=organization_id,
 async def asyncio_detailed(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | TestConnection]:
+) -> Response[ErrorDetailResponse | TestConnection]:
     """  Public API: POST /api/v1/connections/{id}/test/ - Test connection.
 
     Args:
@@ -162,7 +166,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | TestConnection]
+        Response[ErrorDetailResponse | TestConnection]
      """
 
 
@@ -181,10 +185,10 @@ organization_id=organization_id,
 async def asyncio(
     id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | TestConnection | None:
+) -> ErrorDetailResponse | TestConnection | None:
     """  Public API: POST /api/v1/connections/{id}/test/ - Test connection.
 
     Args:
@@ -196,7 +200,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | TestConnection
+        ErrorDetailResponse | TestConnection
      """
 
 

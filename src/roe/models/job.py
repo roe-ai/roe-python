@@ -269,7 +269,10 @@ class JobBatch:
             cached = self._job_statuses.get(job_id)
             if cached is not None and cached["status"] in _TERMINAL_STATUSES:
                 status_map[job_id] = AgentJobStatus(
+                    id=UUID(str(job_id)),
                     status=cached["status"],
+                    created_at=None,
+                    last_updated_at=None,
                     timestamp=cached.get("timestamp", 0),
                     error_message=cached["error_message"]
                     if cached["error_message"] is not None
@@ -289,7 +292,10 @@ class JobBatch:
                     continue
                 err = self._extract_error_message(status_item)
                 status_map[job_id] = AgentJobStatus(
+                    id=UUID(str(job_id)),
                     status=stat_code,
+                    created_at=None,
+                    last_updated_at=None,
                     timestamp=self._extract_timestamp(status_item),
                     error_message=err if err is not None else _UNSET_SENTINEL(),
                 )

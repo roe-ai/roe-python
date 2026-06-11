@@ -14,15 +14,19 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="UpdateConnectionConfig")
+T = TypeVar("T", bound="UploadTableResponse400Type2")
 
 
 
 @_attrs_define
-class UpdateConnectionConfig:
-    """ 
+class UploadTableResponse400Type2:
+    """ Hand-built application error body.
+
+        Attributes:
+            error (str):
      """
 
+    error: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -30,9 +34,14 @@ class UpdateConnectionConfig:
 
 
     def to_dict(self) -> dict[str, Any]:
-        
+        error = self.error
+
+
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
+        field_dict.update({
+            "error": error,
+        })
 
         return field_dict
 
@@ -41,12 +50,15 @@ class UpdateConnectionConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        update_connection_config = cls(
+        error = d.pop("error")
+
+        upload_table_response_400_type_2 = cls(
+            error=error,
         )
 
 
-        update_connection_config.additional_properties = d
-        return update_connection_config
+        upload_table_response_400_type_2.additional_properties = d
+        return upload_table_response_400_type_2
 
     @property
     def additional_keys(self) -> list[str]:

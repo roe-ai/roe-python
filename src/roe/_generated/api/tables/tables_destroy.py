@@ -8,7 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
+from ...models.error_detail_response import ErrorDetailResponse
 from typing import cast
 
 
@@ -33,20 +33,21 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorDetailResponse | list[str] | None:
     if response.status_code == 204:
         response_204 = cast(Any, None)
         return response_204
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
-
-
+        response_400 = cast(list[str], response.json())
 
         return response_400
 
     if response.status_code == 404:
-        response_404 = cast(Any, None)
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
         return response_404
 
     if client.raise_on_unexpected_status:
@@ -55,7 +56,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorDetailResponse | list[str]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,9 +68,9 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     table_name: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[Any | ErrorDetailResponse | list[str]]:
     """ Delete a Roe table
 
      Permanently drop one Roe table from the authenticated organization and remove table-link metadata
@@ -83,7 +84,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[Any | ErrorDetailResponse | list[str]]
      """
 
 
@@ -101,9 +102,9 @@ def sync_detailed(
 def sync(
     table_name: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Any | ErrorResponse | None:
+) -> Any | ErrorDetailResponse | list[str] | None:
     """ Delete a Roe table
 
      Permanently drop one Roe table from the authenticated organization and remove table-link metadata
@@ -117,7 +118,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        Any | ErrorDetailResponse | list[str]
      """
 
 
@@ -130,9 +131,9 @@ client=client,
 async def asyncio_detailed(
     table_name: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[Any | ErrorDetailResponse | list[str]]:
     """ Delete a Roe table
 
      Permanently drop one Roe table from the authenticated organization and remove table-link metadata
@@ -146,7 +147,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[Any | ErrorDetailResponse | list[str]]
      """
 
 
@@ -164,9 +165,9 @@ async def asyncio_detailed(
 async def asyncio(
     table_name: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Any | ErrorResponse | None:
+) -> Any | ErrorDetailResponse | list[str] | None:
     """ Delete a Roe table
 
      Permanently drop one Roe table from the authenticated organization and remove table-link metadata
@@ -180,7 +181,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        Any | ErrorDetailResponse | list[str]
      """
 
 

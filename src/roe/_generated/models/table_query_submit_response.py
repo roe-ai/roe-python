@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.table_query_status_enum import TableQueryStatusEnum
 from dateutil.parser import isoparse
 from typing import cast
 from uuid import UUID
@@ -28,12 +29,17 @@ class TableQuerySubmitResponse:
 
         Attributes:
             table_query_id (UUID):
-            status (str):
+            status (TableQueryStatusEnum): * `PENDING` - PENDING
+                * `STARTED` - STARTED
+                * `RETRY` - RETRY
+                * `SUCCESS` - SUCCESS
+                * `FAILURE` - FAILURE
+                * `REVOKED` - REVOKED
             created_at (datetime.datetime):
      """
 
     table_query_id: UUID
-    status: str
+    status: TableQueryStatusEnum
     created_at: datetime.datetime
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -44,7 +50,7 @@ class TableQuerySubmitResponse:
     def to_dict(self) -> dict[str, Any]:
         table_query_id = str(self.table_query_id)
 
-        status = self.status
+        status = self.status.value
 
         created_at = self.created_at.isoformat()
 
@@ -69,7 +75,10 @@ class TableQuerySubmitResponse:
 
 
 
-        status = d.pop("status")
+        status = TableQueryStatusEnum(d.pop("status"))
+
+
+
 
         created_at = isoparse(d.pop("created_at"))
 

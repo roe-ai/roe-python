@@ -12,19 +12,19 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
-  from ..models.update_connection_auth_config import UpdateConnectionAuthConfig
-  from ..models.update_connection_config import UpdateConnectionConfig
+  from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
+  from ..models.update_connection_request_config import UpdateConnectionRequestConfig
 
 
 
 
 
-T = TypeVar("T", bound="UpdateConnection")
+T = TypeVar("T", bound="UpdateConnectionRequest")
 
 
 
 @_attrs_define
-class UpdateConnection:
+class UpdateConnectionRequest:
     """ Serializer for updating connections.
 
     Cross-state Pydantic validation (config + auth) lives in the view's
@@ -42,14 +42,14 @@ class UpdateConnection:
         Attributes:
             name (str | Unset):
             description (str | Unset):
-            config (UpdateConnectionConfig | Unset):
-            auth_config (UpdateConnectionAuthConfig | Unset):
+            config (UpdateConnectionRequestConfig | Unset):
+            auth_config (UpdateConnectionRequestAuthConfig | Unset):
      """
 
     name: str | Unset = UNSET
     description: str | Unset = UNSET
-    config: UpdateConnectionConfig | Unset = UNSET
-    auth_config: UpdateConnectionAuthConfig | Unset = UNSET
+    config: UpdateConnectionRequestConfig | Unset = UNSET
+    auth_config: UpdateConnectionRequestAuthConfig | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -57,8 +57,8 @@ class UpdateConnection:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.update_connection_auth_config import UpdateConnectionAuthConfig
-        from ..models.update_connection_config import UpdateConnectionConfig
+        from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
+        from ..models.update_connection_request_config import UpdateConnectionRequestConfig
         name = self.name
 
         description = self.description
@@ -91,34 +91,34 @@ class UpdateConnection:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.update_connection_auth_config import UpdateConnectionAuthConfig
-        from ..models.update_connection_config import UpdateConnectionConfig
+        from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
+        from ..models.update_connection_request_config import UpdateConnectionRequestConfig
         d = dict(src_dict)
         name = d.pop("name", UNSET)
 
         description = d.pop("description", UNSET)
 
         _config = d.pop("config", UNSET)
-        config: UpdateConnectionConfig | Unset
+        config: UpdateConnectionRequestConfig | Unset
         if isinstance(_config,  Unset):
             config = UNSET
         else:
-            config = UpdateConnectionConfig.from_dict(_config)
+            config = UpdateConnectionRequestConfig.from_dict(_config)
 
 
 
 
         _auth_config = d.pop("auth_config", UNSET)
-        auth_config: UpdateConnectionAuthConfig | Unset
+        auth_config: UpdateConnectionRequestAuthConfig | Unset
         if isinstance(_auth_config,  Unset):
             auth_config = UNSET
         else:
-            auth_config = UpdateConnectionAuthConfig.from_dict(_auth_config)
+            auth_config = UpdateConnectionRequestAuthConfig.from_dict(_auth_config)
 
 
 
 
-        update_connection = cls(
+        update_connection_request = cls(
             name=name,
             description=description,
             config=config,
@@ -126,8 +126,8 @@ class UpdateConnection:
         )
 
 
-        update_connection.additional_properties = d
-        return update_connection
+        update_connection_request.additional_properties = d
+        return update_connection_request
 
     @property
     def additional_keys(self) -> list[str]:

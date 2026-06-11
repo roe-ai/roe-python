@@ -1,6 +1,6 @@
 """Multipart-bypass helper for the dynamic-input agent run endpoints.
 
-`openapi-python-client`'s generated `AgentExecutionRequestRequest.to_multipart()`
+`openapi-python-client`'s generated `AgentExecutionRequest.to_multipart()`
 encodes every dynamic input as `(None, str(prop).encode(), "text/plain")` —
 which silently sends a file's `repr` instead of its bytes. To send real
 multipart with the right MIME types we bypass the model and call the generated

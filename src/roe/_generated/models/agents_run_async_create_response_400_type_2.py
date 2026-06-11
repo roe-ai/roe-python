@@ -8,28 +8,25 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
-from typing import cast
-
-if TYPE_CHECKING:
-  from ..models.agent_execution_request_request import AgentExecutionRequestRequest
 
 
 
 
 
-T = TypeVar("T", bound="AgentRunAsyncManyRequestRequest")
+
+T = TypeVar("T", bound="AgentsRunAsyncCreateResponse400Type2")
 
 
 
 @_attrs_define
-class AgentRunAsyncManyRequestRequest:
-    """ Serializer for agent async many execution requests.
+class AgentsRunAsyncCreateResponse400Type2:
+    """ Hand-built application error body.
 
         Attributes:
-            inputs (list[AgentExecutionRequestRequest]): List of agent execution requests to process
+            error (str):
      """
 
-    inputs: list[AgentExecutionRequestRequest]
+    error: str
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -37,19 +34,13 @@ class AgentRunAsyncManyRequestRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.agent_execution_request_request import AgentExecutionRequestRequest
-        inputs = []
-        for inputs_item_data in self.inputs:
-            inputs_item = inputs_item_data.to_dict()
-            inputs.append(inputs_item)
-
-
+        error = self.error
 
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "inputs": inputs,
+            "error": error,
         })
 
         return field_dict
@@ -58,25 +49,16 @@ class AgentRunAsyncManyRequestRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.agent_execution_request_request import AgentExecutionRequestRequest
         d = dict(src_dict)
-        inputs = []
-        _inputs = d.pop("inputs")
-        for inputs_item_data in (_inputs):
-            inputs_item = AgentExecutionRequestRequest.from_dict(inputs_item_data)
+        error = d.pop("error")
 
-
-
-            inputs.append(inputs_item)
-
-
-        agent_run_async_many_request_request = cls(
-            inputs=inputs,
+        agents_run_async_create_response_400_type_2 = cls(
+            error=error,
         )
 
 
-        agent_run_async_many_request_request.additional_properties = d
-        return agent_run_async_many_request_request
+        agents_run_async_create_response_400_type_2.additional_properties = d
+        return agents_run_async_create_response_400_type_2
 
     @property
     def additional_keys(self) -> list[str]:

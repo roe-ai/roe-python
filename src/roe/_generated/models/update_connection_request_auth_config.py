@@ -14,12 +14,12 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="UpdateConnectionAuthConfig")
+T = TypeVar("T", bound="UpdateConnectionRequestAuthConfig")
 
 
 
 @_attrs_define
-class UpdateConnectionAuthConfig:
+class UpdateConnectionRequestAuthConfig:
     """ 
      """
 
@@ -41,12 +41,12 @@ class UpdateConnectionAuthConfig:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        update_connection_auth_config = cls(
+        update_connection_request_auth_config = cls(
         )
 
 
-        update_connection_auth_config.additional_properties = d
-        return update_connection_auth_config
+        update_connection_request_auth_config.additional_properties = d
+        return update_connection_request_auth_config
 
     @property
     def additional_keys(self) -> list[str]:

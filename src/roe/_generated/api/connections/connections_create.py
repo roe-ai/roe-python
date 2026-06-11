@@ -9,9 +9,10 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.connection import Connection
+from ...models.connections_create_response_400_type_1 import ConnectionsCreateResponse400Type1
+from ...models.connections_create_response_400_type_2 import ConnectionsCreateResponse400Type2
 from ...models.create_connection_request import CreateConnectionRequest
 from ...models.duplicate_connection_response import DuplicateConnectionResponse
-from ...models.error_response import ErrorResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -56,7 +57,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse | None:
     if response.status_code == 201:
         response_201 = Connection.from_dict(response.json())
 
@@ -65,9 +66,34 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_201
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        def _parse_response_400(data: object) -> ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str]:
+            try:
+                if not isinstance(data, list):
+                    raise TypeError()
+                response_400_type_0 = cast(list[str], data)
+
+                return response_400_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                response_400_type_1 = ConnectionsCreateResponse400Type1.from_dict(data)
 
 
+
+                return response_400_type_1
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            if not isinstance(data, dict):
+                raise TypeError()
+            response_400_type_2 = ConnectionsCreateResponse400Type2.from_dict(data)
+
+
+
+            return response_400_type_2
+
+        response_400 = _parse_response_400(response.json())
 
         return response_400
 
@@ -84,7 +110,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -95,11 +121,11 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
+) -> Response[Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse]:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -112,7 +138,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Connection | DuplicateConnectionResponse | ErrorResponse]
+        Response[Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse]
      """
 
 
@@ -130,11 +156,11 @@ organization_id=organization_id,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
+) -> Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse | None:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -147,7 +173,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Connection | DuplicateConnectionResponse | ErrorResponse
+        Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse
      """
 
 
@@ -160,11 +186,11 @@ organization_id=organization_id,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Connection | DuplicateConnectionResponse | ErrorResponse]:
+) -> Response[Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse]:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -177,7 +203,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Connection | DuplicateConnectionResponse | ErrorResponse]
+        Response[Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse]
      """
 
 
@@ -195,11 +221,11 @@ organization_id=organization_id,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreateConnectionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Connection | DuplicateConnectionResponse | ErrorResponse | None:
+) -> Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse | None:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -212,7 +238,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Connection | DuplicateConnectionResponse | ErrorResponse
+        Connection | ConnectionsCreateResponse400Type1 | ConnectionsCreateResponse400Type2 | list[str] | DuplicateConnectionResponse
      """
 
 

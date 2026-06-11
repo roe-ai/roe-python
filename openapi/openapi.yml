@@ -68,6 +68,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -79,20 +81,30 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: organization_id query parameter is required.
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: organization_id is missing/invalid or a filter parameter is
+            invalid.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or organization access
             denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Organization not found.
     post:
       operationId: agents_create
@@ -107,6 +119,8 @@ paths:
             schema:
               $ref: '#/components/schemas/BaseAgentCreateRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
@@ -118,13 +132,22 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
           description: Invalid request data.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden.
       parameters:
       - name: organization_id
@@ -159,6 +182,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -189,14 +214,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
     put:
       operationId: agents_update
@@ -226,6 +251,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/BaseAgentUpdateRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -237,20 +264,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Invalid name provided.
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid update payload (e.g. blank name).
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
     patch:
       operationId: agents_partial_update
@@ -280,6 +316,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedBaseAgentUpdateRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -291,20 +329,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Invalid name provided.
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid update payload (e.g. blank name).
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
     delete:
       operationId: agents_destroy
@@ -329,6 +376,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '204':
           description: Base agent deleted successfully.
@@ -336,21 +385,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to delete this base agent denied or access to Agents
             feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Base agent ID doesn't exist.
         '500':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Failed to delete base agent or some Qdrant collections.
+                $ref: '#/components/schemas/QdrantCleanupErrorResponse'
+          description: Base agent deleted but Qdrant collection cleanup failed.
   /v1/agents/{agent_id}/duplicate/:
     post:
       operationId: agents_duplicate_create
@@ -375,6 +424,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
@@ -386,14 +437,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
   /v1/agents/{agent_id}/jobs/cancel-all/:
     post:
@@ -418,6 +469,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       deprecated: true
       responses:
         '204':
@@ -426,13 +479,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access forbidden
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found
   /v1/agents/{agent_id}/versions/:
     get:
@@ -458,6 +511,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -486,14 +541,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
     post:
       operationId: agents_versions_create
@@ -523,6 +578,8 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/AgentVersionCreateRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
@@ -551,20 +608,29 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
           description: Invalid request data.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent denied.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
   /v1/agents/{agent_id}/versions/{agent_version_id}/:
     get:
@@ -602,6 +668,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -613,14 +681,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to access this agent denied or access to Agents
             feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent version not found.
     put:
       operationId: agents_versions_update
@@ -657,22 +725,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentVersionUpdateRequestRequest'
+              $ref: '#/components/schemas/AgentVersionUpdateRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
           description: Agent version updated successfully.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to access this agent denied or access to Agents
             feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent version not found.
     patch:
       operationId: agents_versions_partial_update
@@ -709,22 +783,28 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/PatchedPatchedAgentVersionUpdateRequestRequest'
+              $ref: '#/components/schemas/PatchedAgentVersionUpdateRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MessageResponse'
           description: Agent version updated successfully.
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to access this agent denied or access to Agents
             feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent version not found.
     delete:
       operationId: agents_versions_destroy
@@ -756,6 +836,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '204':
           description: Agent version deleted successfully.
@@ -763,15 +845,21 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to delete this agent version denied or access to
             Agents feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent version not found.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/QdrantCleanupErrorResponse'
+          description: Agent version deleted but Qdrant collection cleanup failed.
   /v1/agents/{agent_id}/versions/current/:
     get:
       operationId: agents_versions_current_retrieve
@@ -801,6 +889,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -856,24 +946,19 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Permission to access this agent denied or access to Agents
             feature is forbidden.
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
   /v1/agents/jobs/{agent_job_id}/references/{resource_id}/:
     get:
       operationId: agents_jobs_references_retrieve
-      description: |-
-        Token-authenticated proxy view for serving web resource references from S3.
-
-        Uses Organization API Key authentication (for external API consumers).
-
-        URL: /api/v1/agents/jobs/{agent_job_id}/references/{resource_id}/
+      description: Serve a reference file associated with an agent job.
       parameters:
       - in: path
         name: agent_job_id
@@ -881,6 +966,11 @@ paths:
           type: string
           format: uuid
         required: true
+      - in: query
+        name: download
+        schema:
+          type: boolean
+        description: Set true to receive a Content-Disposition attachment header.
       - in: path
         name: resource_id
         schema:
@@ -897,9 +987,79 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: File bytes. The actual Content-Type matches the stored file
+            (image, html, video, ...).
+        '206':
+          content:
+            application/octet-stream:
+              schema:
+                type: string
+                format: binary
+          description: Partial content for Range requests.
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Invalid resource_id (bare array) or invalid S3 request ({error}).
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Access denied to resource.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Agent job or resource not found.
+        '416':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+          description: Range not satisfiable.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+          description: Error retrieving the resource from storage.
   /v1/agents/jobs/{agent_job_id}/result/:
     get:
       operationId: agents_jobs_result_retrieve
@@ -922,6 +1082,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -950,33 +1112,26 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
                 Example:
                   value:
-                    error: You don't have access to agents feature
+                    detail: You do not have permission to perform this action.
           description: Access to the Agents feature is forbidden or permission to
             access this agent job denied
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
                 Example:
                   value:
-                    error: Agent job not found
+                    detail: Not found.
           description: Agent job not found
         '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                Example:
-                  value:
-                    error: Failed to get agent job result data
-          description: Internal server error
+          description: Internal server error (agent job result data unavailable).
+            No structured response body.
   /v1/agents/jobs/{job_id}/cancel/:
     post:
       operationId: agents_jobs_cancel_create
@@ -1000,6 +1155,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       deprecated: true
       responses:
         '204':
@@ -1008,13 +1165,13 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access forbidden
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent job not found
   /v1/agents/jobs/{job_id}/delete-data/:
     post:
@@ -1041,6 +1198,8 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       deprecated: true
       responses:
         '200':
@@ -1053,26 +1212,20 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ApiErrorResponse'
           description: Bad request - job not in final state
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access forbidden
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent job not found
-        '500':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Failed to delete data
   /v1/agents/jobs/{job_id}/status/:
     get:
       operationId: agents_jobs_status_retrieve
@@ -1095,12 +1248,14 @@ paths:
       tags:
       - agents
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/AgentJobStatus'
+                $ref: '#/components/schemas/AgentJobSingleStatus'
               examples:
                 Example:
                   value:
@@ -1111,14 +1266,14 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access to the Agents feature is forbidden or permission to
             access this agent job denied
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent job not found
   /v1/agents/jobs/results/:
     post:
@@ -1133,26 +1288,39 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentJobResultManyRequestRequest'
+              $ref: '#/components/schemas/AgentJobResultManyRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/PaginatedAgentJobResultItemList'
+                type: array
+                items:
+                  $ref: '#/components/schemas/AgentJobResultItem'
           description: List of agent job results with outputs and metadata
         '400':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
           description: Invalid request data
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Access forbidden to one or more agent jobs
       parameters:
       - name: organization_id
@@ -1176,8 +1344,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentJobStatusManyRequestRequest'
+              $ref: '#/components/schemas/AgentJobStatusManyRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1191,14 +1361,24 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
           description: Invalid request data
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Access forbidden to one or more agent jobs
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Access to the Agents feature is forbidden or organization access
+            denied
       parameters:
       - name: organization_id
         in: query
@@ -1226,6 +1406,8 @@ paths:
       tags:
       - discovery
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1233,6 +1415,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/SupportedLLMModelList'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid capability filter value
   /v1/agents/run/{agent_id}/:
     post:
       operationId: agents_run
@@ -1260,7 +1457,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+              $ref: '#/components/schemas/AgentExecutionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1274,27 +1473,71 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request - invalid input data
-        '402':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Insufficient credits
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+              examples:
+                FieldValidationError:
+                  value:
+                    metadata:
+                    - Invalid JSON string.
+                  summary: Field validation error
+                ValidationError:
+                  value:
+                  - Missing input key document
+                  summary: Validation error
+          description: Invalid request data or agent input validation error
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+                $ref: '#/components/schemas/ErrorDetailResponse'
+              examples:
+                Forbidden:
+                  value:
+                    detail: Insufficient credits to start a new job
+          description: Access to the Agents feature is forbidden, permission to access
+            this agent denied, or insufficient credits
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
+              examples:
+                NotFound:
+                  value:
+                    detail: Not found.
+                  summary: Not found
           description: Agent not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Internal error while running the agent
   /v1/agents/run/{agent_id}/async/:
     post:
       operationId: agents_run_async_create
@@ -1322,7 +1565,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+              $ref: '#/components/schemas/AgentExecutionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1337,59 +1582,84 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
               examples:
-                Example:
+                FieldValidationError:
                   value:
-                    error: Invalid agent input data
+                    metadata:
+                    - Invalid JSON string.
+                  summary: Field validation error
+                ValidationError:
+                  value:
+                  - Missing input key document
+                  summary: Validation error
           description: Invalid request data or agent input validation error
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                Forbidden:
                   value:
-                    error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+                    detail: Insufficient credits to start a new job
+          description: Access to the Agents feature is forbidden, permission to access
+            this agent denied, or insufficient credits
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                NotFound:
                   value:
-                    error: Agent not found
+                    detail: Not found.
+                  summary: Not found
           description: Agent not found
-        '402':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                Example:
-                  value:
-                    error: Insufficient credits
-                    status_code: 402
-          description: Insufficient credits
         '500':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                InternalError:
                   value:
-                    error: Internal server error
-          description: Internal server error
+                    detail: An internal error occurred while processing your request.
+                  summary: Internal error
+          description: Internal error while scheduling the job
   /v1/agents/run/{agent_id}/async/many/:
     post:
       operationId: agents_run_async_many
-      description: Execute an agent with multiple inputs asynchronously and return
-        job IDs for tracking results.
+      description: 'Execute an agent with multiple inputs asynchronously and return
+        job IDs for tracking results. Job `metadata` is not supported on this endpoint:
+        any `metadata` key — top-level or inside an `inputs` item — is silently ignored
+        and the jobs are created with empty metadata. Use the single-run endpoints
+        to attach metadata to a job.'
       summary: Run agent asynchronously with multiple inputs
       parameters:
       - in: path
@@ -1413,16 +1683,19 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentRunAsyncManyRequestRequest'
+              $ref: '#/components/schemas/AgentRunAsyncManyRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                type: object
-                additionalProperties: {}
-                description: Unspecified response body
+                type: array
+                items:
+                  type: string
+                  format: uuid
               examples:
                 SuccessResponse:
                   value:
@@ -1435,51 +1708,71 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
               examples:
+                FieldValidationError:
+                  value:
+                    inputs:
+                    - This field is required.
+                  summary: Field validation error
                 ValidationError:
                   value:
-                    error: At least one agent input is required.
+                  - Worksheet query has been cancelled and cannot be executed
                   summary: Validation error
-                TooManyInputs:
-                  value:
-                    error: Too many inputs. Maximum 1000 inputs allowed.
-                  summary: Too many inputs
           description: Invalid request data or agent input validation error
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
                 Forbidden:
                   value:
-                    error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+                    detail: Insufficient credits to start a new job
+          description: Access to the Agents feature is forbidden, permission to access
+            this agent denied, or insufficient credits
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
                 NotFound:
                   value:
-                    error: Agent not found
+                    detail: Not found.
                   summary: Not found
           description: Agent not found
-        '402':
+        '500':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                InsufficientCredits:
-                  value:
-                    error: Insufficient credits
-                    status_code: 402
-                  summary: Insufficient credits
-          description: Insufficient credits
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Internal error while scheduling jobs
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/:
     post:
       operationId: agents_run_version
@@ -1514,7 +1807,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+              $ref: '#/components/schemas/AgentExecutionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1528,27 +1823,71 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request - invalid input data
-        '402':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Insufficient credits
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+              examples:
+                FieldValidationError:
+                  value:
+                    metadata:
+                    - Invalid JSON string.
+                  summary: Field validation error
+                ValidationError:
+                  value:
+                  - Missing input key document
+                  summary: Validation error
+          description: Invalid request data or agent input validation error
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+                $ref: '#/components/schemas/ErrorDetailResponse'
+              examples:
+                Forbidden:
+                  value:
+                    detail: Insufficient credits to start a new job
+          description: Access to the Agents feature is forbidden, permission to access
+            this agent denied, or insufficient credits
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Agent not found
+                $ref: '#/components/schemas/ErrorDetailResponse'
+              examples:
+                NotFound:
+                  value:
+                    detail: Not found.
+                  summary: Not found
+          description: Agent version not found
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Internal error while running the agent
   /v1/agents/run/{agent_id}/versions/{agent_version_id}/async/:
     post:
       operationId: agents_run_versions_async_create
@@ -1582,7 +1921,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/AgentExecutionRequestRequest'
+              $ref: '#/components/schemas/AgentExecutionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1597,54 +1938,76 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
               examples:
-                Example:
+                FieldValidationError:
                   value:
-                    error: Invalid agent input data
+                    metadata:
+                    - Invalid JSON string.
+                  summary: Field validation error
+                ValidationError:
+                  value:
+                  - Missing input key document
+                  summary: Validation error
           description: Invalid request data or agent input validation error
         '403':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                Forbidden:
                   value:
-                    error: You don't have access to agents feature
-          description: Access to the Agents feature is forbidden or permission to
-            access this agent denied
+                    detail: Insufficient credits to start a new job
+          description: Access to the Agents feature is forbidden, permission to access
+            this agent denied, or insufficient credits
         '404':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                NotFound:
                   value:
-                    error: Agent not found
-          description: Agent not found
-        '402':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-              examples:
-                Example:
-                  value:
-                    error: Insufficient credits
-                    status_code: 402
-          description: Insufficient credits
+                    detail: Not found.
+                  summary: Not found
+          description: Agent version not found
         '500':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
+                $ref: '#/components/schemas/ErrorDetailResponse'
               examples:
-                Example:
+                InternalError:
                   value:
-                    error: Internal server error
-          description: Internal server error
+                    detail: An internal error occurred while processing your request.
+                  summary: Internal error
+          description: Internal error while scheduling the job
   /v1/agents/types/:
     get:
       operationId: discovery_agent_engine_types_list
@@ -1656,6 +2019,8 @@ paths:
       tags:
       - discovery
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1700,6 +2065,8 @@ paths:
       tags:
       - connections
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1707,6 +2074,34 @@ paths:
               schema:
                 $ref: '#/components/schemas/PaginatedConnectionListList'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: organization_id missing or not a valid UUID (field->message
+            map; JWT auth only).
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Caller does not have access to this organization.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Organization not found.
     post:
       operationId: connections_create
       description: 'Public API: GET/POST /api/v1/connections/ - List/create connections.'
@@ -1719,6 +2114,8 @@ paths:
             schema:
               $ref: '#/components/schemas/CreateConnectionRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
@@ -1730,8 +2127,34 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Name collision in this organization.
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Validation failure (bare array of messages), serializer field
+            errors (map), or a name collision ({error}).
         '409':
           content:
             application/json:
@@ -1771,6 +2194,8 @@ paths:
       tags:
       - connections
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1778,6 +2203,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/Connection'
           description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Connection not found.
     put:
       operationId: connections_update
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -1804,8 +2235,9 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/ConnectionRequest'
-        required: true
+              $ref: '#/components/schemas/UpdateConnectionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1813,6 +2245,51 @@ paths:
               schema:
                 $ref: '#/components/schemas/Connection'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Validation failure (bare array of messages), serializer field
+            errors (map), or a name collision ({error}).
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Connection not found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateConnectionResponse'
+          description: A strict-identity duplicate of this connection already exists
+            in this organization.
     patch:
       operationId: connections_partial_update
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -1840,13 +2317,60 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedUpdateConnectionRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/UpdateConnection'
+                $ref: '#/components/schemas/Connection'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Validation failure (bare array of messages), serializer field
+            errors (map), or a name collision ({error}).
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Connection not found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DuplicateConnectionResponse'
+          description: A strict-identity duplicate of this connection already exists
+            in this organization.
     delete:
       operationId: connections_destroy
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -1869,9 +2393,29 @@ paths:
       tags:
       - connections
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Connection deleted successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDeleteErrorResponse'
+          description: Unable to delete this connection.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Connection not found.
+        '500':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDeleteErrorResponse'
+          description: Failed to delete connection credentials.
   /v1/connections/{id}/test/:
     post:
       operationId: connections_test_create
@@ -1894,6 +2438,8 @@ paths:
       tags:
       - connections
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1908,6 +2454,10 @@ paths:
                 $ref: '#/components/schemas/TestConnection'
           description: Connection test failed.
         '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Connection not found.
   /v1/connections/test-credentials/:
     post:
@@ -1922,6 +2472,8 @@ paths:
             schema:
               $ref: '#/components/schemas/TestConnectionCredentialsRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1933,8 +2485,33 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/TestConnection'
-          description: Missing connector_type or credential validation failed.
+                oneOf:
+                - type: object
+                  description: Credential validation or connection test failed (TestConnection
+                    result with success=false).
+                  properties:
+                    success:
+                      type: boolean
+                    message:
+                      type: string
+                    tested_at:
+                      type: string
+                      format: date-time
+                  required:
+                  - success
+                  - message
+                  - tested_at
+                - type: object
+                  description: connector_type missing from the request body.
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                description: 'Bad request: either the credential test failed (TestConnection
+                  body with success=false) or connector_type was missing ({error}).'
+          description: Credential validation or connection test failed (TestConnection
+            body with success=false), or connector_type was missing ({error}).
   /v1/connectors/:
     get:
       operationId: connectors_retrieve
@@ -1942,6 +2519,8 @@ paths:
       tags:
       - connectors
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1951,7 +2530,7 @@ paths:
           description: ''
   /v1/connectors/{connector_type}/:
     get:
-      operationId: connectors_retrieve_2
+      operationId: connectors_retrieve_by_type
       description: 'Public API: GET /api/v1/connectors/{connector_type}/ - Get connector
         details.'
       parameters:
@@ -1963,6 +2542,8 @@ paths:
       tags:
       - connectors
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -1970,6 +2551,17 @@ paths:
               schema:
                 $ref: '#/components/schemas/ConnectorMetadata'
           description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+              examples:
+                NotFound:
+                  value:
+                    detail: 'Unknown connector: foo. Available: slack, gmail'
+                  summary: Not found
+          description: Connector type not found
   /v1/policies/:
     get:
       operationId: policies_list
@@ -2010,6 +2602,8 @@ paths:
       tags:
       - policies
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -2029,13 +2623,30 @@ paths:
             schema:
               $ref: '#/components/schemas/CreatePolicyRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatePolicy'
-          description: ''
+          description: Policy created successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid request data.
       parameters:
       - name: organization_id
         in: query
@@ -2067,13 +2678,21 @@ paths:
       tags:
       - policies
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/Policy'
-          description: ''
+          description: Successfully retrieved policy.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
     put:
       operationId: policies_update
       description: Retrieve, update, or delete a single policy by ID
@@ -2101,13 +2720,36 @@ paths:
             schema:
               $ref: '#/components/schemas/UpdatePolicyRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdatePolicy'
-          description: ''
+          description: Policy updated successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid request data.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
     patch:
       operationId: policies_partial_update
       description: Retrieve, update, or delete a single policy by ID
@@ -2134,13 +2776,36 @@ paths:
           application/json:
             schema:
               $ref: '#/components/schemas/PatchedUpdatePolicyRequest'
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/UpdatePolicy'
-          description: ''
+          description: Policy updated successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid request data.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
     delete:
       operationId: policies_destroy
       description: Retrieve, update, or delete a single policy by ID
@@ -2162,9 +2827,23 @@ paths:
       tags:
       - policies
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '204':
-          description: No response body
+          description: Policy deleted successfully.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PolicyDeleteConflict'
+          description: Policy is in use by agents and cannot be deleted.
   /v1/policies/{policy_id}/versions/:
     get:
       operationId: policies_versions_list
@@ -2200,13 +2879,21 @@ paths:
       tags:
       - policies
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PaginatedPolicyVersionList'
-          description: ''
+          description: Successfully retrieved list of policy versions.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
     post:
       operationId: policies_versions_create
       description: Create a new policy version or list all versions of a specific
@@ -2235,13 +2922,37 @@ paths:
             schema:
               $ref: '#/components/schemas/CreatePolicyVersionRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/CreatePolicyVersion'
-          description: ''
+          description: Policy version created successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid request data (e.g. base_version_id does not belong
+            to this policy).
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy not found.
   /v1/policies/{policy_id}/versions/{version_id}/:
     get:
       operationId: policies_versions_retrieve
@@ -2272,13 +2983,21 @@ paths:
       tags:
       - policies
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
             application/json:
               schema:
                 $ref: '#/components/schemas/PolicyVersion'
-          description: ''
+          description: Successfully retrieved policy version.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Policy or policy version not found.
   /v1/tables/:
     get:
       operationId: tables_list
@@ -2287,6 +3006,8 @@ paths:
       tags:
       - tables
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -2294,12 +3015,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/TableListResponse'
           description: ''
-        '400':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request
   /v1/tables/{table_name}/:
     delete:
       operationId: tables_destroy
@@ -2315,6 +3030,8 @@ paths:
       tags:
       - tables
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '204':
           description: No response body
@@ -2322,9 +3039,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request
+                type: array
+                items:
+                  type: string
+                description: 'DRF ValidationError raised with a message string: the
+                  body is a bare JSON array of error messages.'
+          description: Invalid table name (bare array of messages).
         '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Table not found
   /v1/tables/{table_name}/describe/:
     get:
@@ -2342,6 +3067,8 @@ paths:
       tags:
       - tables
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -2353,9 +3080,17 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request
+                type: array
+                items:
+                  type: string
+                description: 'DRF ValidationError raised with a message string: the
+                  body is a bare JSON array of error messages.'
+          description: Invalid table name (bare array of messages).
         '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Table not found
   /v1/tables/{table_name}/preview/:
     get:
@@ -2381,6 +3116,8 @@ paths:
       tags:
       - tables
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -2392,9 +3129,39 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Invalid table name (bare array of messages) or invalid limit
+            query param (field error map).
         '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
           description: Table not found
   /v1/tables/query/:
     post:
@@ -2408,8 +3175,10 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/TableQueryRequestRequest'
+              $ref: '#/components/schemas/TableQueryRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '202':
           content:
@@ -2417,6 +3186,21 @@ paths:
               schema:
                 $ref: '#/components/schemas/TableQuerySubmitResponse'
           description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid request body (field error map).
   /v1/tables/query/{table_query_id}/result/:
     get:
       operationId: tables_query_result_retrieve
@@ -2432,6 +3216,8 @@ paths:
       tags:
       - tables
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
           content:
@@ -2439,6 +3225,18 @@ paths:
               schema:
                 $ref: '#/components/schemas/TableQueryResultResponse'
           description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: No access to this query's organization.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Table query or its results not found.
   /v1/tables/upload/:
     post:
       operationId: upload_table
@@ -2455,6 +3253,8 @@ paths:
             schema:
               $ref: '#/components/schemas/TableUploadRequest'
         required: true
+      security:
+      - apiKeyAuth: []
       responses:
         '201':
           content:
@@ -2466,17 +3266,51 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorResponse'
-          description: Bad request
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: Serializer field errors (map), or import-time validation failures
+            such as a duplicate/invalid table name or an empty CSV (bare array of
+            messages).
   /v1/users/current_user/:
     get:
       operationId: users_current_user_retrieve
+      summary: Get the current user
       tags:
       - users
       - sdk
+      security:
+      - apiKeyAuth: []
       responses:
         '200':
-          description: No response body
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+          description: ''
 components:
   schemas:
     AgentDatum:
@@ -2526,17 +3360,23 @@ components:
       - engine_types
       - engines
       - total_count
-    AgentExecutionRequestRequest:
+    AgentExecutionRequest:
       type: object
-      description: Serializer for agent execution requests with dynamic input fields.
+      description: Agent execution request. In addition to `metadata`, every key of
+        the agent's input definitions is accepted as a property (text value or file
+        upload).
       properties:
         metadata:
-          description: Optional metadata as JSON object or JSON string
-        agent_input_key_example:
-          type: string
-          minLength: 1
-          description: Agent input keys are dynamic based on agent configuration.
-            Can be text or file.
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: Optional metadata stored as-is on the created agent job. A
+            JSON-encoded object string is also accepted; null is treated the same
+            as omitting the field (empty metadata). Only honored by the single-run
+            endpoints — when this object is an item of the run-async-many `inputs`
+            list, `metadata` is ignored.
+      additionalProperties: true
     AgentInputDefinition:
       type: object
       properties:
@@ -2561,6 +3401,7 @@ components:
       - key
     AgentJobDeleteDataResponse:
       type: object
+      description: Response payload of purge_agent_job_data (delete-data and :purgeData).
       properties:
         status:
           type: string
@@ -2582,14 +3423,18 @@ components:
           type: integer
           description: Number of workflow artifacts that failed to delete
         errors:
-          type: array
-          items: {}
-          description: List of errors encountered during deletion
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+          description: List of errors encountered during deletion; null when none
       required:
       - artifacts_deleted_count
       - artifacts_failed_count
       - blob_sanitized
       - deleted_count
+      - errors
       - failed_count
       - status
     AgentJobResultItem:
@@ -2664,7 +3509,7 @@ components:
       - output_tokens
       - result
       - status
-    AgentJobResultManyRequestRequest:
+    AgentJobResultManyRequest:
       type: object
       description: Serializer for bulk agent job results request.
       properties:
@@ -2714,7 +3559,7 @@ components:
       - inputs
       - output_tokens
       - outputs
-    AgentJobStatus:
+    AgentJobSingleStatus:
       type: object
       properties:
         status:
@@ -2722,15 +3567,58 @@ components:
           description: 'Status code. 0: PENDING, 1: STARTED, 2: RETRY, 3: SUCCESS,
             4: FAILURE, 5: CANCELLED, 6: CACHED'
         timestamp:
-          type: integer
-          description: Unix timestamp in seconds
+          type: number
+          format: double
+          description: Unix timestamp in seconds (fractional)
         error_message:
           type: string
           description: Error message if status is RETRY or FAILURE
       required:
       - status
       - timestamp
-    AgentJobStatusManyRequestRequest:
+    AgentJobStatus:
+      type: object
+      description: Serializer for individual agent job status response.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Agent job ID
+        status:
+          type:
+          - integer
+          - 'null'
+          description: Current status code (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS,
+            4=FAILURE, 5=CANCELLED, 6=CACHED)
+        created_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the job was created
+        last_updated_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: When the job was last updated
+        timestamp:
+          type:
+          - number
+          - 'null'
+          format: double
+          description: Unix timestamp in seconds from the latest status event
+        error_message:
+          type:
+          - string
+          - 'null'
+          description: Error message if status is FAILURE or RETRY
+      required:
+      - created_at
+      - id
+      - last_updated_at
+      - status
+    AgentJobStatusManyRequest:
       type: object
       description: Serializer for bulk agent job status request.
       properties:
@@ -2743,17 +3631,50 @@ components:
           minItems: 1
       required:
       - job_ids
-    AgentRunAsyncManyRequestRequest:
+    AgentRunAsyncManyRequest:
       type: object
       description: Serializer for agent async many execution requests.
       properties:
         inputs:
           type: array
           items:
-            $ref: '#/components/schemas/AgentExecutionRequestRequest'
+            $ref: '#/components/schemas/AgentExecutionRequest'
           description: List of agent execution requests to process
       required:
       - inputs
+    AgentTag:
+      type: object
+      description: Serializer for AgentTag model
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 50
+        color:
+          $ref: '#/components/schemas/ColorEnum'
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        creator:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+        usage_count:
+          type: integer
+          description: Count of agents using this tag
+          readOnly: true
+      required:
+      - color
+      - created_at
+      - creator
+      - id
+      - name
+      - usage_count
     AgentVersion:
       type: object
       description: Serializer for Agent (version) model
@@ -2837,7 +3758,7 @@ components:
           description: List of input definitions for this agent version.
         engine_config:
           description: Engine configuration as a dictionary of string key-value pairs.
-    AgentVersionUpdateRequestRequest:
+    AgentVersionUpdateRequest:
       type: object
       properties:
         version_name:
@@ -2848,6 +3769,15 @@ components:
           type: string
           minLength: 1
           description: New description for the agent version.
+    ApiErrorResponse:
+      type: object
+      description: 'Hand-built application error body: `Response({"error": ...}, 4xx/5xx)`.'
+      properties:
+        error:
+          type: string
+          description: Application error message
+      required:
+      - error
     BaseAgent:
       type: object
       description: Serializer for BaseAgent (agent config)
@@ -2893,14 +3823,19 @@ components:
           description: Job count from annotation, or None when not fetched (use /agents/job-stats/).
           readOnly: true
         most_recent_job:
-          type: string
+          type:
+          - string
+          - 'null'
+          format: date-time
           readOnly: true
         engine_name:
           type: string
           description: Engine Display Name
           readOnly: true
         tags:
-          type: string
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentTag'
           readOnly: true
       required:
       - cache_failed_jobs
@@ -2961,6 +3896,26 @@ components:
         cache_failed_jobs:
           type: boolean
           description: Whether to cache failed jobs for this agent.
+    ColorEnum:
+      enum:
+      - blue
+      - green
+      - purple
+      - orange
+      - red
+      - yellow
+      - gray
+      - pink
+      type: string
+      description: |-
+        * `blue` - Blue
+        * `green` - Green
+        * `purple` - Purple
+        * `orange` - Orange
+        * `red` - Red
+        * `yellow` - Yellow
+        * `gray` - Gray
+        * `pink` - Pink
     Connection:
       type: object
       description: |-
@@ -3018,6 +3973,13 @@ components:
       - organization
       - updated_at
       - user
+    ConnectionDeleteErrorResponse:
+      type: object
+      properties:
+        error:
+          type: string
+      required:
+      - error
     ConnectionList:
       type: object
       description: |-
@@ -3068,34 +4030,6 @@ components:
       - organization
       - updated_at
       - user
-    ConnectionRequest:
-      type: object
-      description: |-
-        Serializer for Connection model.
-        Returns:
-        - config: Non-sensitive config from DB
-        - auth_config: Actual auth credentials from Secrets Manager (not the internal reference)
-      properties:
-        organization:
-          type: string
-          format: uuid
-        connector_type:
-          type: string
-          minLength: 1
-          maxLength: 50
-        name:
-          type: string
-          minLength: 1
-          maxLength: 250
-        description:
-          type: string
-        config: {}
-        status:
-          $ref: '#/components/schemas/StatusEnum'
-      required:
-      - connector_type
-      - name
-      - organization
     ConnectorListResponse:
       type: object
       properties:
@@ -3154,6 +4088,7 @@ components:
       - plaid
       - checkout_com
       - socure
+      - custom_mcp
       type: string
       description: |-
         * `snowflake` - SNOWFLAKE
@@ -3171,6 +4106,7 @@ components:
         * `plaid` - PLAID
         * `checkout_com` - CHECKOUT_COM
         * `socure` - SOCURE
+        * `custom_mcp` - CUSTOM_MCP
     CreateConnectionRequest:
       type: object
       description: |-
@@ -3294,6 +4230,25 @@ components:
           description: ID of the version this was derived from
       required:
       - content
+    DependentAgentInfo:
+      type: object
+      description: An agent version that references a policy (see get_agents_using_policy).
+      properties:
+        base_agent_id:
+          type: string
+          format: uuid
+        agent_name:
+          type: string
+        version_id:
+          type: string
+          format: uuid
+        version_name:
+          type: string
+      required:
+      - agent_name
+      - base_agent_id
+      - version_id
+      - version_name
     DuplicateConnectionExisting:
       type: object
       description: Identifying summary of the existing connection that triggered a
@@ -3319,37 +4274,23 @@ components:
       required:
       - error
       - existing_connection
-    ErrorResponse:
+    ErrorDetailResponse:
       type: object
+      description: 'DRF default error body: NotFound, PermissionDenied, Http404, etc.'
+      properties:
+        detail:
+          type: string
+          description: Human-readable error detail
+      required:
+      - detail
+    MessageResponse:
+      type: object
+      description: 'Simple success acknowledgement body: `{"message": ...}`.'
       properties:
         message:
           type: string
-          description: Error message
       required:
       - message
-    PaginatedAgentJobResultItemList:
-      type: object
-      required:
-      - count
-      - results
-      properties:
-        count:
-          type: integer
-          example: 123
-        next:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=4
-        previous:
-          type: string
-          nullable: true
-          format: uri
-          example: http://api.example.org/accounts/?page=2
-        results:
-          type: array
-          items:
-            $ref: '#/components/schemas/AgentJobResultItem'
     PaginatedBaseAgentList:
       type: object
       required:
@@ -3442,6 +4383,17 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyVersion'
+    PatchedAgentVersionUpdateRequest:
+      type: object
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: New version name for the agent version.
+        description:
+          type: string
+          minLength: 1
+          description: New description for the agent version.
     PatchedBaseAgentUpdateRequest:
       type: object
       description: Serializer for updating BaseAgent
@@ -3456,17 +4408,6 @@ components:
         cache_failed_jobs:
           type: boolean
           description: Whether to cache failed jobs for this agent.
-    PatchedPatchedAgentVersionUpdateRequestRequest:
-      type: object
-      properties:
-        version_name:
-          type: string
-          minLength: 1
-          description: New version name for the agent version.
-        description:
-          type: string
-          minLength: 1
-          description: New description for the agent version.
     PatchedUpdateConnectionRequest:
       type: object
       description: |-
@@ -3544,6 +4485,20 @@ components:
       - name
       - organization_id
       - updated_at
+    PolicyDeleteConflict:
+      type: object
+      description: 409 body when a policy cannot be deleted because agents reference
+        it.
+      properties:
+        error:
+          type: string
+        dependent_agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/DependentAgentInfo'
+      required:
+      - dependent_agents
+      - error
     PolicyVersion:
       type: object
       description: |-
@@ -3576,7 +4531,9 @@ components:
           - $ref: '#/components/schemas/PolicyVersionCreatedBy'
           readOnly: true
         base_version_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
           readOnly: true
       required:
@@ -3607,6 +4564,22 @@ components:
       - display_name
       - email
       - id
+    QdrantCleanupErrorResponse:
+      type: object
+      description: 500 body when deleting an agent/version fails Qdrant collection
+        cleanup.
+      properties:
+        detail:
+          type: string
+          description: Human-readable error detail
+        failed_collections:
+          type: array
+          items:
+            type: string
+          description: Qdrant collections that could not be deleted
+      required:
+      - detail
+      - failed_collections
     StatusEnum:
       enum:
       - active
@@ -3775,7 +4748,7 @@ components:
       - row_count
       - rows
       - table_name
-    TableQueryRequestRequest:
+    TableQueryRequest:
       type: object
       description: Request payload for running a public Roe table query.
       properties:
@@ -3800,7 +4773,7 @@ components:
           type: string
           format: uuid
         status:
-          type: string
+          $ref: '#/components/schemas/TableQueryStatusEnum'
         error:
           type:
           - string
@@ -3832,6 +4805,22 @@ components:
       required:
       - status
       - table_query_id
+    TableQueryStatusEnum:
+      enum:
+      - PENDING
+      - STARTED
+      - RETRY
+      - SUCCESS
+      - FAILURE
+      - REVOKED
+      type: string
+      description: |-
+        * `PENDING` - PENDING
+        * `STARTED` - STARTED
+        * `RETRY` - RETRY
+        * `SUCCESS` - SUCCESS
+        * `FAILURE` - FAILURE
+        * `REVOKED` - REVOKED
     TableQuerySubmitResponse:
       type: object
       description: Response payload for submitting a public Roe table query.
@@ -3840,7 +4829,7 @@ components:
           type: string
           format: uuid
         status:
-          type: string
+          $ref: '#/components/schemas/TableQueryStatusEnum'
         created_at:
           type: string
           format: date-time
@@ -3923,7 +4912,7 @@ components:
       required:
       - config
       - connector_type
-    UpdateConnection:
+    UpdateConnectionRequest:
       type: object
       description: |-
         Serializer for updating connections.
@@ -3942,6 +4931,7 @@ components:
       properties:
         name:
           type: string
+          minLength: 1
           maxLength: 250
         description:
           type: string
@@ -4001,6 +4991,51 @@ components:
           type: string
       required:
       - name
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+        first_name:
+          type: string
+        last_name:
+          type: string
+        display_name:
+          type: string
+          readOnly: true
+        is_staff:
+          type: boolean
+          default: false
+        is_superuser:
+          type: boolean
+          default: false
+        is_active:
+          type: boolean
+          default: true
+        date_joined:
+          type: string
+          format: date-time
+          readOnly: true
+        is_first_login:
+          type: boolean
+          default: true
+        is_email_verified:
+          type: boolean
+          default: false
+        is_mfa_enabled:
+          type: boolean
+          default: true
+      required:
+      - date_joined
+      - display_name
+      - email
+      - first_name
+      - id
+      - last_name
     UserInfo:
       type: object
       properties:
@@ -4025,6 +5060,12 @@ components:
       - display_name
       - email
       - id
+  securitySchemes:
+    apiKeyAuth:
+      type: http
+      scheme: bearer
+      description: Organization API key passed as a Bearer token. This is the scheme
+        used by the public SDK surface.
 servers:
 - url: https://api.roe-ai.com
   description: Production API

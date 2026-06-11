@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.discovery_supported_models_list_response_400 import DiscoverySupportedModelsListResponse400
 from ...models.supported_llm_model_list import SupportedLLMModelList
 from ...types import UNSET, Unset
 from typing import cast
@@ -42,7 +43,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> SupportedLLMModelList | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> DiscoverySupportedModelsListResponse400 | SupportedLLMModelList | None:
     if response.status_code == 200:
         response_200 = SupportedLLMModelList.from_dict(response.json())
 
@@ -50,13 +51,20 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
+    if response.status_code == 400:
+        response_400 = DiscoverySupportedModelsListResponse400.from_dict(response.json())
+
+
+
+        return response_400
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[SupportedLLMModelList]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[DiscoverySupportedModelsListResponse400 | SupportedLLMModelList]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -67,10 +75,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     capability: str | Unset = UNSET,
 
-) -> Response[SupportedLLMModelList]:
+) -> Response[DiscoverySupportedModelsListResponse400 | SupportedLLMModelList]:
     """ List supported model IDs
 
      Returns non-deprecated text-capable model IDs accepted in engine_config.model, with capability and
@@ -85,7 +93,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[SupportedLLMModelList]
+        Response[DiscoverySupportedModelsListResponse400 | SupportedLLMModelList]
      """
 
 
@@ -102,10 +110,10 @@ def sync_detailed(
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     capability: str | Unset = UNSET,
 
-) -> SupportedLLMModelList | None:
+) -> DiscoverySupportedModelsListResponse400 | SupportedLLMModelList | None:
     """ List supported model IDs
 
      Returns non-deprecated text-capable model IDs accepted in engine_config.model, with capability and
@@ -120,7 +128,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        SupportedLLMModelList
+        DiscoverySupportedModelsListResponse400 | SupportedLLMModelList
      """
 
 
@@ -132,10 +140,10 @@ capability=capability,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     capability: str | Unset = UNSET,
 
-) -> Response[SupportedLLMModelList]:
+) -> Response[DiscoverySupportedModelsListResponse400 | SupportedLLMModelList]:
     """ List supported model IDs
 
      Returns non-deprecated text-capable model IDs accepted in engine_config.model, with capability and
@@ -150,7 +158,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[SupportedLLMModelList]
+        Response[DiscoverySupportedModelsListResponse400 | SupportedLLMModelList]
      """
 
 
@@ -167,10 +175,10 @@ async def asyncio_detailed(
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     capability: str | Unset = UNSET,
 
-) -> SupportedLLMModelList | None:
+) -> DiscoverySupportedModelsListResponse400 | SupportedLLMModelList | None:
     """ List supported model IDs
 
      Returns non-deprecated text-capable model IDs accepted in engine_config.model, with capability and
@@ -185,7 +193,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        SupportedLLMModelList
+        DiscoverySupportedModelsListResponse400 | SupportedLLMModelList
      """
 
 

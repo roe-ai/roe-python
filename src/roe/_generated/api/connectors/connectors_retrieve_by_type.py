@@ -9,6 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.connector_metadata import ConnectorMetadata
+from ...models.error_detail_response import ErrorDetailResponse
 from typing import cast
 
 
@@ -33,7 +34,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ConnectorMetadata | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ConnectorMetadata | ErrorDetailResponse | None:
     if response.status_code == 200:
         response_200 = ConnectorMetadata.from_dict(response.json())
 
@@ -41,13 +42,20 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ConnectorMetadata]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ConnectorMetadata | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -59,9 +67,9 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     connector_type: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[ConnectorMetadata]:
+) -> Response[ConnectorMetadata | ErrorDetailResponse]:
     """  Public API: GET /api/v1/connectors/{connector_type}/ - Get connector details.
 
     Args:
@@ -72,7 +80,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ConnectorMetadata]
+        Response[ConnectorMetadata | ErrorDetailResponse]
      """
 
 
@@ -90,9 +98,9 @@ def sync_detailed(
 def sync(
     connector_type: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> ConnectorMetadata | None:
+) -> ConnectorMetadata | ErrorDetailResponse | None:
     """  Public API: GET /api/v1/connectors/{connector_type}/ - Get connector details.
 
     Args:
@@ -103,7 +111,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ConnectorMetadata
+        ConnectorMetadata | ErrorDetailResponse
      """
 
 
@@ -116,9 +124,9 @@ client=client,
 async def asyncio_detailed(
     connector_type: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> Response[ConnectorMetadata]:
+) -> Response[ConnectorMetadata | ErrorDetailResponse]:
     """  Public API: GET /api/v1/connectors/{connector_type}/ - Get connector details.
 
     Args:
@@ -129,7 +137,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ConnectorMetadata]
+        Response[ConnectorMetadata | ErrorDetailResponse]
      """
 
 
@@ -147,9 +155,9 @@ async def asyncio_detailed(
 async def asyncio(
     connector_type: str,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
 
-) -> ConnectorMetadata | None:
+) -> ConnectorMetadata | ErrorDetailResponse | None:
     """  Public API: GET /api/v1/connectors/{connector_type}/ - Get connector details.
 
     Args:
@@ -160,7 +168,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ConnectorMetadata
+        ConnectorMetadata | ErrorDetailResponse
      """
 
 

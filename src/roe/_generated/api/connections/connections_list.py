@@ -8,6 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.connections_list_response_400 import ConnectionsListResponse400
+from ...models.error_detail_response import ErrorDetailResponse
 from ...models.paginated_connection_list_list import PaginatedConnectionListList
 from ...types import UNSET, Unset
 from typing import cast
@@ -58,7 +60,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> PaginatedConnectionListList | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList | None:
     if response.status_code == 200:
         response_200 = PaginatedConnectionListList.from_dict(response.json())
 
@@ -66,13 +68,34 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
+    if response.status_code == 400:
+        response_400 = ConnectionsListResponse400.from_dict(response.json())
+
+
+
+        return response_400
+
+    if response.status_code == 403:
+        response_403 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_403
+
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[PaginatedConnectionListList]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -83,14 +106,14 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
 
-) -> Response[PaginatedConnectionListList]:
+) -> Response[ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList]:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -105,7 +128,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PaginatedConnectionListList]
+        Response[ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList]
      """
 
 
@@ -126,14 +149,14 @@ search=search,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
 
-) -> PaginatedConnectionListList | None:
+) -> ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList | None:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -148,7 +171,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PaginatedConnectionListList
+        ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList
      """
 
 
@@ -164,14 +187,14 @@ search=search,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
 
-) -> Response[PaginatedConnectionListList]:
+) -> Response[ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList]:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -186,7 +209,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PaginatedConnectionListList]
+        Response[ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList]
      """
 
 
@@ -207,14 +230,14 @@ search=search,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
 
-) -> PaginatedConnectionListList | None:
+) -> ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList | None:
     """  Public API: GET/POST /api/v1/connections/ - List/create connections.
 
     Args:
@@ -229,7 +252,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PaginatedConnectionListList
+        ConnectionsListResponse400 | ErrorDetailResponse | PaginatedConnectionListList
      """
 
 

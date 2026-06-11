@@ -10,6 +10,8 @@ from ... import errors
 
 from ...models.create_policy_version import CreatePolicyVersion
 from ...models.create_policy_version_request import CreatePolicyVersionRequest
+from ...models.error_detail_response import ErrorDetailResponse
+from ...models.policies_versions_create_response_400 import PoliciesVersionsCreateResponse400
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -55,7 +57,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CreatePolicyVersion | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400 | None:
     if response.status_code == 201:
         response_201 = CreatePolicyVersion.from_dict(response.json())
 
@@ -63,13 +65,27 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_201
 
+    if response.status_code == 400:
+        response_400 = PoliciesVersionsCreateResponse400.from_dict(response.json())
+
+
+
+        return response_400
+
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CreatePolicyVersion]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -81,11 +97,11 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreatePolicyVersionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[CreatePolicyVersion]:
+) -> Response[CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400]:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -98,7 +114,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CreatePolicyVersion]
+        Response[CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400]
      """
 
 
@@ -118,11 +134,11 @@ organization_id=organization_id,
 def sync(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreatePolicyVersionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> CreatePolicyVersion | None:
+) -> CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400 | None:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -135,7 +151,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CreatePolicyVersion
+        CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400
      """
 
 
@@ -150,11 +166,11 @@ organization_id=organization_id,
 async def asyncio_detailed(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreatePolicyVersionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[CreatePolicyVersion]:
+) -> Response[CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400]:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -167,7 +183,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[CreatePolicyVersion]
+        Response[CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400]
      """
 
 
@@ -187,11 +203,11 @@ organization_id=organization_id,
 async def asyncio(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     body: CreatePolicyVersionRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> CreatePolicyVersion | None:
+) -> CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400 | None:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -204,7 +220,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        CreatePolicyVersion
+        CreatePolicyVersion | ErrorDetailResponse | PoliciesVersionsCreateResponse400
      """
 
 

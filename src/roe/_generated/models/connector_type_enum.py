@@ -3,6 +3,7 @@ from enum import Enum
 class ConnectorTypeEnum(str, Enum):
     CHECKOUT_COM = "checkout_com"
     CUSTOM_API = "custom_api"
+    CUSTOM_MCP = "custom_mcp"
     GOOGLE_DRIVE = "google_drive"
     INTERCOM = "intercom"
     LEXIS_NEXIS = "lexis_nexis"
