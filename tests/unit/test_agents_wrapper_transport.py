@@ -54,3 +54,25 @@ def test_run_passes_idempotency_key_through_dynamic_wrapper():
     assert kwargs["headers"]["Idempotency-Key"] == "idem-123"
     assert kwargs["headers"]["x-roe-skip-retry"] == "1"
     assert job.id == JOB_ID
+
+
+def test_retrieve_status_parses_single_status_shape_without_id():
+    # GET /v1/agents/jobs/{job_id}/status/ returns AgentJobSingleStatus
+    # ({status, timestamp, error_message?}) with no "id" field — parsing it
+    # with the batch AgentJobStatus model raises KeyError("id").
+    api, _ = _api(
+        httpx.Response(
+            200,
+            json={
+                "status": 4,
+                "timestamp": 1781211849.964229,
+                "error_message": "boom",
+            },
+        )
+    )
+
+    status = api.jobs.retrieve_status(JOB_ID)
+
+    assert status.status == 4
+    assert status.timestamp == pytest.approx(1781211849.964229)
+    assert status.error_message == "boom"

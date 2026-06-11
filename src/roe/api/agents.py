@@ -57,6 +57,7 @@ from roe._generated.models.agent_job_result_many_request import (
 )
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe._generated.models.agent_job_status_many_request import (
     AgentJobStatusManyRequest,
@@ -230,14 +231,14 @@ class AgentJobsAPI:
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
-    def retrieve_status(self, job_id: str) -> AgentJobStatus:
+    def retrieve_status(self, job_id: str) -> AgentJobSingleStatus:
         response = request_raw(
             self._raw,
             agents_jobs_status_retrieve,
             UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        return AgentJobStatus.from_dict(response.json())
+        return AgentJobSingleStatus.from_dict(response.json())
 
     def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
         response = request_raw(

@@ -14,6 +14,7 @@ from uuid import UUID
 
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe.exceptions import NotFoundError, RoeAPIException
 
@@ -136,8 +137,8 @@ class Job:
 
             time.sleep(interval)
 
-    def retrieve_status(self) -> AgentJobStatus:
-        """Generated ``AgentJobStatus`` for the job."""
+    def retrieve_status(self) -> AgentJobSingleStatus:
+        """Generated ``AgentJobSingleStatus`` for the job."""
         return self.agents_api.jobs.retrieve_status(self._job_id)
 
     def retrieve_result(self) -> AgentJobResultResponse:
