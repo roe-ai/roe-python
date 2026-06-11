@@ -1,0 +1,566 @@
+# MIGRATION PARITY FIXTURE — not consumed by scripts/generate-sdk in production.
+#
+# Candidate openapi/wrappers.yml for migrating the hand-written facades
+# (src/roe/api/agents.py, policies.py, users.py) to contract-generated code.
+# Every signature, annotation, default, and behavior below was derived from
+# the hand-written facades as of this commit; swapping this file into
+# openapi/wrappers.yml and running scripts/generate_wrappers.py must
+# reproduce the existing public surface exactly.
+#
+# - APIs with at least one `manual` operation and at least one generated
+#   operation (agents, policies) emit base classes to
+#   src/roe/api/_{api}_generated.py; the hand-written facade keeps ownership
+#   of the public class and the manual methods (codegen asserts they exist).
+# - All-manual APIs (users) are parity-checked only; nothing is emitted.
+# - discovery/tables are verbatim copies of the committed openapi/wrappers.yml
+#   so the swapped-in contract regenerates the whole tree.
+
+apis:
+  discovery:
+    class_name: DiscoveryAPI
+    docstring: API for discovering valid agent engine types and model IDs.
+    operations:
+    - kind: simple
+      method_name: list_agent_engine_types
+      docstring: Return production engine_class_id values accepted by agent creation.
+      endpoint_module: roe._generated.api.discovery.discovery_agent_engine_types_list
+      return_type: AgentEngineTypeList
+      return_import: roe._generated.models.agent_engine_type_list.AgentEngineTypeList
+      empty_response_message: agent engine discovery returned an empty response
+    - kind: simple
+      method_name: list_supported_models
+      docstring: Return non-deprecated model IDs accepted in engine_config.model.
+      endpoint_module: roe._generated.api.discovery.discovery_supported_models_list
+      return_type: SupportedLLMModelList
+      return_import: roe._generated.models.supported_llm_model_list.SupportedLLMModelList
+      empty_response_message: model discovery returned an empty response
+      parameters:
+      - name: capability
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+  tables:
+    class_name: TablesAPI
+    docstring: API for uploading CSV files into Roe tables.
+    operations:
+    - kind: table_upload
+      method_name: upload
+      docstring: Upload a CSV file and create a Roe table.
+      endpoint_module: roe._generated.api.tables.upload_table
+      return_type: TableUploadResponse
+      return_import: roe._generated.models.table_upload_response.TableUploadResponse
+      body_type: TableUploadRequest
+      body_import: roe._generated.models.table_upload_request.TableUploadRequest
+      empty_response_message: table upload returned an empty response
+
+  agents:
+    class_name: AgentsAPI
+    docstring: API for managing and running agents.
+    operations:
+    - kind: body
+      method_name: list
+      docstring: ''
+      method: GET
+      path: /v1/agents/
+      endpoint_module: roe._generated.api.agents.agents_list
+      return_type: PaginatedBaseAgentList
+      return_import: roe._generated.models.paginated_base_agent_list.PaginatedBaseAgentList
+      parameters:
+      - name: page
+        location: query
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve
+      docstring: ''
+      method: GET
+      path: /v1/agents/{agent_id}/
+      endpoint_module: roe._generated.api.agents.agents_retrieve
+      return_type: BaseAgent
+      return_import: roe._generated.models.base_agent.BaseAgent
+      parameters:
+      - name: agent_id
+        location: path
+        annotation: str
+        coerce: uuid
+    - kind: body
+      method_name: create
+      docstring: ''
+      method: POST
+      path: /v1/agents/
+      endpoint_module: roe._generated.api.agents.agents_create
+      return_type: BaseAgent
+      return_import: roe._generated.models.base_agent.BaseAgent
+      body_type: BaseAgentCreateRequest
+      body_import: roe._generated.models.base_agent_create_request.BaseAgentCreateRequest
+      inject_organization_id: true
+      parameters:
+      - name: name
+        location: body
+        annotation: str
+      - name: engine_class_id
+        location: body
+        annotation: str
+      - name: input_definitions
+        location: body
+        annotation: list[dict[str, Any]] | None
+        default: null
+        or_empty: list
+      - name: engine_config
+        location: body
+        annotation: dict[str, Any] | None
+        default: null
+        or_empty: dict
+      - name: version_name
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: update
+      docstring: Update an agent via PATCH (partial update).
+      method: PATCH
+      path: /v1/agents/{agent_id}/
+      endpoint_module: roe._generated.api.agents.agents_partial_update
+      return_type: BaseAgent
+      return_import: roe._generated.models.base_agent.BaseAgent
+      body_type: PatchedBaseAgentUpdateRequest
+      body_import: roe._generated.models.patched_base_agent_update_request.PatchedBaseAgentUpdateRequest
+      parameters:
+      - name: agent_id
+        location: path
+        annotation: str
+        coerce: uuid
+      - name: name
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: disable_cache
+        location: body
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
+      - name: cache_failed_jobs
+        location: body
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: delete
+      docstring: ''
+      method: DELETE
+      path: /v1/agents/{agent_id}/
+      endpoint_module: roe._generated.api.agents.agents_destroy
+      parameters:
+      - name: agent_id
+        location: path
+        annotation: str
+        coerce: uuid
+    - kind: body
+      method_name: duplicate
+      docstring: |-
+        Duplicate an agent. Returns the resulting ``AgentVersion``.
+
+        The endpoint historically returned a JSON object with a ``base_agent``
+        key wrapping the new agent; the generated client now models the
+        response as ``AgentVersion`` directly. Callers wanting the new base
+        agent should read ``result.base_agent`` (already populated).
+      method: POST
+      path: /v1/agents/{agent_id}/duplicate/
+      endpoint_module: roe._generated.api.agents.agents_duplicate_create
+      return_type: AgentVersion
+      return_import: roe._generated.models.agent_version.AgentVersion
+      parameters:
+      - name: agent_id
+        location: path
+        annotation: str
+        coerce: uuid
+    # Bespoke run flows: dynamic **inputs packing via _build_aer/call_dynamic,
+    # Job/JobBatch polling wrappers, and client-side batch chunking.
+    - kind: manual
+      method_name: run
+      docstring: Run an agent asynchronously and return a Job handle.
+      method: POST
+      path: /v1/agents/run/{agent_id}/async/
+    - kind: manual
+      method_name: run_many
+      docstring: Run an agent over a batch of inputs and return a JobBatch handle.
+      method: POST
+      path: /v1/agents/run/{agent_id}/async/many/
+    - kind: manual
+      method_name: run_sync
+      docstring: Run an agent synchronously and return its output data.
+      method: POST
+      path: /v1/agents/run/{agent_id}/
+    - kind: manual
+      method_name: run_version
+      docstring: Run a specific agent version asynchronously and return a Job handle.
+      method: POST
+      path: /v1/agents/run/{agent_id}/versions/{agent_version_id}/async/
+    - kind: manual
+      method_name: run_version_sync
+      docstring: Run a specific agent version synchronously and return its output data.
+      method: POST
+      path: /v1/agents/run/{agent_id}/versions/{agent_version_id}/
+    namespaces:
+      versions:
+        class_name: AgentVersionsAPI
+        attr: versions
+        docstring: Nested API for agent version operations.
+        operations:
+        - kind: body
+          method_name: list
+          docstring: ''
+          method: GET
+          path: /v1/agents/{agent_id}/versions/
+          endpoint_module: roe._generated.api.agents.agents_versions_list
+          return_type: AgentVersion
+          return_import: roe._generated.models.agent_version.AgentVersion
+          return_shape: list
+          list_error_label: agent versions
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: retrieve
+          docstring: ''
+          method: GET
+          path: /v1/agents/{agent_id}/versions/{agent_version_id}/
+          endpoint_module: roe._generated.api.agents.agents_versions_retrieve
+          return_type: AgentVersion
+          return_import: roe._generated.models.agent_version.AgentVersion
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: version_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: get_supports_eval
+            location: query
+            annotation: bool | None
+            default: null
+            pass_unset_when_none: true
+        - kind: body
+          method_name: retrieve_current
+          docstring: ''
+          method: GET
+          path: /v1/agents/{agent_id}/versions/current/
+          endpoint_module: roe._generated.api.agents.agents_versions_current_retrieve
+          return_type: AgentVersion
+          return_import: roe._generated.models.agent_version.AgentVersion
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: create
+          docstring: ''
+          method: POST
+          path: /v1/agents/{agent_id}/versions/
+          endpoint_module: roe._generated.api.agents.agents_versions_create
+          return_type: AgentVersion
+          return_import: roe._generated.models.agent_version.AgentVersion
+          body_type: AgentVersionCreateRequest
+          body_import: roe._generated.models.agent_version_create_request.AgentVersionCreateRequest
+          refetch_with_retrieve: true
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: input_definitions
+            location: body
+            annotation: list[dict[str, Any]] | None
+            default: null
+            or_empty: list
+          - name: engine_config
+            location: body
+            annotation: dict[str, Any] | None
+            default: null
+            or_empty: dict
+          - name: version_name
+            location: body
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: description
+            location: body
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+        - kind: body
+          method_name: update
+          docstring: Update an agent version via PATCH (partial update).
+          method: PATCH
+          path: /v1/agents/{agent_id}/versions/{agent_version_id}/
+          endpoint_module: roe._generated.api.agents.agents_versions_partial_update
+          body_type: PatchedPatchedAgentVersionUpdateRequestRequest
+          body_import: roe._generated.models.patched_patched_agent_version_update_request_request.PatchedPatchedAgentVersionUpdateRequestRequest
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: version_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: version_name
+            location: body
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: description
+            location: body
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+        - kind: body
+          method_name: delete
+          docstring: ''
+          method: DELETE
+          path: /v1/agents/{agent_id}/versions/{agent_version_id}/
+          endpoint_module: roe._generated.api.agents.agents_versions_destroy
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: version_id
+            location: path
+            annotation: str
+            coerce: uuid
+      jobs:
+        class_name: AgentJobsAPI
+        attr: jobs
+        docstring: Nested API for agent job operations.
+        operations:
+        - kind: body
+          method_name: retrieve_status
+          docstring: ''
+          method: GET
+          path: /v1/agents/jobs/{job_id}/status/
+          endpoint_module: roe._generated.api.agents.agents_jobs_status_retrieve
+          return_type: AgentJobStatus
+          return_import: roe._generated.models.agent_job_status.AgentJobStatus
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: retrieve_result
+          docstring: ''
+          method: GET
+          path: /v1/agents/jobs/{agent_job_id}/result/
+          endpoint_module: roe._generated.api.agents.agents_jobs_result_retrieve
+          return_type: AgentJobResultResponse
+          return_import: roe._generated.models.agent_job_result_response.AgentJobResultResponse
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: cancel
+          docstring: ''
+          method: POST
+          path: /v1/agents/jobs/{job_id}/cancel/
+          endpoint_module: roe._generated.api.agents.agents_jobs_cancel_create
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: cancel_all
+          docstring: ''
+          method: POST
+          path: /v1/agents/{agent_id}/jobs/cancel-all/
+          endpoint_module: roe._generated.api.agents.agents_jobs_cancel_all_create
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
+          method_name: delete_data
+          docstring: ''
+          method: POST
+          path: /v1/agents/jobs/{job_id}/delete-data/
+          endpoint_module: roe._generated.api.agents.agents_jobs_delete_data_create
+          return_type: AgentJobDeleteDataResponse
+          return_import: roe._generated.models.agent_job_delete_data_response.AgentJobDeleteDataResponse
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+        # Bespoke: 1000-id chunking with inter-chunk delay; results-shape
+        # normalization; raw httpx download with query injection.
+        - kind: manual
+          method_name: retrieve_status_many
+          docstring: Retrieve statuses for many jobs (chunked batch calls).
+          method: POST
+          path: /v1/agents/jobs/statuses/
+        - kind: manual
+          method_name: retrieve_result_many
+          docstring: Retrieve results for many jobs (chunked batch calls).
+          method: POST
+          path: /v1/agents/jobs/results/
+        - kind: manual
+          method_name: download_reference
+          docstring: Download a binary reference produced by an agent job.
+          method: GET
+          path: /v1/agents/jobs/{agent_job_id}/references/{resource_id}/
+
+  policies:
+    class_name: PoliciesAPI
+    docstring: API for managing policies used by agentic workflows.
+    operations:
+    - kind: body
+      method_name: list
+      docstring: List policies in the organization.
+      method: GET
+      path: /v1/policies/
+      endpoint_module: roe._generated.api.policies.policies_list
+      return_type: PaginatedPolicyList
+      return_import: roe._generated.models.paginated_policy_list.PaginatedPolicyList
+      parameters:
+      - name: page
+        location: query
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve
+      docstring: Retrieve a specific policy by ID.
+      method: GET
+      path: /v1/policies/{id}/
+      endpoint_module: roe._generated.api.policies.policies_retrieve
+      return_type: Policy
+      return_import: roe._generated.models.policy.Policy
+      parameters:
+      - name: policy_id
+        location: path
+        annotation: str
+        coerce: uuid
+    - kind: body
+      method_name: create
+      docstring: Create a new policy with an initial version.
+      method: POST
+      path: /v1/policies/
+      endpoint_module: roe._generated.api.policies.policies_create
+      return_type: CreatePolicy
+      return_import: roe._generated.models.create_policy.CreatePolicy
+      body_type: CreatePolicyRequest
+      body_import: roe._generated.models.create_policy_request.CreatePolicyRequest
+      parameters:
+      - name: name
+        location: body
+        annotation: str
+      - name: content
+        location: body
+        annotation: dict[str, Any]
+      - name: description
+        location: body
+        annotation: str
+        default: ''
+      - name: version_name
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: update
+      docstring: Update a policy's metadata via PATCH (partial update).
+      method: PATCH
+      path: /v1/policies/{id}/
+      endpoint_module: roe._generated.api.policies.policies_partial_update
+      return_type: Any
+      body_type: PatchedUpdatePolicyRequest
+      body_import: roe._generated.models.patched_update_policy_request.PatchedUpdatePolicyRequest
+      parameters:
+      - name: policy_id
+        location: path
+        annotation: str
+        coerce: uuid
+      - name: name
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: delete
+      docstring: Delete a policy and all its versions.
+      method: DELETE
+      path: /v1/policies/{id}/
+      endpoint_module: roe._generated.api.policies.policies_destroy
+      parameters:
+      - name: policy_id
+        location: path
+        annotation: str
+        coerce: uuid
+    namespaces:
+      versions:
+        class_name: PolicyVersionsAPI
+        attr: versions
+        docstring: Nested API for policy version operations.
+        operations:
+        # Bespoke: every method routes through _parse_policy_version
+        # (base_version_id zero-UUID normalization); list custom-constructs
+        # PaginatedPolicyVersionList; create refetches via resp.parsed.
+        - kind: manual
+          method_name: list
+          docstring: List versions of a policy.
+          method: GET
+          path: /v1/policies/{policy_id}/versions/
+        - kind: manual
+          method_name: retrieve
+          docstring: Retrieve a specific version of a policy.
+          method: GET
+          path: /v1/policies/{policy_id}/versions/{version_id}/
+        - kind: manual
+          method_name: create
+          docstring: Create a new policy version (auto-set as current).
+          method: POST
+          path: /v1/policies/{policy_id}/versions/
+
+  users:
+    class_name: UsersAPI
+    docstring: API for retrieving information about the authenticated user.
+    operations:
+    # Bespoke: tolerant manual JSON parsing of an undocumented response body.
+    - kind: manual
+      method_name: me
+      docstring: Return the currently-authenticated user.
+      method: GET
+      path: /v1/users/current_user/
