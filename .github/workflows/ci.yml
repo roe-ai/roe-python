@@ -8,7 +8,7 @@ on:
   workflow_dispatch:
 
 jobs:
-  test:
+  lint:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -24,8 +24,27 @@ jobs:
       - name: Install dependencies
         run: uv sync --locked --group dev
 
-      - name: Lint
-        run: uv run ruff check .
+      - name: Run Ruff Linter
+        run: uv run ruff check --output-format=github .
+
+      - name: Run Ruff Formatter Check
+        run: uv run ruff format --check --diff .
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up uv and Python
+        uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.11.9"
+          enable-cache: true
+          cache-dependency-glob: uv.lock
+          activate-environment: true
+
+      - name: Install dependencies
+        run: uv sync --locked --group dev
 
       - name: Test
         run: uv run pytest

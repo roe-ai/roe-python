@@ -1,0 +1,62 @@
+#!/bin/bash
+
+# roe-cli - Development CLI for the Roe Python SDK
+# Usage: ./roe-cli <command> [options]
+
+set -e
+
+SCRIPT_DIR=$(cd "$(dirname "$0")" && pwd)
+
+show_help() {
+    cat << EOF
+roe-cli - Development CLI for the Roe Python SDK
+
+Usage: ./roe-cli <command>
+
+Commands:
+    format              Run code formatter and linter (Ruff)
+    help                Show this help message
+
+Examples:
+    ./roe-cli format    # Format and lint the codebase
+EOF
+}
+
+cmd_format() {
+    cd "$SCRIPT_DIR"
+
+    echo "Running Ruff formatter..."
+    uv run --group dev ruff format .
+
+    echo "Running Ruff linter..."
+    uv run --group dev ruff check --fix .
+
+    echo "✨ Code is properly formatted and linted!"
+}
+
+main() {
+    if [[ $# -eq 0 ]]; then
+        show_help
+        exit 1
+    fi
+
+    local command="$1"
+    shift
+
+    case "$command" in
+        format)
+            cmd_format "$@"
+            ;;
+        help|--help|-h)
+            show_help
+            ;;
+        *)
+            echo "Unknown command: $command" >&2
+            echo ""
+            show_help
+            exit 1
+            ;;
+    esac
+}
+
+main "$@"

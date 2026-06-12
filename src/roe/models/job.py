@@ -117,7 +117,9 @@ class Job:
         while True:
             status = self.retrieve_status()
             error_message = (
-                None if isinstance(status.error_message, Unset) else status.error_message
+                None
+                if isinstance(status.error_message, Unset)
+                else status.error_message
             )
 
             if status.status in _TERMINAL_STATUSES:
@@ -203,9 +205,7 @@ class JobBatch:
 
         while len(self._completed_jobs) < len(self._job_ids):
             pending_job_ids = [
-                job_id
-                for job_id in self._job_ids
-                if job_id not in self._completed_jobs
+                job_id for job_id in self._job_ids if job_id not in self._completed_jobs
             ]
 
             if not pending_job_ids:

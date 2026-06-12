@@ -509,9 +509,7 @@ class AgentsAPI:
             if not is_first_chunk:
                 time.sleep(self.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentRunAsyncManyRequest(
-                inputs=[_build_aer(item) for item in chunk]
-            )
+            body = AgentRunAsyncManyRequest(inputs=[_build_aer(item) for item in chunk])
             if metadata is not None:
                 body.additional_properties["metadata"] = metadata
             response = request_raw(

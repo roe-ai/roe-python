@@ -467,6 +467,7 @@ dependencies = [
 codegen = [
     { name = "openapi-python-client" },
     { name = "ruamel-yaml" },
+    { name = "ruff" },
 ]
 dev = [
     { name = "pytest" },
@@ -485,6 +486,7 @@ requires-dist = [
 codegen = [
     { name = "openapi-python-client", specifier = ">=0.28,<0.29" },
     { name = "ruamel-yaml", specifier = ">=0.18.15" },
+    { name = "ruff", specifier = ">=0.12.10" },
 ]
 dev = [
     { name = "pytest", specifier = ">=8.3.0" },

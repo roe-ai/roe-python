@@ -136,4 +136,9 @@ def translate_response(response: Any) -> None:
 
     raw_headers = getattr(response, "headers", None)
     cls = get_exception_for_status_code(status_code)
-    raise cls(message=message, status_code=status_code, response=error_data, headers=raw_headers)
+    raise cls(
+        message=message,
+        status_code=status_code,
+        response=error_data,
+        headers=raw_headers,
+    )

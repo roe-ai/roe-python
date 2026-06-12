@@ -18,3 +18,7 @@ rm -rf src/roe/_generated
 mv "$TMP_DIR/generated" src/roe/_generated
 
 uv run --group codegen python scripts/generate_wrappers.py
+
+# Keep generated wrappers consistent with `./roe-cli format` so formatting the
+# repo never introduces codegen drift.
+uv run --group codegen ruff format src/roe/api

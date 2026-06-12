@@ -49,8 +49,14 @@ def main():
             "instructions": "Investigate the alert against each category. Gather evidence from available data sources. Cite specific transactions and patterns.",
             "dispositions": {
                 "classifications": [
-                    {"name": "Fraudulent", "description": "Confirmed fraud indicators found"},
-                    {"name": "Legitimate", "description": "Activity has legitimate explanation"},
+                    {
+                        "name": "Fraudulent",
+                        "description": "Confirmed fraud indicators found",
+                    },
+                    {
+                        "name": "Legitimate",
+                        "description": "Activity has legitimate explanation",
+                    },
                     {"name": "Escalate", "description": "Needs senior analyst review"},
                 ]
             },
@@ -109,8 +115,14 @@ def main():
             "instructions": "Investigate the alert against each category. Gather evidence from available data sources. Cite specific transactions and patterns. Pay special attention to geographic indicators.",
             "dispositions": {
                 "classifications": [
-                    {"name": "Fraudulent", "description": "Confirmed fraud indicators found"},
-                    {"name": "Legitimate", "description": "Activity has legitimate explanation"},
+                    {
+                        "name": "Fraudulent",
+                        "description": "Confirmed fraud indicators found",
+                    },
+                    {
+                        "name": "Legitimate",
+                        "description": "Activity has legitimate explanation",
+                    },
                     {"name": "Escalate", "description": "Needs senior analyst review"},
                 ]
             },
