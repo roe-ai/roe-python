@@ -41,7 +41,7 @@ class PolicyVersion:
             updated_at (datetime.datetime):
             policy (Policy): Policy serializer
             created_by (PolicyVersionCreatedBy): Minimal user serializer for audit metadata on policy versions.
-            base_version_id (UUID):
+            base_version_id (None | UUID):
      """
 
     id: UUID
@@ -51,7 +51,7 @@ class PolicyVersion:
     updated_at: datetime.datetime
     policy: Policy
     created_by: PolicyVersionCreatedBy
-    base_version_id: UUID
+    base_version_id: None | UUID
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -75,7 +75,11 @@ class PolicyVersion:
 
         created_by = self.created_by.to_dict()
 
-        base_version_id = str(self.base_version_id)
+        base_version_id: None | str
+        if isinstance(self.base_version_id, UUID):
+            base_version_id = str(self.base_version_id)
+        else:
+            base_version_id = self.base_version_id
 
 
         field_dict: dict[str, Any] = {}
@@ -129,9 +133,22 @@ class PolicyVersion:
 
 
 
-        base_version_id = UUID(d.pop("base_version_id"))
+        def _parse_base_version_id(data: object) -> None | UUID:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                base_version_id_type_0 = UUID(data)
 
 
+
+                return base_version_id_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | UUID, data)
+
+        base_version_id = _parse_base_version_id(d.pop("base_version_id"))
 
 
         policy_version = cls(

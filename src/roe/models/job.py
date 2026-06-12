@@ -14,6 +14,7 @@ from uuid import UUID
 
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe.exceptions import NotFoundError, RoeAPIException
 
@@ -136,8 +137,8 @@ class Job:
 
             time.sleep(interval)
 
-    def retrieve_status(self) -> AgentJobStatus:
-        """Generated ``AgentJobStatus`` for the job."""
+    def retrieve_status(self) -> AgentJobSingleStatus:
+        """Generated ``AgentJobSingleStatus`` for the job."""
         return self.agents_api.jobs.retrieve_status(self._job_id)
 
     def retrieve_result(self) -> AgentJobResultResponse:
@@ -269,7 +270,10 @@ class JobBatch:
             cached = self._job_statuses.get(job_id)
             if cached is not None and cached["status"] in _TERMINAL_STATUSES:
                 status_map[job_id] = AgentJobStatus(
+                    id=UUID(str(job_id)),
                     status=cached["status"],
+                    created_at=None,
+                    last_updated_at=None,
                     timestamp=cached.get("timestamp", 0),
                     error_message=cached["error_message"]
                     if cached["error_message"] is not None
@@ -289,7 +293,10 @@ class JobBatch:
                     continue
                 err = self._extract_error_message(status_item)
                 status_map[job_id] = AgentJobStatus(
+                    id=UUID(str(job_id)),
                     status=stat_code,
+                    created_at=None,
+                    last_updated_at=None,
                     timestamp=self._extract_timestamp(status_item),
                     error_message=err if err is not None else _UNSET_SENTINEL(),
                 )

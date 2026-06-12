@@ -8,7 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
+from ...models.error_detail_response import ErrorDetailResponse
+from ...models.qdrant_cleanup_error_response import QdrantCleanupErrorResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -47,27 +48,27 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorDetailResponse | QdrantCleanupErrorResponse | None:
     if response.status_code == 204:
         response_204 = cast(Any, None)
         return response_204
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_404
 
     if response.status_code == 500:
-        response_500 = ErrorResponse.from_dict(response.json())
+        response_500 = QdrantCleanupErrorResponse.from_dict(response.json())
 
 
 
@@ -79,7 +80,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -91,10 +92,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]:
     """ Delete a base agent.
 
      Delete a specific base agent.
@@ -108,7 +109,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]
      """
 
 
@@ -127,10 +128,10 @@ organization_id=organization_id,
 def sync(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorResponse | None:
+) -> Any | ErrorDetailResponse | QdrantCleanupErrorResponse | None:
     """ Delete a base agent.
 
      Delete a specific base agent.
@@ -144,7 +145,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        Any | ErrorDetailResponse | QdrantCleanupErrorResponse
      """
 
 
@@ -158,10 +159,10 @@ organization_id=organization_id,
 async def asyncio_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]:
     """ Delete a base agent.
 
      Delete a specific base agent.
@@ -175,7 +176,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]
      """
 
 
@@ -194,10 +195,10 @@ organization_id=organization_id,
 async def asyncio(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorResponse | None:
+) -> Any | ErrorDetailResponse | QdrantCleanupErrorResponse | None:
     """ Delete a base agent.
 
      Delete a specific base agent.
@@ -211,7 +212,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        Any | ErrorDetailResponse | QdrantCleanupErrorResponse
      """
 
 

@@ -27,20 +27,21 @@ class BaseAgentCreateRequest:
         Attributes:
             name (str): Name of the base agent.
             engine_class_id (str): Engine class ID for the agent.
-            organization_id (UUID): Organization ID where the agent belongs.
-            input_definitions (Any): Input definitions for the first version.
-            engine_config (Any): Engine configuration for the first version.
+            organization_id (UUID | Unset): Optional. Ignored by the API — the organization is derived from the
+                authenticated API key/token. Accepted for backwards compatibility.
             version_name (str | Unset): Name of the first version.
             description (str | Unset): Description of the first version.
+            input_definitions (Any | Unset): Input definitions for the first version.
+            engine_config (Any | Unset): Engine configuration for the first version.
      """
 
     name: str
     engine_class_id: str
-    organization_id: UUID
-    input_definitions: Any
-    engine_config: Any
+    organization_id: UUID | Unset = UNSET
     version_name: str | Unset = UNSET
     description: str | Unset = UNSET
+    input_definitions: Any | Unset = UNSET
+    engine_config: Any | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -52,15 +53,17 @@ class BaseAgentCreateRequest:
 
         engine_class_id = self.engine_class_id
 
-        organization_id = str(self.organization_id)
-
-        input_definitions = self.input_definitions
-
-        engine_config = self.engine_config
+        organization_id: str | Unset = UNSET
+        if not isinstance(self.organization_id, Unset):
+            organization_id = str(self.organization_id)
 
         version_name = self.version_name
 
         description = self.description
+
+        input_definitions = self.input_definitions
+
+        engine_config = self.engine_config
 
 
         field_dict: dict[str, Any] = {}
@@ -68,14 +71,17 @@ class BaseAgentCreateRequest:
         field_dict.update({
             "name": name,
             "engine_class_id": engine_class_id,
-            "organization_id": organization_id,
-            "input_definitions": input_definitions,
-            "engine_config": engine_config,
         })
+        if organization_id is not UNSET:
+            field_dict["organization_id"] = organization_id
         if version_name is not UNSET:
             field_dict["version_name"] = version_name
         if description is not UNSET:
             field_dict["description"] = description
+        if input_definitions is not UNSET:
+            field_dict["input_definitions"] = input_definitions
+        if engine_config is not UNSET:
+            field_dict["engine_config"] = engine_config
 
         return field_dict
 
@@ -88,27 +94,32 @@ class BaseAgentCreateRequest:
 
         engine_class_id = d.pop("engine_class_id")
 
-        organization_id = UUID(d.pop("organization_id"))
+        _organization_id = d.pop("organization_id", UNSET)
+        organization_id: UUID | Unset
+        if isinstance(_organization_id,  Unset):
+            organization_id = UNSET
+        else:
+            organization_id = UUID(_organization_id)
 
 
 
-
-        input_definitions = d.pop("input_definitions")
-
-        engine_config = d.pop("engine_config")
 
         version_name = d.pop("version_name", UNSET)
 
         description = d.pop("description", UNSET)
 
+        input_definitions = d.pop("input_definitions", UNSET)
+
+        engine_config = d.pop("engine_config", UNSET)
+
         base_agent_create_request = cls(
             name=name,
             engine_class_id=engine_class_id,
             organization_id=organization_id,
-            input_definitions=input_definitions,
-            engine_config=engine_config,
             version_name=version_name,
             description=description,
+            input_definitions=input_definitions,
+            engine_config=engine_config,
         )
 
 

@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.error_detail_response import ErrorDetailResponse
 from ...models.paginated_policy_version_list import PaginatedPolicyVersionList
 from ...types import UNSET, Unset
 from typing import cast
@@ -53,7 +54,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> PaginatedPolicyVersionList | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorDetailResponse | PaginatedPolicyVersionList | None:
     if response.status_code == 200:
         response_200 = PaginatedPolicyVersionList.from_dict(response.json())
 
@@ -61,13 +62,20 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[PaginatedPolicyVersionList]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorDetailResponse | PaginatedPolicyVersionList]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -79,12 +87,12 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[PaginatedPolicyVersionList]:
+) -> Response[ErrorDetailResponse | PaginatedPolicyVersionList]:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -98,7 +106,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PaginatedPolicyVersionList]
+        Response[ErrorDetailResponse | PaginatedPolicyVersionList]
      """
 
 
@@ -119,12 +127,12 @@ organization_id=organization_id,
 def sync(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> PaginatedPolicyVersionList | None:
+) -> ErrorDetailResponse | PaginatedPolicyVersionList | None:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -138,7 +146,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PaginatedPolicyVersionList
+        ErrorDetailResponse | PaginatedPolicyVersionList
      """
 
 
@@ -154,12 +162,12 @@ organization_id=organization_id,
 async def asyncio_detailed(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[PaginatedPolicyVersionList]:
+) -> Response[ErrorDetailResponse | PaginatedPolicyVersionList]:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -173,7 +181,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PaginatedPolicyVersionList]
+        Response[ErrorDetailResponse | PaginatedPolicyVersionList]
      """
 
 
@@ -194,12 +202,12 @@ organization_id=organization_id,
 async def asyncio(
     policy_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     page: int | Unset = UNSET,
     page_size: int | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> PaginatedPolicyVersionList | None:
+) -> ErrorDetailResponse | PaginatedPolicyVersionList | None:
     """  Create a new policy version or list all versions of a specific policy
 
     Args:
@@ -213,7 +221,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PaginatedPolicyVersionList
+        ErrorDetailResponse | PaginatedPolicyVersionList
      """
 
 

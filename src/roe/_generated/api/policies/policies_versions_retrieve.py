@@ -8,6 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
+from ...models.error_detail_response import ErrorDetailResponse
 from ...models.policy_version import PolicyVersion
 from ...types import UNSET, Unset
 from typing import cast
@@ -48,7 +49,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> PolicyVersion | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorDetailResponse | PolicyVersion | None:
     if response.status_code == 200:
         response_200 = PolicyVersion.from_dict(response.json())
 
@@ -56,13 +57,20 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
         return response_200
 
+    if response.status_code == 404:
+        response_404 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_404
+
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
     else:
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[PolicyVersion]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorDetailResponse | PolicyVersion]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -75,10 +83,10 @@ def sync_detailed(
     policy_id: UUID,
     version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[PolicyVersion]:
+) -> Response[ErrorDetailResponse | PolicyVersion]:
     """  Get a specific policy version by policy_id and version_id.
     Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
 
@@ -92,7 +100,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PolicyVersion]
+        Response[ErrorDetailResponse | PolicyVersion]
      """
 
 
@@ -113,10 +121,10 @@ def sync(
     policy_id: UUID,
     version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> PolicyVersion | None:
+) -> ErrorDetailResponse | PolicyVersion | None:
     """  Get a specific policy version by policy_id and version_id.
     Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
 
@@ -130,7 +138,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PolicyVersion
+        ErrorDetailResponse | PolicyVersion
      """
 
 
@@ -146,10 +154,10 @@ async def asyncio_detailed(
     policy_id: UUID,
     version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[PolicyVersion]:
+) -> Response[ErrorDetailResponse | PolicyVersion]:
     """  Get a specific policy version by policy_id and version_id.
     Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
 
@@ -163,7 +171,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[PolicyVersion]
+        Response[ErrorDetailResponse | PolicyVersion]
      """
 
 
@@ -184,10 +192,10 @@ async def asyncio(
     policy_id: UUID,
     version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> PolicyVersion | None:
+) -> ErrorDetailResponse | PolicyVersion | None:
     """  Get a specific policy version by policy_id and version_id.
     Used for nested URL pattern: /policies/{policy_id}/versions/{version_id}/
 
@@ -201,7 +209,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        PolicyVersion
+        ErrorDetailResponse | PolicyVersion
      """
 
 

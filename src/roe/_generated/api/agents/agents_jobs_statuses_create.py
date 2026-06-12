@@ -9,8 +9,9 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.agent_job_status import AgentJobStatus
-from ...models.agent_job_status_many_request_request import AgentJobStatusManyRequestRequest
-from ...models.error_response import ErrorResponse
+from ...models.agent_job_status_many_request import AgentJobStatusManyRequest
+from ...models.agents_jobs_statuses_create_response_400 import AgentsJobsStatusesCreateResponse400
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -19,7 +20,7 @@ from uuid import UUID
 
 def _get_kwargs(
     *,
-    body: AgentJobStatusManyRequestRequest,
+    body: AgentJobStatusManyRequest,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -55,7 +56,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | list[AgentJobStatus] | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus] | None:
     if response.status_code == 200:
         response_200 = []
         _response_200 = response.json()
@@ -69,14 +70,14 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_200
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        response_400 = AgentsJobsStatusesCreateResponse400.from_dict(response.json())
 
 
 
         return response_400
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -88,7 +89,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | list[AgentJobStatus]]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -99,25 +100,25 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobStatusManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobStatusManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | list[AgentJobStatus]]:
+) -> Response[AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]]:
     """ Get status for multiple agent jobs
 
      Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
+        body (AgentJobStatusManyRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | list[AgentJobStatus]]
+        Response[AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]]
      """
 
 
@@ -135,25 +136,25 @@ organization_id=organization_id,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobStatusManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobStatusManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | list[AgentJobStatus] | None:
+) -> AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus] | None:
     """ Get status for multiple agent jobs
 
      Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
+        body (AgentJobStatusManyRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | list[AgentJobStatus]
+        AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]
      """
 
 
@@ -166,25 +167,25 @@ organization_id=organization_id,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobStatusManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobStatusManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[ErrorResponse | list[AgentJobStatus]]:
+) -> Response[AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]]:
     """ Get status for multiple agent jobs
 
      Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
+        body (AgentJobStatusManyRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | list[AgentJobStatus]]
+        Response[AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]]
      """
 
 
@@ -202,25 +203,25 @@ organization_id=organization_id,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
-    body: AgentJobStatusManyRequestRequest,
+    client: AuthenticatedClient,
+    body: AgentJobStatusManyRequest,
     organization_id: UUID | Unset = UNSET,
 
-) -> ErrorResponse | list[AgentJobStatus] | None:
+) -> AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus] | None:
     """ Get status for multiple agent jobs
 
      Retrieve the current status for multiple agent jobs by providing a list of job IDs
 
     Args:
         organization_id (UUID | Unset):
-        body (AgentJobStatusManyRequestRequest): Serializer for bulk agent job status request.
+        body (AgentJobStatusManyRequest): Serializer for bulk agent job status request.
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | list[AgentJobStatus]
+        AgentsJobsStatusesCreateResponse400 | ErrorDetailResponse | list[AgentJobStatus]
      """
 
 

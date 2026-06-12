@@ -25,16 +25,16 @@ class AgentVersionCreateRequest:
     """ Serializer for creating new agent versions
 
         Attributes:
-            input_definitions (Any): List of input definitions for this agent version.
-            engine_config (Any): Engine configuration as a dictionary of string key-value pairs.
             version_name (str | Unset): Version name for the agent version. Defaults to 'unnamed version' if not provided.
             description (None | str | Unset): Description for the agent version.
+            input_definitions (Any | Unset): List of input definitions for this agent version.
+            engine_config (Any | Unset): Engine configuration as a dictionary of string key-value pairs.
      """
 
-    input_definitions: Any
-    engine_config: Any
     version_name: str | Unset = UNSET
     description: None | str | Unset = UNSET
+    input_definitions: Any | Unset = UNSET
+    engine_config: Any | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -42,10 +42,6 @@ class AgentVersionCreateRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
-        input_definitions = self.input_definitions
-
-        engine_config = self.engine_config
-
         version_name = self.version_name
 
         description: None | str | Unset
@@ -54,17 +50,23 @@ class AgentVersionCreateRequest:
         else:
             description = self.description
 
+        input_definitions = self.input_definitions
+
+        engine_config = self.engine_config
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
-            "input_definitions": input_definitions,
-            "engine_config": engine_config,
         })
         if version_name is not UNSET:
             field_dict["version_name"] = version_name
         if description is not UNSET:
             field_dict["description"] = description
+        if input_definitions is not UNSET:
+            field_dict["input_definitions"] = input_definitions
+        if engine_config is not UNSET:
+            field_dict["engine_config"] = engine_config
 
         return field_dict
 
@@ -73,10 +75,6 @@ class AgentVersionCreateRequest:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        input_definitions = d.pop("input_definitions")
-
-        engine_config = d.pop("engine_config")
-
         version_name = d.pop("version_name", UNSET)
 
         def _parse_description(data: object) -> None | str | Unset:
@@ -89,11 +87,15 @@ class AgentVersionCreateRequest:
         description = _parse_description(d.pop("description", UNSET))
 
 
+        input_definitions = d.pop("input_definitions", UNSET)
+
+        engine_config = d.pop("engine_config", UNSET)
+
         agent_version_create_request = cls(
-            input_definitions=input_definitions,
-            engine_config=engine_config,
             version_name=version_name,
             description=description,
+            input_definitions=input_definitions,
+            engine_config=engine_config,
         )
 
 

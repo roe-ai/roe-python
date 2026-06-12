@@ -46,23 +46,24 @@ from roe._generated.api.agents import (
 )
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.agent_datum import AgentDatum
-from roe._generated.models.agent_execution_request_request import (
-    AgentExecutionRequestRequest,
+from roe._generated.models.agent_execution_request import (
+    AgentExecutionRequest,
 )
 from roe._generated.models.agent_job_delete_data_response import (
     AgentJobDeleteDataResponse,
 )
-from roe._generated.models.agent_job_result_many_request_request import (
-    AgentJobResultManyRequestRequest,
+from roe._generated.models.agent_job_result_many_request import (
+    AgentJobResultManyRequest,
 )
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
+from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
 from roe._generated.models.agent_job_status import AgentJobStatus
-from roe._generated.models.agent_job_status_many_request_request import (
-    AgentJobStatusManyRequestRequest,
+from roe._generated.models.agent_job_status_many_request import (
+    AgentJobStatusManyRequest,
 )
-from roe._generated.models.agent_run_async_many_request_request import (
-    AgentRunAsyncManyRequestRequest,
+from roe._generated.models.agent_run_async_many_request import (
+    AgentRunAsyncManyRequest,
 )
 from roe._generated.models.agent_version import AgentVersion
 from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
@@ -72,8 +73,8 @@ from roe._generated.models.paginated_base_agent_list import PaginatedBaseAgentLi
 from roe._generated.models.patched_base_agent_update_request import (
     PatchedBaseAgentUpdateRequest,
 )
-from roe._generated.models.patched_patched_agent_version_update_request_request import (
-    PatchedPatchedAgentVersionUpdateRequestRequest,
+from roe._generated.models.patched_agent_version_update_request import (
+    PatchedAgentVersionUpdateRequest,
 )
 from roe._generated.types import UNSET
 from roe.config import RoeConfig
@@ -83,14 +84,14 @@ from roe.utils._dynamic_call import call_dynamic
 from roe.utils.generated_request import request_json, request_raw
 
 
-def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequestRequest:
-    """Pack a free-form ``inputs`` dict into an ``AgentExecutionRequestRequest``.
+def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequest:
+    """Pack a free-form ``inputs`` dict into an ``AgentExecutionRequest``.
 
     Used for the JSON-only batch endpoint. The model's fixed fields are
     ignored; everything goes through ``additional_properties`` so the
     ``to_dict()`` serializer emits a flat ``{key: value}`` shape.
     """
-    body = AgentExecutionRequestRequest()
+    body = AgentExecutionRequest()
     for key, value in inputs.items():
         body.additional_properties[key] = value
     return body
@@ -186,7 +187,7 @@ class AgentVersionsAPI:
         description: str | None = None,
     ) -> None:
         """Update an agent version via PATCH (partial update)."""
-        body = PatchedPatchedAgentVersionUpdateRequestRequest(
+        body = PatchedAgentVersionUpdateRequest(
             version_name=version_name if version_name is not None else UNSET,
             description=description if description is not None else UNSET,
         )
@@ -230,14 +231,14 @@ class AgentJobsAPI:
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
 
-    def retrieve_status(self, job_id: str) -> AgentJobStatus:
+    def retrieve_status(self, job_id: str) -> AgentJobSingleStatus:
         response = request_raw(
             self._raw,
             agents_jobs_status_retrieve,
             UUID(str(job_id)),
             organization_id=self._org_id,
         )
-        return AgentJobStatus.from_dict(response.json())
+        return AgentJobSingleStatus.from_dict(response.json())
 
     def retrieve_result(self, job_id: str) -> AgentJobResultResponse:
         response = request_raw(
@@ -257,7 +258,7 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentJobStatusManyRequestRequest(
+            body = AgentJobStatusManyRequest(
                 job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
             resp = request_json(
@@ -282,7 +283,7 @@ class AgentJobsAPI:
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentJobResultManyRequestRequest(
+            body = AgentJobResultManyRequest(
                 job_ids=[UUID(str(job_id)) for job_id in chunk]
             )
             response = request_raw(
@@ -508,7 +509,7 @@ class AgentsAPI:
             if not is_first_chunk:
                 time.sleep(self.config.batch_chunk_delay)
             is_first_chunk = False
-            body = AgentRunAsyncManyRequestRequest(
+            body = AgentRunAsyncManyRequest(
                 inputs=[_build_aer(item) for item in chunk]
             )
             if metadata is not None:

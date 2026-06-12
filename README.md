@@ -2,11 +2,14 @@
 
 A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
-> **v1.0.802** — Version synchronization across the public SDKs: roe-ai
-> (Python), roe-typescript, and roe-golang. The public SDK packages now
-> share a single 1.0.x patch counter, driven by the SDK OpenAPI spec.
+<!-- ROE-SDK:RELEASE-BANNER:START -->
+> **v1.1.0** - Schema synchronization across the public SDKs: roe-ai
+> (Python), roe-typescript, and roe-golang. This release is generated from
+> SDK OpenAPI marker `1-0-83`, and all public package metadata is bumped to
+> 1.1.0.
 > Python friendly wrappers are generated from `openapi/wrappers.yml`;
 > current generated facades include `client.discovery` and `client.tables`.
+<!-- ROE-SDK:RELEASE-BANNER:END -->
 
 > **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
 > (`roe._generated`); ergonomic wrappers on `client.agents` and

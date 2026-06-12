@@ -8,8 +8,9 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
-from ...models.patched_patched_agent_version_update_request_request import PatchedPatchedAgentVersionUpdateRequestRequest
+from ...models.error_detail_response import ErrorDetailResponse
+from ...models.message_response import MessageResponse
+from ...models.patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -20,7 +21,7 @@ def _get_kwargs(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
+    body: PatchedAgentVersionUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -58,20 +59,23 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorDetailResponse | MessageResponse | None:
     if response.status_code == 200:
-        response_200 = cast(Any, None)
+        response_200 = MessageResponse.from_dict(response.json())
+
+
+
         return response_200
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -83,7 +87,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorDetailResponse | MessageResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -96,11 +100,11 @@ def sync_detailed(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: PatchedAgentVersionUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[ErrorDetailResponse | MessageResponse]:
     """ Partially update an agent version.
 
      Partially update details of a specific agent version (only version name and description).
@@ -109,14 +113,14 @@ def sync_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
+        body (PatchedAgentVersionUpdateRequest | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[ErrorDetailResponse | MessageResponse]
      """
 
 
@@ -138,11 +142,11 @@ def sync(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: PatchedAgentVersionUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorResponse | None:
+) -> ErrorDetailResponse | MessageResponse | None:
     """ Partially update an agent version.
 
      Partially update details of a specific agent version (only version name and description).
@@ -151,14 +155,14 @@ def sync(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
+        body (PatchedAgentVersionUpdateRequest | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        ErrorDetailResponse | MessageResponse
      """
 
 
@@ -175,11 +179,11 @@ async def asyncio_detailed(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: PatchedAgentVersionUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorResponse]:
+) -> Response[ErrorDetailResponse | MessageResponse]:
     """ Partially update an agent version.
 
      Partially update details of a specific agent version (only version name and description).
@@ -188,14 +192,14 @@ async def asyncio_detailed(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
+        body (PatchedAgentVersionUpdateRequest | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorResponse]
+        Response[ErrorDetailResponse | MessageResponse]
      """
 
 
@@ -217,11 +221,11 @@ async def asyncio(
     agent_id: UUID,
     agent_version_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
-    body: PatchedPatchedAgentVersionUpdateRequestRequest | Unset = UNSET,
+    client: AuthenticatedClient,
+    body: PatchedAgentVersionUpdateRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorResponse | None:
+) -> ErrorDetailResponse | MessageResponse | None:
     """ Partially update an agent version.
 
      Partially update details of a specific agent version (only version name and description).
@@ -230,14 +234,14 @@ async def asyncio(
         agent_id (UUID):
         agent_version_id (UUID):
         organization_id (UUID | Unset):
-        body (PatchedPatchedAgentVersionUpdateRequestRequest | Unset):
+        body (PatchedAgentVersionUpdateRequest | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorResponse
+        ErrorDetailResponse | MessageResponse
      """
 
 

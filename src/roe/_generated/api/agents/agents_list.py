@@ -8,7 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_response import ErrorResponse
+from ...models.agents_list_response_400 import AgentsListResponse400
+from ...models.error_detail_response import ErrorDetailResponse
 from ...models.paginated_base_agent_list import PaginatedBaseAgentList
 from ...types import UNSET, Unset
 from typing import cast
@@ -74,7 +75,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> ErrorResponse | PaginatedBaseAgentList | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList | None:
     if response.status_code == 200:
         response_200 = PaginatedBaseAgentList.from_dict(response.json())
 
@@ -83,21 +84,21 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_200
 
     if response.status_code == 400:
-        response_400 = ErrorResponse.from_dict(response.json())
+        response_400 = AgentsListResponse400.from_dict(response.json())
 
 
 
         return response_400
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -109,7 +110,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -120,7 +121,7 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 def sync_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     engine_class_id: str | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
@@ -131,7 +132,7 @@ def sync_detailed(
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
 
-) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+) -> Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]:
     """ List agents or create a new agent.
 
      Retrieve a list of agents or create a new agent.
@@ -152,7 +153,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | PaginatedBaseAgentList]
+        Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]
      """
 
 
@@ -177,7 +178,7 @@ tags=tags,
 
 def sync(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     engine_class_id: str | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
@@ -188,7 +189,7 @@ def sync(
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
 
-) -> ErrorResponse | PaginatedBaseAgentList | None:
+) -> AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList | None:
     """ List agents or create a new agent.
 
      Retrieve a list of agents or create a new agent.
@@ -209,7 +210,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | PaginatedBaseAgentList
+        AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList
      """
 
 
@@ -229,7 +230,7 @@ tags=tags,
 
 async def asyncio_detailed(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     engine_class_id: str | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
@@ -240,7 +241,7 @@ async def asyncio_detailed(
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
 
-) -> Response[ErrorResponse | PaginatedBaseAgentList]:
+) -> Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]:
     """ List agents or create a new agent.
 
      Retrieve a list of agents or create a new agent.
@@ -261,7 +262,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[ErrorResponse | PaginatedBaseAgentList]
+        Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]
      """
 
 
@@ -286,7 +287,7 @@ tags=tags,
 
 async def asyncio(
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     engine_class_id: str | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
@@ -297,7 +298,7 @@ async def asyncio(
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
 
-) -> ErrorResponse | PaginatedBaseAgentList | None:
+) -> AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList | None:
     """ List agents or create a new agent.
 
      Retrieve a list of agents or create a new agent.
@@ -318,7 +319,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        ErrorResponse | PaginatedBaseAgentList
+        AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList
      """
 
 

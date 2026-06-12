@@ -9,7 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.base_agent import BaseAgent
-from ...models.error_response import ErrorResponse
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -48,7 +48,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BaseAgent | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> BaseAgent | ErrorDetailResponse | None:
     if response.status_code == 200:
         response_200 = BaseAgent.from_dict(response.json())
 
@@ -57,14 +57,14 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_200
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -76,7 +76,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BaseAgent | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[BaseAgent | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -88,10 +88,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[BaseAgent | ErrorResponse]:
+) -> Response[BaseAgent | ErrorDetailResponse]:
     """ Retrieve an agent.
 
      Retrieve details of a specific base agent.
@@ -105,7 +105,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BaseAgent | ErrorResponse]
+        Response[BaseAgent | ErrorDetailResponse]
      """
 
 
@@ -124,10 +124,10 @@ organization_id=organization_id,
 def sync(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> BaseAgent | ErrorResponse | None:
+) -> BaseAgent | ErrorDetailResponse | None:
     """ Retrieve an agent.
 
      Retrieve details of a specific base agent.
@@ -141,7 +141,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BaseAgent | ErrorResponse
+        BaseAgent | ErrorDetailResponse
      """
 
 
@@ -155,10 +155,10 @@ organization_id=organization_id,
 async def asyncio_detailed(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[BaseAgent | ErrorResponse]:
+) -> Response[BaseAgent | ErrorDetailResponse]:
     """ Retrieve an agent.
 
      Retrieve details of a specific base agent.
@@ -172,7 +172,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[BaseAgent | ErrorResponse]
+        Response[BaseAgent | ErrorDetailResponse]
      """
 
 
@@ -191,10 +191,10 @@ organization_id=organization_id,
 async def asyncio(
     agent_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> BaseAgent | ErrorResponse | None:
+) -> BaseAgent | ErrorDetailResponse | None:
     """ Retrieve an agent.
 
      Retrieve details of a specific base agent.
@@ -208,7 +208,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        BaseAgent | ErrorResponse
+        BaseAgent | ErrorDetailResponse
      """
 
 

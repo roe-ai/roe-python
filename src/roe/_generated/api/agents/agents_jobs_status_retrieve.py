@@ -8,8 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_job_status import AgentJobStatus
-from ...models.error_response import ErrorResponse
+from ...models.agent_job_single_status import AgentJobSingleStatus
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -48,23 +48,23 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobStatus | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobSingleStatus | ErrorDetailResponse | None:
     if response.status_code == 200:
-        response_200 = AgentJobStatus.from_dict(response.json())
+        response_200 = AgentJobSingleStatus.from_dict(response.json())
 
 
 
         return response_200
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
@@ -76,7 +76,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobStatus | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobSingleStatus | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -88,10 +88,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobStatus | ErrorResponse]:
+) -> Response[AgentJobSingleStatus | ErrorDetailResponse]:
     """  Get agent job status.
 
     Args:
@@ -103,7 +103,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobStatus | ErrorResponse]
+        Response[AgentJobSingleStatus | ErrorDetailResponse]
      """
 
 
@@ -122,10 +122,10 @@ organization_id=organization_id,
 def sync(
     job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobStatus | ErrorResponse | None:
+) -> AgentJobSingleStatus | ErrorDetailResponse | None:
     """  Get agent job status.
 
     Args:
@@ -137,7 +137,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobStatus | ErrorResponse
+        AgentJobSingleStatus | ErrorDetailResponse
      """
 
 
@@ -151,10 +151,10 @@ organization_id=organization_id,
 async def asyncio_detailed(
     job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobStatus | ErrorResponse]:
+) -> Response[AgentJobSingleStatus | ErrorDetailResponse]:
     """  Get agent job status.
 
     Args:
@@ -166,7 +166,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobStatus | ErrorResponse]
+        Response[AgentJobSingleStatus | ErrorDetailResponse]
      """
 
 
@@ -185,10 +185,10 @@ organization_id=organization_id,
 async def asyncio(
     job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobStatus | ErrorResponse | None:
+) -> AgentJobSingleStatus | ErrorDetailResponse | None:
     """  Get agent job status.
 
     Args:
@@ -200,7 +200,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobStatus | ErrorResponse
+        AgentJobSingleStatus | ErrorDetailResponse
      """
 
 

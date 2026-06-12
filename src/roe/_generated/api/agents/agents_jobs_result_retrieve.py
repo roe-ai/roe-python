@@ -9,7 +9,7 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.agent_job_result_response import AgentJobResultResponse
-from ...models.error_response import ErrorResponse
+from ...models.error_detail_response import ErrorDetailResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -48,7 +48,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobResultResponse | ErrorResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
     if response.status_code == 200:
         response_200 = AgentJobResultResponse.from_dict(response.json())
 
@@ -57,24 +57,21 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_200
 
     if response.status_code == 403:
-        response_403 = ErrorResponse.from_dict(response.json())
+        response_403 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorResponse.from_dict(response.json())
+        response_404 = ErrorDetailResponse.from_dict(response.json())
 
 
 
         return response_404
 
     if response.status_code == 500:
-        response_500 = ErrorResponse.from_dict(response.json())
-
-
-
+        response_500 = cast(Any, None)
         return response_500
 
     if client.raise_on_unexpected_status:
@@ -83,7 +80,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobResultResponse | ErrorResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -95,10 +92,10 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     agent_job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | ErrorResponse]:
+) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
     """  Get agent job result data.
 
     Args:
@@ -110,7 +107,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | ErrorResponse]
+        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
      """
 
 
@@ -129,10 +126,10 @@ organization_id=organization_id,
 def sync(
     agent_job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | ErrorResponse | None:
+) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
     """  Get agent job result data.
 
     Args:
@@ -144,7 +141,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | ErrorResponse
+        AgentJobResultResponse | Any | ErrorDetailResponse
      """
 
 
@@ -158,10 +155,10 @@ organization_id=organization_id,
 async def asyncio_detailed(
     agent_job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | ErrorResponse]:
+) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
     """  Get agent job result data.
 
     Args:
@@ -173,7 +170,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | ErrorResponse]
+        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
      """
 
 
@@ -192,10 +189,10 @@ organization_id=organization_id,
 async def asyncio(
     agent_job_id: UUID,
     *,
-    client: AuthenticatedClient | Client,
+    client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | ErrorResponse | None:
+) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
     """  Get agent job result data.
 
     Args:
@@ -207,7 +204,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | ErrorResponse
+        AgentJobResultResponse | Any | ErrorDetailResponse
      """
 
 
