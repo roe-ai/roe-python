@@ -7,6 +7,11 @@ from typing import Any
 
 from ruamel.yaml import YAML
 
+try:
+    import tomllib
+except ModuleNotFoundError:  # pragma: no cover - Python < 3.11 codegen envs
+    import tomli as tomllib
+
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
 CONTRACT_PATH = ROOT_DIR / "openapi" / "wrappers.yml"
@@ -14,6 +19,8 @@ README_BLOCKS_PATH = ROOT_DIR / "openapi" / "readme_blocks.yml"
 README_PATH = ROOT_DIR / "README.md"
 API_DIR = ROOT_DIR / "src" / "roe" / "api"
 REGISTRY_PATH = API_DIR / "_generated_registry.py"
+README_BANNER_START = "<!-- ROE-SDK:RELEASE-BANNER:START -->"
+README_BANNER_END = "<!-- ROE-SDK:RELEASE-BANNER:END -->"
 README_BLOCK_START = "<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->"
 README_BLOCK_END = "<!-- ROE-SDK:GENERATED-FRIENDLY-APIS:END -->"
 
@@ -52,19 +59,74 @@ def _load_readme_block() -> str:
     return block.strip()
 
 
+def _replace_marked_block(
+    readme: str,
+    *,
+    start_marker: str,
+    end_marker: str,
+    replacement: str,
+) -> str:
+    block = f"{start_marker}\n{replacement.strip()}\n{end_marker}"
+    pattern = re.compile(
+        rf"{re.escape(start_marker)}.*?{re.escape(end_marker)}",
+        re.DOTALL,
+    )
+    updated, count = pattern.subn(block, readme, count=1)
+    if count != 1:
+        raise ValueError(
+            f"{README_PATH} must contain {start_marker} and {end_marker}"
+        )
+    return updated
+
+
+def _load_project_version() -> str:
+    data = tomllib.loads((ROOT_DIR / "pyproject.toml").read_text(encoding="utf-8"))
+    version = data.get("project", {}).get("version")
+    if not isinstance(version, str) or not version:
+        raise ValueError("pyproject.toml must contain project.version")
+    return version
+
+
+def _load_release_marker() -> str:
+    marker = (ROOT_DIR / ".roe-main-release-version").read_text(encoding="utf-8").strip()
+    if not marker:
+        raise ValueError(".roe-main-release-version must not be empty")
+    return marker
+
+
+def _render_release_banner() -> str:
+    version = _load_project_version()
+    marker = _load_release_marker()
+    return (
+        f"> **v{version}** - Schema synchronization across the public SDKs: roe-ai\n"
+        f"> (Python), roe-typescript, and roe-golang. This release is generated from\n"
+        f"> SDK OpenAPI marker `{marker}`, and all public package metadata is bumped to\n"
+        f"> {version}.\n"
+        "> Python friendly wrappers are generated from `openapi/wrappers.yml`;\n"
+        "> current generated facades include `client.discovery` and `client.tables`."
+    )
+
+
+def _sync_readme_release_banner() -> None:
+    readme = README_PATH.read_text(encoding="utf-8")
+    updated = _replace_marked_block(
+        readme,
+        start_marker=README_BANNER_START,
+        end_marker=README_BANNER_END,
+        replacement=_render_release_banner(),
+    )
+    README_PATH.write_text(updated, encoding="utf-8")
+
+
 def _sync_readme_block() -> None:
     block = _load_readme_block()
     readme = README_PATH.read_text(encoding="utf-8")
-    replacement = f"{README_BLOCK_START}\n{block}\n{README_BLOCK_END}"
-    pattern = re.compile(
-        rf"{re.escape(README_BLOCK_START)}.*?{re.escape(README_BLOCK_END)}",
-        re.DOTALL,
+    updated = _replace_marked_block(
+        readme,
+        start_marker=README_BLOCK_START,
+        end_marker=README_BLOCK_END,
+        replacement=block,
     )
-    updated, count = pattern.subn(replacement, readme, count=1)
-    if count != 1:
-        raise ValueError(
-            f"{README_PATH} must contain {README_BLOCK_START} and {README_BLOCK_END}"
-        )
     README_PATH.write_text(updated, encoding="utf-8")
 
 
@@ -358,6 +420,7 @@ def main() -> None:
         target.write_text(_render_api_module(api_name, spec))
 
     REGISTRY_PATH.write_text(_render_registry(apis))
+    _sync_readme_release_banner()
     _sync_readme_block()
     print(
         f"Generated {len(apis)} friendly API wrapper modules from "
