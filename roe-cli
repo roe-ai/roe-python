@@ -25,11 +25,11 @@ EOF
 cmd_format() {
     cd "$SCRIPT_DIR"
 
-    echo "Running Ruff formatter..."
-    uv run --group dev ruff format .
-
     echo "Running Ruff linter..."
     uv run --group dev ruff check --fix .
+
+    echo "Running Ruff formatter..."
+    uv run --group dev ruff format .
 
     echo "✨ Code is properly formatted and linted!"
 }
