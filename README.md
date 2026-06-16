@@ -720,6 +720,16 @@ client.agents.jobs.delete_data(job_id)
 | AML Investigation | `AMLInvestigationEngine` |
 | Fraud Investigation | `FraudInvestigationEngine` |
 
+## Development
+
+Before opening a PR, format and lint the codebase by running:
+
+```bash
+./roe-cli format
+```
+
+CI runs the same checks (`ruff check` and `ruff format --check`) on every pull request and on merges to `main`, and they must pass before a PR can be merged.
+
 ## Links
 
 - [Roe](https://www.roe-ai.com/)

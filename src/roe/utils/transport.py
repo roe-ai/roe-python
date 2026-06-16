@@ -62,7 +62,10 @@ class RoeRetryTransport(httpx.HTTPTransport):
                 time.sleep(wait_time)
                 continue
 
-            if not _should_retry_status(response.status_code) or attempt >= self.max_retries:
+            if (
+                not _should_retry_status(response.status_code)
+                or attempt >= self.max_retries
+            ):
                 return response
 
             wait_time = min(2**attempt, 10)

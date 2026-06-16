@@ -36,7 +36,9 @@ def main():
                                 "description": "Funds transferred through multiple accounts to obscure origin",
                                 "flag": "RED_FLAG",
                                 "sub_rules": [
-                                    {"title": "Cross-border wire transfers with no business purpose"},
+                                    {
+                                        "title": "Cross-border wire transfers with no business purpose"
+                                    },
                                     {"title": "Shell company intermediaries"},
                                 ],
                             },
@@ -47,9 +49,18 @@ def main():
             "instructions": "Investigate the alert by analyzing transaction patterns, account relationships, and customer profile. Use available data sources to corroborate or refute each finding.",
             "dispositions": {
                 "classifications": [
-                    {"name": "Suspicious", "description": "Activity warrants SAR filing"},
-                    {"name": "Not Suspicious", "description": "Activity has legitimate business explanation"},
-                    {"name": "Needs Escalation", "description": "Requires senior BSA analyst review"},
+                    {
+                        "name": "Suspicious",
+                        "description": "Activity warrants SAR filing",
+                    },
+                    {
+                        "name": "Not Suspicious",
+                        "description": "Activity has legitimate business explanation",
+                    },
+                    {
+                        "name": "Needs Escalation",
+                        "description": "Requires senior BSA analyst review",
+                    },
                 ]
             },
             "summary_template": {
@@ -69,7 +80,11 @@ def main():
         name="AML Investigation Agent",
         engine_class_id="AMLInvestigationEngine",
         input_definitions=[
-            {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context for AML investigation"},
+            {
+                "key": "alert_data",
+                "data_type": "text/plain",
+                "description": "Alert data and context for AML investigation",
+            },
         ],
         engine_config={
             "policy_version_id": str(policy.current_version_id),
@@ -128,9 +143,18 @@ def main():
             "instructions": "Investigate the alert by analyzing transaction patterns, account relationships, and customer profile. Pay special attention to potential smurfing networks.",
             "dispositions": {
                 "classifications": [
-                    {"name": "Suspicious", "description": "Activity warrants SAR filing"},
-                    {"name": "Not Suspicious", "description": "Activity has legitimate business explanation"},
-                    {"name": "Needs Escalation", "description": "Requires senior BSA analyst review"},
+                    {
+                        "name": "Suspicious",
+                        "description": "Activity warrants SAR filing",
+                    },
+                    {
+                        "name": "Not Suspicious",
+                        "description": "Activity has legitimate business explanation",
+                    },
+                    {
+                        "name": "Needs Escalation",
+                        "description": "Requires senior BSA analyst review",
+                    },
                 ]
             },
         },
@@ -142,7 +166,11 @@ def main():
     client.agents.versions.create(
         agent_id=str(agent.id),
         input_definitions=[
-            {"key": "alert_data", "data_type": "text/plain", "description": "Alert data and context for AML investigation"},
+            {
+                "key": "alert_data",
+                "data_type": "text/plain",
+                "description": "Alert data and context for AML investigation",
+            },
         ],
         engine_config={
             "policy_version_id": str(new_version.id),

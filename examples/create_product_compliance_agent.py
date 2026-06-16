@@ -63,9 +63,18 @@ def main():
             "instructions": "Analyze the product listing against each category. Flag any rule violations with evidence from the listing text.",
             "dispositions": {
                 "classifications": [
-                    {"name": "Compliant", "description": "Product meets all policy requirements"},
-                    {"name": "Non-Compliant", "description": "Product violates one or more policy rules"},
-                    {"name": "Needs Review", "description": "Insufficient information to determine compliance"},
+                    {
+                        "name": "Compliant",
+                        "description": "Product meets all policy requirements",
+                    },
+                    {
+                        "name": "Non-Compliant",
+                        "description": "Product violates one or more policy rules",
+                    },
+                    {
+                        "name": "Needs Review",
+                        "description": "Insufficient information to determine compliance",
+                    },
                 ]
             },
         },
@@ -77,7 +86,11 @@ def main():
         name="Product Compliance Checker",
         engine_class_id="ProductPolicyEngine",
         input_definitions=[
-            {"key": "product_listings", "data_type": "text/plain", "description": "Product listing to analyze"},
+            {
+                "key": "product_listings",
+                "data_type": "text/plain",
+                "description": "Product listing to analyze",
+            },
         ],
         engine_config={
             "policy_version_id": str(policy.current_version_id),

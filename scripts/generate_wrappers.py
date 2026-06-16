@@ -73,9 +73,7 @@ def _replace_marked_block(
     )
     updated, count = pattern.subn(block, readme, count=1)
     if count != 1:
-        raise ValueError(
-            f"{README_PATH} must contain {start_marker} and {end_marker}"
-        )
+        raise ValueError(f"{README_PATH} must contain {start_marker} and {end_marker}")
     return updated
 
 
@@ -88,7 +86,9 @@ def _load_project_version() -> str:
 
 
 def _load_release_marker() -> str:
-    marker = (ROOT_DIR / ".roe-main-release-version").read_text(encoding="utf-8").strip()
+    marker = (
+        (ROOT_DIR / ".roe-main-release-version").read_text(encoding="utf-8").strip()
+    )
     if not marker:
         raise ValueError(".roe-main-release-version must not be empty")
     return marker

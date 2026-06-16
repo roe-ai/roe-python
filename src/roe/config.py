@@ -52,8 +52,10 @@ class RoeConfig(BaseModel):
         base_url = base_url or os.getenv("ROE_BASE_URL", "https://api.roe-ai.com")
         timeout = timeout or float(os.getenv("ROE_TIMEOUT", "60.0"))
         max_retries = max_retries or int(os.getenv("ROE_MAX_RETRIES", "3"))
-        batch_chunk_delay = batch_chunk_delay if batch_chunk_delay is not None else float(
-            os.getenv("ROE_BATCH_CHUNK_DELAY", "10.0")
+        batch_chunk_delay = (
+            batch_chunk_delay
+            if batch_chunk_delay is not None
+            else float(os.getenv("ROE_BATCH_CHUNK_DELAY", "10.0"))
         )
 
         if not api_key:
