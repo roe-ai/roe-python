@@ -13,20 +13,13 @@ Copy-ready calls for every SDK operation. Required and optional inputs are shown
 List agents or create a new agent.
 
 ```python
-from roe._generated.api.agents import agents_list
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_list.sync(
-    client=client.raw,
-    engine_class_id="engine_class_id",  # optional query
-    exclude_engine_class_id="exclude_engine_class_id",  # optional query
-    include_job_stats=True,  # optional query
-    ordering="ordering",  # optional query
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # required query
-    page=1,  # optional query
-    page_size=1,  # optional query
-    search="search",  # optional query
-    tags=["value"],  # optional query
+client = RoeClient()
+
+result = client.agents.list(
+    page=1,  # optional
+    page_size=1,  # optional
 )
 ```
 
@@ -35,22 +28,17 @@ result = agents_list.sync(
 Create a new base agent.
 
 ```python
-from roe._generated.api.agents import agents_create
-from uuid import UUID
-from roe._generated.models.base_agent_create_request import BaseAgentCreateRequest
+from roe import RoeClient
 
-result = agents_create.sync(
-    client=client.raw,
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=BaseAgentCreateRequest(
-        name="name",  # required
-        engine_class_id="engine_class_id",  # required
-        organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional
-        version_name="version_name",  # optional
-        description="description",  # optional
-        input_definitions="input_definitions",  # optional
-        engine_config="engine_config",  # optional
-    ),  # required body
+client = RoeClient()
+
+result = client.agents.create(
+    name="name",  # required
+    engine_class_id="engine_class_id",  # required
+    input_definitions=[{"key": "text", "data_type": "text/plain"}],  # optional
+    engine_config={"model": "gpt-4.1"},  # optional
+    version_name="version_name",  # optional
+    description="description",  # optional
 )
 ```
 
@@ -59,16 +47,12 @@ result = agents_create.sync(
 Get results for multiple agent jobs
 
 ```python
-from roe._generated.api.agents import agents_jobs_results_create
-from uuid import UUID
-from roe._generated.models.agent_job_result_many_request import AgentJobResultManyRequest
+from roe import RoeClient
 
-result = agents_jobs_results_create.sync(
-    client=client.raw,
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentJobResultManyRequest(
-        job_ids=["value"],  # required
-    ),  # required body
+client = RoeClient()
+
+result = client.agents.jobs.retrieve_result_many(
+    job_ids=["job_id"],
 )
 ```
 
@@ -77,16 +61,12 @@ result = agents_jobs_results_create.sync(
 Get status for multiple agent jobs
 
 ```python
-from roe._generated.api.agents import agents_jobs_statuses_create
-from uuid import UUID
-from roe._generated.models.agent_job_status_many_request import AgentJobStatusManyRequest
+from roe import RoeClient
 
-result = agents_jobs_statuses_create.sync(
-    client=client.raw,
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentJobStatusManyRequest(
-        job_ids=["value"],  # required
-    ),  # required body
+client = RoeClient()
+
+result = client.agents.jobs.retrieve_status_many(
+    job_ids=["job_id"],
 )
 ```
 
@@ -95,15 +75,14 @@ result = agents_jobs_statuses_create.sync(
 Serve a reference file associated with an agent job.
 
 ```python
-from roe._generated.api.agents import agents_jobs_references_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_references_retrieve.sync(
-    client=client.raw,
-    agent_job_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    download=True,  # optional query
-    resource_id="resource_id",  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+content = client.agents.jobs.download_reference(
+    job_id="job_id",
+    resource_id="resource_id",
+    as_attachment=False,
 )
 ```
 
@@ -112,13 +91,12 @@ result = agents_jobs_references_retrieve.sync(
 Get agent job result data.
 
 ```python
-from roe._generated.api.agents import agents_jobs_result_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_result_retrieve.sync(
-    client=client.raw,
-    agent_job_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.jobs.retrieve_result(
+    job_id="job_id",  # required
 )
 ```
 
@@ -127,13 +105,12 @@ result = agents_jobs_result_retrieve.sync(
 Cancel an agent job
 
 ```python
-from roe._generated.api.agents import agents_jobs_cancel_create
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_cancel_create.sync(
-    client=client.raw,
-    job_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.jobs.cancel(
+    job_id="job_id",  # required
 )
 ```
 
@@ -142,13 +119,12 @@ result = agents_jobs_cancel_create.sync(
 Delete agent job data
 
 ```python
-from roe._generated.api.agents import agents_jobs_delete_data_create
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_delete_data_create.sync(
-    client=client.raw,
-    job_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.jobs.delete_data(
+    job_id="job_id",  # required
 )
 ```
 
@@ -157,13 +133,12 @@ result = agents_jobs_delete_data_create.sync(
 Get agent job status.
 
 ```python
-from roe._generated.api.agents import agents_jobs_status_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_status_retrieve.sync(
-    client=client.raw,
-    job_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.jobs.retrieve_status(
+    job_id="job_id",  # required
 )
 ```
 
@@ -172,17 +147,14 @@ result = agents_jobs_status_retrieve.sync(
 Run agent synchronously
 
 ```python
-from roe._generated.api.agents import agents_run
-from uuid import UUID
-from roe._generated.models.agent_execution_request import AgentExecutionRequest
+from roe import RoeClient
 
-result = agents_run.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentExecutionRequest(
-        metadata={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.agents.run_sync(
+    agent_id="agent_id",
+    text="text",
+    metadata={},
 )
 ```
 
@@ -191,17 +163,15 @@ result = agents_run.sync(
 Run agent asynchronously.
 
 ```python
-from roe._generated.api.agents import agents_run_async_create
-from uuid import UUID
-from roe._generated.models.agent_execution_request import AgentExecutionRequest
+from roe import RoeClient
 
-result = agents_run_async_create.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentExecutionRequest(
-        metadata={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+job = client.agents.run(
+    agent_id="agent_id",
+    timeout_seconds=300,
+    text="text",
+    metadata={},
 )
 ```
 
@@ -210,17 +180,15 @@ result = agents_run_async_create.sync(
 Run agent asynchronously with multiple inputs
 
 ```python
-from roe._generated.api.agents import agents_run_async_many
-from uuid import UUID
-from roe._generated.models.agent_run_async_many_request import AgentRunAsyncManyRequest
+from roe import RoeClient
 
-result = agents_run_async_many.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentRunAsyncManyRequest(
-        inputs=["value"],  # required
-    ),  # required body
+client = RoeClient()
+
+batch = client.agents.run_many(
+    agent_id="agent_id",
+    batch_inputs=[{"text": "text"}],
+    timeout_seconds=300,
+    metadata={},
 )
 ```
 
@@ -229,18 +197,15 @@ result = agents_run_async_many.sync(
 Run agent version synchronously
 
 ```python
-from roe._generated.api.agents import agents_run_version
-from uuid import UUID
-from roe._generated.models.agent_execution_request import AgentExecutionRequest
+from roe import RoeClient
 
-result = agents_run_version.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentExecutionRequest(
-        metadata={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.agents.run_version_sync(
+    agent_id="agent_id",
+    version_id="version_id",
+    text="text",
+    metadata={},
 )
 ```
 
@@ -249,18 +214,16 @@ result = agents_run_version.sync(
 Run agent version asynchronously.
 
 ```python
-from roe._generated.api.agents import agents_run_versions_async_create
-from uuid import UUID
-from roe._generated.models.agent_execution_request import AgentExecutionRequest
+from roe import RoeClient
 
-result = agents_run_versions_async_create.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentExecutionRequest(
-        metadata={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+job = client.agents.run_version(
+    agent_id="agent_id",
+    version_id="version_id",
+    timeout_seconds=300,
+    text="text",
+    metadata={},
 )
 ```
 
@@ -269,13 +232,12 @@ result = agents_run_versions_async_create.sync(
 Delete a base agent.
 
 ```python
-from roe._generated.api.agents import agents_destroy
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_destroy.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.delete(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -284,13 +246,12 @@ result = agents_destroy.sync(
 Retrieve an agent.
 
 ```python
-from roe._generated.api.agents import agents_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_retrieve.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.retrieve(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -299,19 +260,15 @@ result = agents_retrieve.sync(
 Partially update an agent.
 
 ```python
-from roe._generated.api.agents import agents_partial_update
-from uuid import UUID
-from roe._generated.models.patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
+from roe import RoeClient
 
-result = agents_partial_update.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=PatchedBaseAgentUpdateRequest(
-        name="name",  # optional
-        disable_cache=True,  # optional
-        cache_failed_jobs=True,  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.agents.update(
+    agent_id="agent_id",  # required
+    name="name",  # optional
+    disable_cache=True,  # optional
+    cache_failed_jobs=True,  # optional
 )
 ```
 
@@ -320,20 +277,26 @@ result = agents_partial_update.sync(
 Update a base agent.
 
 ```python
-from roe._generated.api.agents import agents_update
-from uuid import UUID
-from roe._generated.models.base_agent_update_request import BaseAgentUpdateRequest
+from roe import RoeClient
 
-result = agents_update.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=BaseAgentUpdateRequest(
-        name="name",  # optional
-        disable_cache=True,  # optional
-        cache_failed_jobs=True,  # optional
-    ),  # optional body
+client = RoeClient()
+
+agent_id = "agent_id"
+
+response = client.raw.get_httpx_client().request(
+    "PUT",
+    f"/v1/agents/{agent_id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "name": "name",  # optional
+        "disable_cache": True,  # optional
+        "cache_failed_jobs": True,  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `agents_duplicate_create`
@@ -341,13 +304,12 @@ result = agents_update.sync(
 Duplicate an agent.
 
 ```python
-from roe._generated.api.agents import agents_duplicate_create
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_duplicate_create.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.duplicate(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -356,13 +318,12 @@ result = agents_duplicate_create.sync(
 Cancel all agent jobs
 
 ```python
-from roe._generated.api.agents import agents_jobs_cancel_all_create
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_jobs_cancel_all_create.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.jobs.cancel_all(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -371,13 +332,12 @@ result = agents_jobs_cancel_all_create.sync(
 List agent versions.
 
 ```python
-from roe._generated.api.agents import agents_versions_list
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_versions_list.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.versions.list(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -386,20 +346,16 @@ result = agents_versions_list.sync(
 Create a new agent version.
 
 ```python
-from roe._generated.api.agents import agents_versions_create
-from uuid import UUID
-from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
+from roe import RoeClient
 
-result = agents_versions_create.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentVersionCreateRequest(
-        version_name="version_name",  # optional
-        description="description",  # optional
-        input_definitions="input_definitions",  # optional
-        engine_config="engine_config",  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.agents.versions.create(
+    agent_id="agent_id",  # required
+    input_definitions=[{"key": "text", "data_type": "text/plain"}],  # optional
+    engine_config={"model": "gpt-4.1"},  # optional
+    version_name="version_name",  # optional
+    description="description",  # optional
 )
 ```
 
@@ -408,14 +364,12 @@ result = agents_versions_create.sync(
 Retrieve the current version of an agent.
 
 ```python
-from roe._generated.api.agents import agents_versions_current_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_versions_current_retrieve.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    get_supports_eval=True,  # optional query
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.versions.retrieve_current(
+    agent_id="agent_id",  # required
 )
 ```
 
@@ -424,14 +378,13 @@ result = agents_versions_current_retrieve.sync(
 Delete an agent version.
 
 ```python
-from roe._generated.api.agents import agents_versions_destroy
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_versions_destroy.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.versions.delete(
+    agent_id="agent_id",  # required
+    version_id="version_id",  # required
 )
 ```
 
@@ -440,15 +393,14 @@ result = agents_versions_destroy.sync(
 Retrieve an agent version.
 
 ```python
-from roe._generated.api.agents import agents_versions_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = agents_versions_retrieve.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    get_supports_eval=True,  # optional query
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.agents.versions.retrieve(
+    agent_id="agent_id",  # required
+    version_id="version_id",  # required
+    get_supports_eval=True,  # optional
 )
 ```
 
@@ -457,19 +409,15 @@ result = agents_versions_retrieve.sync(
 Partially update an agent version.
 
 ```python
-from roe._generated.api.agents import agents_versions_partial_update
-from uuid import UUID
-from roe._generated.models.patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
+from roe import RoeClient
 
-result = agents_versions_partial_update.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=PatchedAgentVersionUpdateRequest(
-        version_name="version_name",  # optional
-        description="description",  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.agents.versions.update(
+    agent_id="agent_id",  # required
+    version_id="version_id",  # required
+    version_name="version_name",  # optional
+    description="description",  # optional
 )
 ```
 
@@ -478,20 +426,26 @@ result = agents_versions_partial_update.sync(
 Update an agent version.
 
 ```python
-from roe._generated.api.agents import agents_versions_update
-from uuid import UUID
-from roe._generated.models.agent_version_update_request import AgentVersionUpdateRequest
+from roe import RoeClient
 
-result = agents_versions_update.sync(
-    client=client.raw,
-    agent_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    agent_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=AgentVersionUpdateRequest(
-        version_name="version_name",  # optional
-        description="description",  # optional
-    ),  # optional body
+client = RoeClient()
+
+agent_id = "agent_id"
+agent_version_id = "agent_version_id"
+
+response = client.raw.get_httpx_client().request(
+    "PUT",
+    f"/v1/agents/{agent_id}/versions/{agent_version_id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "version_name": "version_name",  # optional
+        "description": "description",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 ### Connections
@@ -501,17 +455,23 @@ result = agents_versions_update.sync(
 List/create connections.
 
 ```python
-from roe._generated.api.connections import connections_list
-from uuid import UUID
+from roe import RoeClient
 
-result = connections_list.sync(
-    client=client.raw,
-    connector_type="connector_type",  # optional query
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    page=1,  # optional query
-    page_size=1,  # optional query
-    search="search",  # optional query
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    "/v1/connections/",
+    params={
+        "connector_type": "connector_type",  # optional
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+        "page": 1,  # optional
+        "page_size": 1,  # optional
+        "search": "search",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_create`
@@ -519,22 +479,27 @@ result = connections_list.sync(
 List/create connections.
 
 ```python
-from roe._generated.api.connections import connections_create
-from uuid import UUID
-from roe._generated.models.create_connection_request import CreateConnectionRequest
+from roe import RoeClient
 
-result = connections_create.sync(
-    client=client.raw,
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=CreateConnectionRequest(
-        connector_type="connector_type",  # required
-        name="name",  # required
-        description="description",  # optional
-        config={},  # required
-        auth_config={},  # optional
-        organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional
-    ),  # required body
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "POST",
+    "/v1/connections/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "connector_type": "connector_type",  # required
+        "name": "name",  # required
+        "description": "description",  # optional
+        "config": {},  # required
+        "auth_config": {},  # optional
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_test_credentials_create`
@@ -542,17 +507,21 @@ result = connections_create.sync(
 Test credentials without storing them.
 
 ```python
-from roe._generated.api.connections import connections_test_credentials_create
-from roe._generated.models.test_connection_credentials_request import TestConnectionCredentialsRequest
+from roe import RoeClient
 
-result = connections_test_credentials_create.sync(
-    client=client.raw,
-    body=TestConnectionCredentialsRequest(
-        connector_type="connector_type",  # required
-        config={},  # required
-        auth_config={},  # optional
-    ),  # required body
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "POST",
+    "/v1/connections/test-credentials/",
+    json={
+        "connector_type": "connector_type",  # required
+        "config": {},  # required
+        "auth_config": {},  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_destroy`
@@ -560,14 +529,21 @@ result = connections_test_credentials_create.sync(
 Manage connection.
 
 ```python
-from roe._generated.api.connections import connections_destroy
-from uuid import UUID
+from roe import RoeClient
 
-result = connections_destroy.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "DELETE",
+    f"/v1/connections/{id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_retrieve`
@@ -575,14 +551,21 @@ result = connections_destroy.sync(
 Manage connection.
 
 ```python
-from roe._generated.api.connections import connections_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = connections_retrieve.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    f"/v1/connections/{id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_partial_update`
@@ -590,21 +573,27 @@ result = connections_retrieve.sync(
 Manage connection.
 
 ```python
-from roe._generated.api.connections import connections_partial_update
-from uuid import UUID
-from roe._generated.models.patched_update_connection_request import PatchedUpdateConnectionRequest
+from roe import RoeClient
 
-result = connections_partial_update.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=PatchedUpdateConnectionRequest(
-        name="name",  # optional
-        description="description",  # optional
-        config={},  # optional
-        auth_config={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "PATCH",
+    f"/v1/connections/{id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "name": "name",  # optional
+        "description": "description",  # optional
+        "config": {},  # optional
+        "auth_config": {},  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_update`
@@ -612,21 +601,27 @@ result = connections_partial_update.sync(
 Manage connection.
 
 ```python
-from roe._generated.api.connections import connections_update
-from uuid import UUID
-from roe._generated.models.update_connection_request import UpdateConnectionRequest
+from roe import RoeClient
 
-result = connections_update.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=UpdateConnectionRequest(
-        name="name",  # optional
-        description="description",  # optional
-        config={},  # optional
-        auth_config={},  # optional
-    ),  # optional body
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "PUT",
+    f"/v1/connections/{id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "name": "name",  # optional
+        "description": "description",  # optional
+        "config": {},  # optional
+        "auth_config": {},  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connections_test_create`
@@ -634,14 +629,21 @@ result = connections_update.sync(
 Test connection.
 
 ```python
-from roe._generated.api.connections import connections_test_create
-from uuid import UUID
+from roe import RoeClient
 
-result = connections_test_create.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "POST",
+    f"/v1/connections/{id}/test/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 ### Connectors
@@ -651,11 +653,16 @@ result = connections_test_create.sync(
 List all connector types.
 
 ```python
-from roe._generated.api.connectors import connectors_retrieve
+from roe import RoeClient
 
-result = connectors_retrieve.sync(
-    client=client.raw,
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    "/v1/connectors/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `connectors_retrieve_by_type`
@@ -663,12 +670,18 @@ result = connectors_retrieve.sync(
 Get connector details.
 
 ```python
-from roe._generated.api.connectors import connectors_retrieve_by_type
+from roe import RoeClient
 
-result = connectors_retrieve_by_type.sync(
-    client=client.raw,
-    connector_type="connector_type",  # required path
+client = RoeClient()
+
+connector_type = "connector_type"
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    f"/v1/connectors/{connector_type}/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 ### Discovery
@@ -678,11 +691,12 @@ result = connectors_retrieve_by_type.sync(
 List supported model IDs
 
 ```python
-from roe._generated.api.discovery import discovery_supported_models_list
+from roe import RoeClient
 
-result = discovery_supported_models_list.sync(
-    client=client.raw,
-    capability="capability",  # optional query
+client = RoeClient()
+
+result = client.discovery.list_supported_models(
+    capability="capability",  # optional
 )
 ```
 
@@ -691,11 +705,11 @@ result = discovery_supported_models_list.sync(
 List supported agent engine types
 
 ```python
-from roe._generated.api.discovery import discovery_agent_engine_types_list
+from roe import RoeClient
 
-result = discovery_agent_engine_types_list.sync(
-    client=client.raw,
-)
+client = RoeClient()
+
+result = client.discovery.list_agent_engine_types()
 ```
 
 ### Policies
@@ -705,16 +719,13 @@ result = discovery_agent_engine_types_list.sync(
 List all policies and create a new policy.
 
 ```python
-from roe._generated.api.policies import policies_list
-from uuid import UUID
+from roe import RoeClient
 
-result = policies_list.sync(
-    client=client.raw,
-    ordering="ordering",  # optional query
-    page=1,  # optional query
-    page_size=1,  # optional query
-    search="search",  # optional query
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.policies.list(
+    page=1,  # optional
+    page_size=1,  # optional
 )
 ```
 
@@ -723,19 +734,15 @@ result = policies_list.sync(
 List all policies and create a new policy.
 
 ```python
-from roe._generated.api.policies import policies_create
-from uuid import UUID
-from roe._generated.models.create_policy_request import CreatePolicyRequest
+from roe import RoeClient
 
-result = policies_create.sync(
-    client=client.raw,
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=CreatePolicyRequest(
-        name="name",  # required
-        description="description",  # optional
-        content="content",  # required
-        version_name="version_name",  # optional
-    ),  # required body
+client = RoeClient()
+
+result = client.policies.create(
+    name="name",  # required
+    content={},  # required
+    description="description",  # optional
+    version_name="version_name",  # optional
 )
 ```
 
@@ -744,13 +751,12 @@ result = policies_create.sync(
 Retrieve, update, or delete a single policy by ID.
 
 ```python
-from roe._generated.api.policies import policies_destroy
-from uuid import UUID
+from roe import RoeClient
 
-result = policies_destroy.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.policies.delete(
+    policy_id="policy_id",  # required
 )
 ```
 
@@ -759,13 +765,12 @@ result = policies_destroy.sync(
 Retrieve, update, or delete a single policy by ID.
 
 ```python
-from roe._generated.api.policies import policies_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = policies_retrieve.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.policies.retrieve(
+    policy_id="policy_id",  # required
 )
 ```
 
@@ -774,18 +779,14 @@ result = policies_retrieve.sync(
 Retrieve, update, or delete a single policy by ID.
 
 ```python
-from roe._generated.api.policies import policies_partial_update
-from uuid import UUID
-from roe._generated.models.patched_update_policy_request import PatchedUpdatePolicyRequest
+from roe import RoeClient
 
-result = policies_partial_update.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=PatchedUpdatePolicyRequest(
-        name="name",  # optional
-        description="description",  # optional
-    ),  # optional body
+client = RoeClient()
+
+result = client.policies.update(
+    policy_id="policy_id",  # required
+    name="name",  # optional
+    description="description",  # optional
 )
 ```
 
@@ -794,19 +795,25 @@ result = policies_partial_update.sync(
 Retrieve, update, or delete a single policy by ID.
 
 ```python
-from roe._generated.api.policies import policies_update
-from uuid import UUID
-from roe._generated.models.update_policy_request import UpdatePolicyRequest
+from roe import RoeClient
 
-result = policies_update.sync(
-    client=client.raw,
-    id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=UpdatePolicyRequest(
-        name="name",  # required
-        description="description",  # optional
-    ),  # required body
+client = RoeClient()
+
+id = "id"
+
+response = client.raw.get_httpx_client().request(
+    "PUT",
+    f"/v1/policies/{id}/",
+    params={
+        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
+    },
+    json={
+        "name": "name",  # required
+        "description": "description",  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `policies_versions_list`
@@ -814,15 +821,14 @@ result = policies_update.sync(
 Create a new policy version or list all versions of a specific policy.
 
 ```python
-from roe._generated.api.policies import policies_versions_list
-from uuid import UUID
+from roe import RoeClient
 
-result = policies_versions_list.sync(
-    client=client.raw,
-    page=1,  # optional query
-    page_size=1,  # optional query
-    policy_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.policies.versions.list(
+    policy_id="policy_id",
+    page=1,
+    page_size=10,
 )
 ```
 
@@ -831,19 +837,15 @@ result = policies_versions_list.sync(
 Create a new policy version or list all versions of a specific policy.
 
 ```python
-from roe._generated.api.policies import policies_versions_create
-from uuid import UUID
-from roe._generated.models.create_policy_version_request import CreatePolicyVersionRequest
+from roe import RoeClient
 
-result = policies_versions_create.sync(
-    client=client.raw,
-    policy_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
-    body=CreatePolicyVersionRequest(
-        version_name="version_name",  # optional
-        content="content",  # required
-        base_version_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional
-    ),  # required body
+client = RoeClient()
+
+result = client.policies.versions.create(
+    policy_id="policy_id",
+    content={},
+    version_name="version_name",
+    base_version_id="base_version_id",
 )
 ```
 
@@ -852,14 +854,13 @@ result = policies_versions_create.sync(
 Get a specific policy version by policy_id and version_id.
 
 ```python
-from roe._generated.api.policies import policies_versions_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = policies_versions_retrieve.sync(
-    client=client.raw,
-    policy_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    version_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
-    organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional query
+client = RoeClient()
+
+result = client.policies.versions.retrieve(
+    policy_id="policy_id",
+    version_id="version_id",
 )
 ```
 
@@ -870,11 +871,16 @@ result = policies_versions_retrieve.sync(
 List Roe tables
 
 ```python
-from roe._generated.api.tables import tables_list
+from roe import RoeClient
 
-result = tables_list.sync(
-    client=client.raw,
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    "/v1/tables/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `tables_query_create`
@@ -882,16 +888,20 @@ result = tables_list.sync(
 Run a read-only Roe table query
 
 ```python
-from roe._generated.api.tables import tables_query_create
-from roe._generated.models.table_query_request import TableQueryRequest
+from roe import RoeClient
 
-result = tables_query_create.sync(
-    client=client.raw,
-    body=TableQueryRequest(
-        sql="sql",  # required
-        limit=1,  # optional
-    ),  # required body
+client = RoeClient()
+
+response = client.raw.get_httpx_client().request(
+    "POST",
+    "/v1/tables/query/",
+    json={
+        "sql": "sql",  # required
+        "limit": 1,  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `tables_query_result_retrieve`
@@ -899,13 +909,18 @@ result = tables_query_create.sync(
 Get a Roe table query result
 
 ```python
-from roe._generated.api.tables import tables_query_result_retrieve
-from uuid import UUID
+from roe import RoeClient
 
-result = tables_query_result_retrieve.sync(
-    client=client.raw,
-    table_query_id=UUID("00000000-0000-0000-0000-000000000000"),  # required path
+client = RoeClient()
+
+table_query_id = "table_query_id"
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    f"/v1/tables/query/{table_query_id}/result/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `tables_destroy`
@@ -913,12 +928,18 @@ result = tables_query_result_retrieve.sync(
 Delete a Roe table
 
 ```python
-from roe._generated.api.tables import tables_destroy
+from roe import RoeClient
 
-result = tables_destroy.sync(
-    client=client.raw,
-    table_name="table_name",  # required path
+client = RoeClient()
+
+table_name = "table_name"
+
+response = client.raw.get_httpx_client().request(
+    "DELETE",
+    f"/v1/tables/{table_name}/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `tables_describe_retrieve`
@@ -926,12 +947,18 @@ result = tables_destroy.sync(
 Describe a Roe table
 
 ```python
-from roe._generated.api.tables import tables_describe_retrieve
+from roe import RoeClient
 
-result = tables_describe_retrieve.sync(
-    client=client.raw,
-    table_name="table_name",  # required path
+client = RoeClient()
+
+table_name = "table_name"
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    f"/v1/tables/{table_name}/describe/",
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `tables_preview_retrieve`
@@ -939,13 +966,21 @@ result = tables_describe_retrieve.sync(
 Preview a Roe table
 
 ```python
-from roe._generated.api.tables import tables_preview_retrieve
+from roe import RoeClient
 
-result = tables_preview_retrieve.sync(
-    client=client.raw,
-    limit=1,  # optional query
-    table_name="table_name",  # required path
+client = RoeClient()
+
+table_name = "table_name"
+
+response = client.raw.get_httpx_client().request(
+    "GET",
+    f"/v1/tables/{table_name}/preview/",
+    params={
+        "limit": 1,  # optional
+    },
 )
+response.raise_for_status()
+result = response.json()
 ```
 
 #### `upload_table`
@@ -953,19 +988,14 @@ result = tables_preview_retrieve.sync(
 Upload a CSV as a Roe table
 
 ```python
-from roe._generated.api.tables import upload_table
-from uuid import UUID
-from roe._generated.models.table_upload_request import TableUploadRequest
-from roe._generated.types import File
+from roe import RoeClient
 
-result = upload_table.sync(
-    client=client.raw,
-    body=TableUploadRequest(
-        table_name="table_name",  # required
-        file=File(payload=open("file.csv", "rb"), file_name="file.csv", mime_type="text/csv"),  # required
-        with_headers=True,  # optional
-        organization_id=UUID("00000000-0000-0000-0000-000000000000"),  # optional
-    ),  # required body
+client = RoeClient()
+
+result = client.tables.upload(
+    table_name="table_name",
+    file="file.csv",
+    with_headers=True,
 )
 ```
 
@@ -976,11 +1006,11 @@ result = upload_table.sync(
 Get the current user
 
 ```python
-from roe._generated.api.users import users_current_user_retrieve
+from roe import RoeClient
 
-result = users_current_user_retrieve.sync(
-    client=client.raw,
-)
+client = RoeClient()
+
+result = client.users.me()
 ```
 
 ## Use Cases
