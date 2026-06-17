@@ -16,6 +16,7 @@ from roe._generated.api.policies import (
     policies_list,
     policies_partial_update,
     policies_retrieve,
+    policies_update,
     policies_versions_create,
     policies_versions_list,
     policies_versions_retrieve,
@@ -35,6 +36,8 @@ from roe._generated.models.patched_update_policy_request import (
 )
 from roe._generated.models.policy import Policy
 from roe._generated.models.policy_version import PolicyVersion
+from roe._generated.models.update_policy import UpdatePolicy
+from roe._generated.models.update_policy_request import UpdatePolicyRequest
 from roe._generated.types import UNSET
 from roe.config import RoeConfig
 from roe.utils.generated_request import request_json, request_raw
@@ -207,6 +210,27 @@ class PoliciesAPI:
             organization_id=UUID(str(self.config.organization_id)),
         )
         return resp.parsed
+
+    def replace(
+        self,
+        policy_id: str,
+        name: str,
+        description: str | None = None,
+    ) -> UpdatePolicy:
+        """Replace a policy via PUT."""
+        org_id = UUID(str(self.config.organization_id))
+        body = UpdatePolicyRequest(
+            name=name,
+            description=description if description is not None else UNSET,
+        )
+        resp = request_json(
+            self._raw,
+            policies_update,
+            UUID(str(policy_id)),
+            body=body,
+            organization_id=org_id,
+        )
+        return resp.parsed  # type: ignore[return-value]
 
     def delete(self, policy_id: str) -> None:
         """Delete a policy and all its versions."""

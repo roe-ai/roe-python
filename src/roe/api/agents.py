@@ -36,6 +36,7 @@ from roe._generated.api.agents import (
     agents_run_async_create,
     agents_run_async_many,
     agents_run_version,
+    agents_update,
     agents_run_versions_async_create,
     agents_versions_create,
     agents_versions_current_retrieve,
@@ -43,6 +44,7 @@ from roe._generated.api.agents import (
     agents_versions_list,
     agents_versions_partial_update,
     agents_versions_retrieve,
+    agents_versions_update,
 )
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.agent_datum import AgentDatum
@@ -67,8 +69,11 @@ from roe._generated.models.agent_run_async_many_request import (
 )
 from roe._generated.models.agent_version import AgentVersion
 from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
+from roe._generated.models.agent_version_update_request import AgentVersionUpdateRequest
 from roe._generated.models.base_agent import BaseAgent
 from roe._generated.models.base_agent_create_request import BaseAgentCreateRequest
+from roe._generated.models.base_agent_update_request import BaseAgentUpdateRequest
+from roe._generated.models.message_response import MessageResponse
 from roe._generated.models.paginated_base_agent_list import PaginatedBaseAgentList
 from roe._generated.models.patched_base_agent_update_request import (
     PatchedBaseAgentUpdateRequest,
@@ -199,6 +204,28 @@ class AgentVersionsAPI:
             body=body,
             organization_id=self._org_id,
         )
+
+    def replace(
+        self,
+        agent_id: str,
+        version_id: str,
+        version_name: str | None = None,
+        description: str | None = None,
+    ) -> MessageResponse:
+        """Replace an agent version via PUT."""
+        body = AgentVersionUpdateRequest(
+            version_name=version_name if version_name is not None else UNSET,
+            description=description if description is not None else UNSET,
+        )
+        resp = request_json(
+            self._raw,
+            agents_versions_update,
+            UUID(str(agent_id)),
+            UUID(str(version_id)),
+            body=body,
+            organization_id=self._org_id,
+        )
+        return resp.parsed  # type: ignore[return-value]
 
     def delete(self, agent_id: str, version_id: str) -> None:
         request_raw(
@@ -436,6 +463,30 @@ class AgentsAPI:
         resp = request_json(
             self._raw,
             agents_partial_update,
+            UUID(str(agent_id)),
+            body=body,
+            organization_id=self._org_id,
+        )
+        return resp.parsed  # type: ignore[return-value]
+
+    def replace(
+        self,
+        agent_id: str,
+        name: str | None = None,
+        disable_cache: bool | None = None,
+        cache_failed_jobs: bool | None = None,
+    ) -> BaseAgent:
+        """Replace an agent via PUT."""
+        body = BaseAgentUpdateRequest(
+            name=name if name is not None else UNSET,
+            disable_cache=disable_cache if disable_cache is not None else UNSET,
+            cache_failed_jobs=cache_failed_jobs
+            if cache_failed_jobs is not None
+            else UNSET,
+        )
+        resp = request_json(
+            self._raw,
+            agents_update,
             UUID(str(agent_id)),
             body=body,
             organization_id=self._org_id,

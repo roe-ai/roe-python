@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from types import SimpleNamespace
 from unittest.mock import MagicMock
+from uuid import UUID
 
 import httpx
 import pytest
@@ -15,6 +16,23 @@ ORG_ID = "00000000-0000-0000-0000-000000000123"
 AGENT_ID = "00000000-0000-0000-0000-000000000111"
 VERSION_ID = "00000000-0000-0000-0000-000000000222"
 JOB_ID = "00000000-0000-0000-0000-000000000333"
+
+
+def _base_agent_json() -> dict[str, object]:
+    return {
+        "id": AGENT_ID,
+        "created_at": "2025-01-01T00:00:00Z",
+        "name": "Agent",
+        "disable_cache": False,
+        "cache_failed_jobs": False,
+        "organization_id": ORG_ID,
+        "engine_class_id": "engine",
+        "current_version_id": VERSION_ID,
+        "job_count": None,
+        "most_recent_job": None,
+        "engine_name": "Engine",
+        "tags": [],
+    }
 
 
 def _api(response: httpx.Response) -> tuple[AgentsAPI, MagicMock]:
@@ -54,6 +72,35 @@ def test_run_passes_idempotency_key_through_dynamic_wrapper():
     assert kwargs["headers"]["Idempotency-Key"] == "idem-123"
     assert kwargs["headers"]["x-roe-skip-retry"] == "1"
     assert job.id == JOB_ID
+
+
+def test_agent_replace_uses_put_with_org_query_and_model_body():
+    api, request = _api(httpx.Response(200, json=_base_agent_json()))
+
+    result = api.replace(AGENT_ID, name="Renamed", disable_cache=True)
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "put"
+    assert kwargs["params"] == {"organization_id": ORG_ID}
+    assert kwargs["json"] == {"name": "Renamed", "disable_cache": True}
+    assert result.id == UUID(AGENT_ID)
+
+
+def test_agent_version_replace_uses_put_with_org_query_and_model_body():
+    api, request = _api(httpx.Response(200, json={"message": "ok"}))
+
+    result = api.versions.replace(
+        AGENT_ID,
+        VERSION_ID,
+        version_name="v2",
+        description="desc",
+    )
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "put"
+    assert kwargs["params"] == {"organization_id": ORG_ID}
+    assert kwargs["json"] == {"version_name": "v2", "description": "desc"}
+    assert result.message == "ok"
 
 
 def test_retrieve_status_parses_single_status_shape_without_id():
