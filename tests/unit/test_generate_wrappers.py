@@ -50,6 +50,7 @@ def test_partial_module_imports_uuid_without_unset_usage():
 
     assert "from typing import Any" in rendered
     assert "from uuid import UUID" in rendered
+    assert "from roe.exceptions import RoeAPIException, translate_response" in rendered
     assert "from roe._generated.types import UNSET" not in rendered
     assert "config: RoeConfig" in rendered
     assert "_raw: AuthenticatedClient" in rendered

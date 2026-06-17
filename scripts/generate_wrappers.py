@@ -452,17 +452,21 @@ def _render_generated_class(
 
 def _collect_generated_imports(
     spec: dict[str, Any],
-) -> tuple[dict[str, list[str]], dict[str, list[str]], bool, bool, bool]:
+) -> tuple[dict[str, list[str]], dict[str, list[str]], bool, bool, bool, bool]:
     endpoint_imports: dict[str, list[str]] = defaultdict(list)
     model_imports: dict[str, list[str]] = defaultdict(list)
     needs_any = False
     needs_roe_api_exception = False
+    needs_translate_response = False
     needs_unset = False
 
     for scoped_spec in _iter_specs(spec):
         for operation in scoped_spec.get("operations") or []:
-            if _operation_kind(operation) == "manual":
+            kind = _operation_kind(operation)
+            if kind == "manual":
                 continue
+            if kind == "simple":
+                needs_translate_response = True
             package, endpoint_name = _module_import_parts(operation["endpoint_module"])
             endpoint_imports[package].append(endpoint_name)
             if operation.get("return_import"):
@@ -480,29 +484,32 @@ def _collect_generated_imports(
                 or any("Any" in param.get("annotation", "") for param in parameters)
             )
             needs_roe_api_exception = needs_roe_api_exception or bool(
-                operation.get("refetch_with_retrieve")
+                operation.get("empty_response_message")
+                or operation.get("refetch_with_retrieve")
                 or operation.get("return_shape") == "list"
             )
-            needs_unset = needs_unset or bool(
-                operation.get("inject_organization_id")
-                or any(
-                    param.get("pass_unset_when_none") or param.get("coerce") == "uuid"
-                    for param in parameters
-                )
+            needs_unset = needs_unset or any(
+                param.get("pass_unset_when_none") for param in parameters
             )
     return (
         endpoint_imports,
         model_imports,
         needs_any,
         needs_roe_api_exception,
+        needs_translate_response,
         needs_unset,
     )
 
 
 def _render_partial_api_module(api_name: str, spec: dict[str, Any]) -> str:
-    endpoint_imports, model_imports, needs_any, needs_roe_api_exception, needs_unset = (
-        _collect_generated_imports(spec)
-    )
+    (
+        endpoint_imports,
+        model_imports,
+        needs_any,
+        needs_roe_api_exception,
+        needs_translate_response,
+        needs_unset,
+    ) = _collect_generated_imports(spec)
     lines = [HEADER]
     if needs_any:
         lines.append("from typing import Any\n")
@@ -524,8 +531,12 @@ def _render_partial_api_module(api_name: str, spec: dict[str, Any]) -> str:
     if needs_unset:
         lines.append("from roe._generated.types import UNSET\n")
     lines.append("from roe.config import RoeConfig\n")
-    if needs_roe_api_exception:
+    if needs_roe_api_exception and needs_translate_response:
+        lines.append("from roe.exceptions import RoeAPIException, translate_response\n")
+    elif needs_roe_api_exception:
         lines.append("from roe.exceptions import RoeAPIException\n")
+    elif needs_translate_response:
+        lines.append("from roe.exceptions import translate_response\n")
     lines.append("from roe.utils.generated_request import request_json, request_raw\n")
     lines.append("\n\n")
 
