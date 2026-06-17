@@ -4,9 +4,9 @@
 blocks:
   generated_friendly_apis:
     python: |
-      ## Generated Friendly APIs
+      ## SDK Operation Groups
 
-      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+      Common operations are available directly on the SDK client.
 
       ```python
       engines = client.discovery.list_agent_engine_types()
@@ -19,9 +19,9 @@ blocks:
       )
       ```
     typescript: |
-      ## Generated Friendly APIs
+      ## SDK Operation Groups
 
-      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+      Common operations are available directly on the SDK client.
 
       ```typescript
       const engines = await client.discovery.listAgentEngineTypes();
@@ -34,9 +34,9 @@ blocks:
       });
       ```
     go: |
-      ## Generated Friendly APIs
+      ## SDK Operation Groups
 
-      This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+      Common operations are available directly on the SDK client.
 
       ```go
       engines, err := client.Discovery.ListAgentEngineTypes()

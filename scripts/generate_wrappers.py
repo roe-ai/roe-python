@@ -85,25 +85,12 @@ def _load_project_version() -> str:
     return version
 
 
-def _load_release_marker() -> str:
-    marker = (
-        (ROOT_DIR / ".roe-main-release-version").read_text(encoding="utf-8").strip()
-    )
-    if not marker:
-        raise ValueError(".roe-main-release-version must not be empty")
-    return marker
-
-
 def _render_release_banner() -> str:
     version = _load_project_version()
-    marker = _load_release_marker()
     return (
-        f"> **v{version}** - Schema synchronization across the public SDKs: roe-ai\n"
-        f"> (Python), roe-typescript, and roe-golang. This release is generated from\n"
-        f"> SDK OpenAPI marker `{marker}`, and all public package metadata is bumped to\n"
-        f"> {version}.\n"
-        "> Python friendly wrappers are generated from `openapi/wrappers.yml`;\n"
-        "> current generated facades include `client.discovery` and `client.tables`."
+        f"> **v{version}** - SDK operation coverage is synchronized across Python,\n"
+        "> TypeScript, and Go. See `SDK_EXAMPLES.md` for copy-ready examples and\n"
+        "> use cases."
     )
 
 
