@@ -1016,6 +1016,8 @@ result = client.users.me()
 ## Use Cases
 
 These workflows assume `ROE_API_KEY` and `ROE_ORGANIZATION_ID` are set.
+The first example provisions a policy and an agent from scratch; the later two
+reuse an existing agent id so they stay focused on the run-and-fetch calls.
 
 ### Create a policy and run a policy-aware agent
 
