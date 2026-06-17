@@ -281,7 +281,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-agent_id = "agent_id"
+agent_id = "agent_id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "PUT",
@@ -430,8 +430,8 @@ from roe import RoeClient
 
 client = RoeClient()
 
-agent_id = "agent_id"
-agent_version_id = "agent_version_id"
+agent_id = "agent_id"  # required path
+agent_version_id = "agent_version_id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "PUT",
@@ -533,7 +533,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "DELETE",
@@ -555,7 +555,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "GET",
@@ -577,7 +577,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "PATCH",
@@ -605,7 +605,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "PUT",
@@ -633,7 +633,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "POST",
@@ -674,7 +674,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-connector_type = "connector_type"
+connector_type = "connector_type"  # required path
 
 response = client.raw.get_httpx_client().request(
     "GET",
@@ -799,7 +799,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"
+id = "id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "PUT",
@@ -913,7 +913,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_query_id = "table_query_id"
+table_query_id = "table_query_id"  # required path
 
 response = client.raw.get_httpx_client().request(
     "GET",
@@ -932,7 +932,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"
+table_name = "table_name"  # required path
 
 response = client.raw.get_httpx_client().request(
     "DELETE",
@@ -951,7 +951,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"
+table_name = "table_name"  # required path
 
 response = client.raw.get_httpx_client().request(
     "GET",
@@ -970,7 +970,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"
+table_name = "table_name"  # required path
 
 response = client.raw.get_httpx_client().request(
     "GET",
