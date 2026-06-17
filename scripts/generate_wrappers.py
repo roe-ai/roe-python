@@ -321,7 +321,9 @@ def _signature_param(param: dict[str, Any]) -> str:
     return f"{param['name']}: {param['annotation']}"
 
 
-def _dict_body_lines(operation: dict[str, Any], body_params: list[dict[str, Any]]) -> list[str]:
+def _dict_body_lines(
+    operation: dict[str, Any], body_params: list[dict[str, Any]]
+) -> list[str]:
     if operation.get("body_format") != "dict":
         return []
     lines = ["        body: dict[str, Any] = {}\n"]
@@ -457,7 +459,9 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
         endpoint_imports[package].append(endpoint_name)
 
         if operation.get("return_import"):
-            return_module, return_class = _class_import_parts(operation["return_import"])
+            return_module, return_class = _class_import_parts(
+                operation["return_import"]
+            )
             model_imports[return_module].append(return_class)
 
         kind = operation.get("kind", "simple")

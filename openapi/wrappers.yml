@@ -238,6 +238,7 @@ apis:
       return_import: roe._generated.models.base_agent.BaseAgent
       body_type: BaseAgentUpdateRequest
       body_import: roe._generated.models.base_agent_update_request.BaseAgentUpdateRequest
+      inject_organization_id: true
       parameters:
       - name: agent_id
         location: path
@@ -442,6 +443,7 @@ apis:
           return_import: roe._generated.models.message_response.MessageResponse
           body_type: AgentVersionUpdateRequest
           body_import: roe._generated.models.agent_version_update_request.AgentVersionUpdateRequest
+          inject_organization_id: true
           parameters:
           - name: agent_id
             location: path
@@ -893,6 +895,7 @@ apis:
       return_import: roe._generated.models.update_policy.UpdatePolicy
       body_type: UpdatePolicyRequest
       body_import: roe._generated.models.update_policy_request.UpdatePolicyRequest
+      inject_organization_id: true
       parameters:
       - name: policy_id
         location: path

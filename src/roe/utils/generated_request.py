@@ -7,6 +7,14 @@ from roe._generated.types import UNSET, Unset
 from roe.exceptions import translate_response
 
 
+class _DictBody:
+    def __init__(self, value: dict[str, Any]):
+        self.value = value
+
+    def to_dict(self) -> dict[str, Any]:
+        return self.value
+
+
 def request_raw(
     raw: AuthenticatedClient,
     ep_module: Any,
@@ -16,7 +24,10 @@ def request_raw(
 ) -> Any:
     """Call a generated endpoint while forcing JSON body serialization."""
     if not isinstance(body, Unset):
-        request_kwargs = ep_module._get_kwargs(*path_args, body=body, **kwargs)
+        generated_body = _DictBody(body) if isinstance(body, dict) else body
+        request_kwargs = ep_module._get_kwargs(
+            *path_args, body=generated_body, **kwargs
+        )
         request_kwargs.pop("data", None)
         request_kwargs.pop("files", None)
         request_kwargs["json"] = body.to_dict() if hasattr(body, "to_dict") else body
