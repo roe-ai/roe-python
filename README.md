@@ -3,10 +3,10 @@
 A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
 <!-- ROE-SDK:RELEASE-BANNER:START -->
-> **v1.1.0** - Schema synchronization across the public SDKs: roe-ai
+> **v1.1.1** - Schema synchronization across the public SDKs: roe-ai
 > (Python), roe-typescript, and roe-golang. This release is generated from
-> SDK OpenAPI marker `1-0-83`, and all public package metadata is bumped to
-> 1.1.0.
+> SDK OpenAPI marker `pr3456-fanout-sim-3`, and all public package metadata is bumped to
+> 1.1.1.
 > Python friendly wrappers are generated from `openapi/wrappers.yml`;
 > current generated facades include `client.discovery` and `client.tables`.
 <!-- ROE-SDK:RELEASE-BANNER:END -->

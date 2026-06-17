@@ -36,6 +36,7 @@ from roe._generated.models.patched_update_policy_request import (
 from roe._generated.models.policy import Policy
 from roe._generated.models.policy_version import PolicyVersion
 from roe._generated.types import UNSET
+from roe.api._policies_generated import GeneratedPoliciesAPI
 from roe.config import RoeConfig
 from roe.utils.generated_request import request_json, request_raw
 
@@ -128,7 +129,7 @@ class PolicyVersionsAPI:
         return self.retrieve(policy_id, str(created.id))
 
 
-class PoliciesAPI:
+class PoliciesAPI(GeneratedPoliciesAPI):
     """API for managing policies used by agentic workflows."""
 
     def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
