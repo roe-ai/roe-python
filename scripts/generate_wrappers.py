@@ -321,6 +321,28 @@ def _signature_param(param: dict[str, Any]) -> str:
     return f"{param['name']}: {param['annotation']}"
 
 
+def _dict_body_lines(operation: dict[str, Any], body_params: list[dict[str, Any]]) -> list[str]:
+    if operation.get("body_format") != "dict":
+        return []
+    lines = ["        body: dict[str, Any] = {}\n"]
+    if operation.get("inject_organization_id"):
+        lines.append('        body["organization_id"] = str(self._org_id)\n')
+    for param in body_params:
+        name = param["name"]
+        wire_name = param.get("wire_name", name)
+        value = _field_expr(param)
+        if param.get("pass_unset_when_none"):
+            lines.extend(
+                [
+                    f"        if {name} is not None:\n",
+                    f"            body[{wire_name!r}] = {value}\n",
+                ]
+            )
+        else:
+            lines.append(f"        body[{wire_name!r}] = {value}\n")
+    return lines
+
+
 def _body_method(operation: dict[str, Any]) -> str:
     method_name = operation["method_name"]
     return_type = operation.get("return_type")
@@ -349,6 +371,7 @@ def _body_method(operation: dict[str, Any]) -> str:
         f'        """{docstring}"""\n',
     ]
     body_type = operation.get("body_type")
+    has_json_body = bool(body_type or operation.get("body_format") == "dict")
     if body_type:
         lines.append(f"        body = {body_type}(\n")
         if operation.get("inject_organization_id"):
@@ -356,11 +379,13 @@ def _body_method(operation: dict[str, Any]) -> str:
         for param in body_params:
             lines.append(f"            {param['name']}={_field_expr(param)},\n")
         lines.append("        )\n")
+    else:
+        lines.extend(_dict_body_lines(operation, body_params))
 
     endpoint_name = _module_import_parts(operation["endpoint_module"])[1]
     call_args = ["            self._raw,\n", f"            {endpoint_name},\n"]
     call_args.extend(f"            {_field_expr(param)},\n" for param in path_params)
-    if body_type:
+    if has_json_body:
         call_args.append("            body=body,\n")
     for param in query_params:
         call_args.append(f"            {param['name']}={_field_expr(param)},\n")
@@ -370,12 +395,12 @@ def _body_method(operation: dict[str, Any]) -> str:
     if return_type or operation.get("refetch_with_retrieve"):
         lines.append(
             "        resp = request_json(\n"
-            if body_type
+            if has_json_body
             else "        response = request_raw(\n"
         )
     else:
         lines.append(
-            "        request_json(\n" if body_type else "        request_raw(\n"
+            "        request_json(\n" if has_json_body else "        request_raw(\n"
         )
     lines.extend(call_args)
     lines.append("        )\n")
@@ -391,7 +416,7 @@ def _body_method(operation: dict[str, Any]) -> str:
             ]
         )
     elif return_type:
-        if body_type:
+        if has_json_body:
             lines.append("        return resp.parsed  # type: ignore[return-value]\n")
         elif operation.get("return_shape") == "list":
             label = operation.get("list_error_label", return_type)
@@ -417,8 +442,13 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
 
     endpoint_imports: dict[str, list[str]] = defaultdict(list)
     model_imports: dict[str, list[str]] = defaultdict(list)
+    needs_any = False
+    needs_org_id = False
+    needs_request_json = False
+    needs_request_raw = False
     needs_unset = False
     needs_roe_api_exception = False
+    needs_translate_response = False
     needs_table_upload_helpers = False
 
     methods: list[str] = []
@@ -426,12 +456,14 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
         package, endpoint_name = _module_import_parts(operation["endpoint_module"])
         endpoint_imports[package].append(endpoint_name)
 
-        return_module, return_class = _class_import_parts(operation["return_import"])
-        model_imports[return_module].append(return_class)
+        if operation.get("return_import"):
+            return_module, return_class = _class_import_parts(operation["return_import"])
+            model_imports[return_module].append(return_class)
 
         kind = operation.get("kind", "simple")
         if kind == "simple":
             needs_roe_api_exception = True
+            needs_translate_response = True
             if any(
                 param.get("pass_unset_when_none")
                 for param in operation.get("parameters") or []
@@ -440,21 +472,53 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
             methods.append(_simple_method(operation))
         elif kind == "table_upload":
             needs_roe_api_exception = True
+            needs_translate_response = True
             needs_table_upload_helpers = True
             needs_unset = True
             body_module, body_class = _class_import_parts(operation["body_import"])
             model_imports[body_module].append(body_class)
             methods.append(_table_upload_method(operation))
+        elif kind == "body":
+            parameters = operation.get("parameters") or []
+            has_json_body = bool(
+                operation.get("body_type") or operation.get("body_format") == "dict"
+            )
+            needs_any = (
+                needs_any
+                or "Any" in operation.get("return_type", "")
+                or any("Any" in param.get("annotation", "") for param in parameters)
+            )
+            needs_request_json = needs_request_json or has_json_body
+            needs_request_raw = needs_request_raw or not has_json_body
+            needs_org_id = needs_org_id or bool(operation.get("inject_organization_id"))
+            needs_roe_api_exception = needs_roe_api_exception or bool(
+                operation.get("refetch_with_retrieve")
+                or operation.get("return_shape") == "list"
+            )
+            needs_unset = needs_unset or any(
+                param.get("pass_unset_when_none") for param in parameters
+            )
+            if operation.get("body_import"):
+                body_module, body_class = _class_import_parts(operation["body_import"])
+                model_imports[body_module].append(body_class)
+            methods.append(_body_method(operation))
         else:
             raise ValueError(f"Unsupported wrapper kind {kind!r} in {api_name}")
 
     lines = [HEADER]
+    typing_imports = []
+    if needs_any:
+        typing_imports.append("Any")
     if needs_table_upload_helpers:
         lines.append("from io import BytesIO\n")
         lines.append("import mimetypes\n")
         lines.append("from pathlib import Path\n")
-        lines.append("from typing import BinaryIO\n")
+        typing_imports.append("BinaryIO")
+    if typing_imports:
+        lines.append(f"from typing import {', '.join(sorted(set(typing_imports)))}\n")
+    if needs_table_upload_helpers or needs_org_id:
         lines.append("from uuid import UUID\n")
+    if needs_table_upload_helpers or typing_imports or needs_org_id:
         lines.append("\n")
 
     for package, names in sorted(endpoint_imports.items()):
@@ -475,12 +539,23 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
     elif needs_unset:
         lines.append("from roe._generated.types import UNSET\n")
     lines.append("from roe.config import RoeConfig\n")
-    if needs_roe_api_exception:
+    if needs_roe_api_exception and needs_translate_response:
         lines.append("from roe.exceptions import RoeAPIException, translate_response\n")
-    else:
+    elif needs_roe_api_exception:
+        lines.append("from roe.exceptions import RoeAPIException\n")
+    elif needs_translate_response:
         lines.append("from roe.exceptions import translate_response\n")
     if needs_table_upload_helpers:
         lines.append("from roe.models import FileUpload\n")
+    request_helpers = []
+    if needs_request_json:
+        request_helpers.append("request_json")
+    if needs_request_raw:
+        request_helpers.append("request_raw")
+    if request_helpers:
+        lines.append(
+            f"from roe.utils.generated_request import {', '.join(request_helpers)}\n"
+        )
 
     lines.append("\n\n")
     lines.append(f"class {class_name}:\n")
@@ -492,6 +567,11 @@ def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
     lines.append("        self.config = config\n")
     lines.append("        self._raw = raw_client\n")
     lines.append("\n")
+    if needs_org_id:
+        lines.append("    @property\n")
+        lines.append("    def _org_id(self) -> UUID:\n")
+        lines.append("        return UUID(str(self.config.organization_id))\n")
+        lines.append("\n")
     lines.append("\n".join(methods))
 
     if needs_table_upload_helpers:

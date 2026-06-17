@@ -8,10 +8,10 @@ A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 > use cases.
 <!-- ROE-SDK:RELEASE-BANNER:END -->
 
-> **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
-> (`roe._generated`); ergonomic wrappers on `client.agents` and
-> `client.policies` remain. Noteworthy API and behavioral changes compared
-> to earlier releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
+> **v1.0.0** - The SDK delegates transport and type details to the generated
+> OpenAPI client behind stable public methods such as `client.agents` and
+> `client.policies`. Noteworthy API and behavioral changes compared to earlier
+> releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Installation
 
@@ -109,26 +109,6 @@ except RoeAPIException as exc:
 result carries `result["status"] == JobStatus.FAILURE` and
 `result["error_message"]`. Transport / HTTP errors hit the typed
 hierarchy above.
-
-## Raw API Access
-
-When the ergonomic wrappers don't expose an endpoint you need, the generated
-client is available as `client.raw` and the operation modules live under
-`roe._generated.api.<tag>.<operation_id>`. Submodule names follow the
-upstream OpenAPI tags + `operationId`s and may shift across releases, so the
-portable form uses `client.raw.get_httpx_client()` to send a request through
-the same auth-configured `httpx.Client`:
-
-```python
-from roe import RoeClient
-
-client = RoeClient(api_key="your-api-key", organization_id="your-org-uuid")
-response = client.raw.get_httpx_client().get("/v1/users/current_user/")
-print(response.status_code)
-```
-
-For typed request/response models, call the generated operation module
-directly — see `roe/_generated/api/` for the current surface.
 
 <!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->
 ## SDK Operation Groups
