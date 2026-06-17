@@ -474,8 +474,10 @@ def _collect_generated_imports(
                 body_module, body_class = _class_import_parts(operation["body_import"])
                 model_imports[body_module].append(body_class)
             parameters = operation.get("parameters") or []
-            needs_any = needs_any or any(
-                "Any" in param.get("annotation", "") for param in parameters
+            needs_any = (
+                needs_any
+                or "Any" in operation.get("return_type", "")
+                or any("Any" in param.get("annotation", "") for param in parameters)
             )
             needs_roe_api_exception = needs_roe_api_exception or bool(
                 operation.get("refetch_with_retrieve")

@@ -37,11 +37,18 @@ def test_partial_module_imports_uuid_without_unset_usage():
                     "return_import": "roe._generated.models.widget.Widget",
                     "return_type": "Widget",
                     "empty_response_message": "widgets list returned no data",
+                },
+                {
+                    "method_name": "patch",
+                    "endpoint_module": "roe._generated.api.widgets.widgets_patch",
+                    "return_type": "Any",
+                    "empty_response_message": "widgets patch returned no data",
                 }
             ],
         },
     )
 
+    assert "from typing import Any" in rendered
     assert "from uuid import UUID" in rendered
     assert "from roe._generated.types import UNSET" not in rendered
     assert "config: RoeConfig" in rendered
