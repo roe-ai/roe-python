@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
+from roe._generated.client import AuthenticatedClient
 from roe._generated.api.agents import (
     agents_create,
     agents_destroy,
@@ -44,12 +45,18 @@ from roe._generated.models.patched_base_agent_update_request import (
     PatchedBaseAgentUpdateRequest,
 )
 from roe._generated.types import UNSET
+from roe.config import RoeConfig
 from roe.exceptions import RoeAPIException
 from roe.utils.generated_request import request_json, request_raw
 
 
 class GeneratedAgentVersionsAPI:
-    """Nested API for agent version operations."""
+    """Nested API for agent version operations.
+
+    Concrete SDK API classes provide ``config`` and ``_raw``."""
+
+    config: RoeConfig
+    _raw: AuthenticatedClient
 
     @property
     def _org_id(self) -> UUID:
@@ -167,7 +174,12 @@ class GeneratedAgentVersionsAPI:
 
 
 class GeneratedAgentJobsAPI:
-    """Nested API for agent job operations."""
+    """Nested API for agent job operations.
+
+    Concrete SDK API classes provide ``config`` and ``_raw``."""
+
+    config: RoeConfig
+    _raw: AuthenticatedClient
 
     @property
     def _org_id(self) -> UUID:
@@ -235,7 +247,12 @@ class GeneratedAgentJobsAPI:
 
 
 class GeneratedAgentsAPI:
-    """API for managing and running agents."""
+    """API for managing and running agents.
+
+    Concrete SDK API classes provide ``config`` and ``_raw``."""
+
+    config: RoeConfig
+    _raw: AuthenticatedClient
 
     @property
     def _org_id(self) -> UUID:

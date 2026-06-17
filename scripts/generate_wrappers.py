@@ -436,7 +436,12 @@ def _render_generated_class(
     generated_name = f"Generated{class_name}"
     return (
         f"class {generated_name}:\n"
-        f'    """{docstring}"""\n'
+        f'    """{docstring}\n'
+        "\n"
+        '    Concrete SDK API classes provide ``config`` and ``_raw``."""\n'
+        "\n"
+        "    config: RoeConfig\n"
+        "    _raw: AuthenticatedClient\n"
         "\n"
         "    @property\n"
         "    def _org_id(self) -> UUID:\n"
@@ -499,9 +504,9 @@ def _render_partial_api_module(api_name: str, spec: dict[str, Any]) -> str:
     lines = [HEADER]
     if needs_any:
         lines.append("from typing import Any\n")
-    if needs_unset:
-        lines.append("from uuid import UUID\n")
+    lines.append("from uuid import UUID\n")
     lines.append("\n")
+    lines.append("from roe._generated.client import AuthenticatedClient\n")
     for package, names in sorted(endpoint_imports.items()):
         unique_names = sorted(set(names))
         if len(unique_names) == 1:
@@ -516,6 +521,7 @@ def _render_partial_api_module(api_name: str, spec: dict[str, Any]) -> str:
         lines.append(f"from {module} import {joined}\n")
     if needs_unset:
         lines.append("from roe._generated.types import UNSET\n")
+    lines.append("from roe.config import RoeConfig\n")
     if needs_roe_api_exception:
         lines.append("from roe.exceptions import RoeAPIException\n")
     lines.append("from roe.utils.generated_request import request_json, request_raw\n")

@@ -8,6 +8,7 @@ from __future__ import annotations
 from typing import Any
 from uuid import UUID
 
+from roe._generated.client import AuthenticatedClient
 from roe._generated.api.policies import (
     policies_create,
     policies_destroy,
@@ -23,11 +24,17 @@ from roe._generated.models.patched_update_policy_request import (
 )
 from roe._generated.models.policy import Policy
 from roe._generated.types import UNSET
+from roe.config import RoeConfig
 from roe.utils.generated_request import request_json, request_raw
 
 
 class GeneratedPoliciesAPI:
-    """API for managing policies used by agentic workflows."""
+    """API for managing policies used by agentic workflows.
+
+    Concrete SDK API classes provide ``config`` and ``_raw``."""
+
+    config: RoeConfig
+    _raw: AuthenticatedClient
 
     @property
     def _org_id(self) -> UUID:
