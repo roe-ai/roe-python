@@ -74,9 +74,9 @@ class ConnectionsAPI:
         body["name"] = name
         body["config"] = config
         if description is not None:
-            body["description"] = description if description is not None else UNSET
+            body["description"] = description
         if auth_config is not None:
-            body["auth_config"] = auth_config if auth_config is not None else UNSET
+            body["auth_config"] = auth_config
         resp = request_json(
             self._raw,
             connections_create,
@@ -96,7 +96,7 @@ class ConnectionsAPI:
         body["connector_type"] = connector_type
         body["config"] = config
         if auth_config is not None:
-            body["auth_config"] = auth_config if auth_config is not None else UNSET
+            body["auth_config"] = auth_config
         resp = request_json(
             self._raw,
             connections_test_credentials_create,
@@ -129,13 +129,13 @@ class ConnectionsAPI:
         body: dict[str, Any] = {}
         body["organization_id"] = str(self._org_id)
         if name is not None:
-            body["name"] = name if name is not None else UNSET
+            body["name"] = name
         if description is not None:
-            body["description"] = description if description is not None else UNSET
+            body["description"] = description
         if config is not None:
-            body["config"] = config if config is not None else UNSET
+            body["config"] = config
         if auth_config is not None:
-            body["auth_config"] = auth_config if auth_config is not None else UNSET
+            body["auth_config"] = auth_config
         resp = request_json(
             self._raw,
             connections_partial_update,
@@ -157,13 +157,13 @@ class ConnectionsAPI:
         body: dict[str, Any] = {}
         body["organization_id"] = str(self._org_id)
         if name is not None:
-            body["name"] = name if name is not None else UNSET
+            body["name"] = name
         if description is not None:
-            body["description"] = description if description is not None else UNSET
+            body["description"] = description
         if config is not None:
-            body["config"] = config if config is not None else UNSET
+            body["config"] = config
         if auth_config is not None:
-            body["auth_config"] = auth_config if auth_config is not None else UNSET
+            body["auth_config"] = auth_config
         resp = request_json(
             self._raw,
             connections_update,

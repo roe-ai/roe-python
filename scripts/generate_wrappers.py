@@ -332,15 +332,15 @@ def _dict_body_lines(
     for param in body_params:
         name = param["name"]
         wire_name = param.get("wire_name", name)
-        value = _field_expr(param)
         if param.get("pass_unset_when_none"):
             lines.extend(
                 [
                     f"        if {name} is not None:\n",
-                    f"            body[{wire_name!r}] = {value}\n",
+                    f"            body[{wire_name!r}] = {name}\n",
                 ]
             )
         else:
+            value = _field_expr(param)
             lines.append(f"        body[{wire_name!r}] = {value}\n")
     return lines
 
