@@ -299,14 +299,6 @@ def _has_manual_operations(spec: dict[str, Any]) -> bool:
     )
 
 
-def _has_generated_operations(spec: dict[str, Any]) -> bool:
-    return any(
-        _operation_kind(operation) != "manual"
-        for scoped_spec in _iter_specs(spec)
-        for operation in scoped_spec.get("operations") or []
-    )
-
-
 def _field_expr(param: dict[str, Any]) -> str:
     name = param["name"]
     if param.get("coerce") == "uuid":
@@ -417,147 +409,6 @@ def _body_method(operation: dict[str, Any]) -> str:
         lines.append("        return None\n")
 
     return "".join(lines)
-
-
-def _render_generated_class(
-    class_name: str,
-    docstring: str,
-    operations: list[dict[str, Any]],
-) -> str:
-    methods = [
-        _body_method(operation)
-        if _operation_kind(operation) == "body"
-        else _simple_method(operation)
-        for operation in operations
-        if _operation_kind(operation) != "manual"
-    ]
-    if not methods:
-        return ""
-    generated_name = f"Generated{class_name}"
-    return (
-        f"class {generated_name}:\n"
-        f'    """{docstring}\n'
-        "\n"
-        '    Concrete SDK API classes provide ``config`` and ``_raw``."""\n'
-        "\n"
-        "    config: RoeConfig\n"
-        "    _raw: AuthenticatedClient\n"
-        "\n"
-        "    @property\n"
-        "    def _org_id(self) -> UUID:\n"
-        "        return UUID(str(self.config.organization_id))\n"
-        "\n" + "\n".join(methods)
-    ).rstrip() + "\n"
-
-
-def _collect_generated_imports(
-    spec: dict[str, Any],
-) -> tuple[dict[str, list[str]], dict[str, list[str]], bool, bool, bool, bool]:
-    endpoint_imports: dict[str, list[str]] = defaultdict(list)
-    model_imports: dict[str, list[str]] = defaultdict(list)
-    needs_any = False
-    needs_roe_api_exception = False
-    needs_translate_response = False
-    needs_unset = False
-
-    for scoped_spec in _iter_specs(spec):
-        for operation in scoped_spec.get("operations") or []:
-            kind = _operation_kind(operation)
-            if kind == "manual":
-                continue
-            if kind == "simple":
-                needs_translate_response = True
-            package, endpoint_name = _module_import_parts(operation["endpoint_module"])
-            endpoint_imports[package].append(endpoint_name)
-            if operation.get("return_import"):
-                return_module, return_class = _class_import_parts(
-                    operation["return_import"]
-                )
-                model_imports[return_module].append(return_class)
-            if operation.get("body_import"):
-                body_module, body_class = _class_import_parts(operation["body_import"])
-                model_imports[body_module].append(body_class)
-            parameters = operation.get("parameters") or []
-            needs_any = (
-                needs_any
-                or "Any" in operation.get("return_type", "")
-                or any("Any" in param.get("annotation", "") for param in parameters)
-            )
-            needs_roe_api_exception = needs_roe_api_exception or bool(
-                operation.get("empty_response_message")
-                or operation.get("refetch_with_retrieve")
-                or operation.get("return_shape") == "list"
-            )
-            needs_unset = needs_unset or any(
-                param.get("pass_unset_when_none") for param in parameters
-            )
-    return (
-        endpoint_imports,
-        model_imports,
-        needs_any,
-        needs_roe_api_exception,
-        needs_translate_response,
-        needs_unset,
-    )
-
-
-def _render_partial_api_module(api_name: str, spec: dict[str, Any]) -> str:
-    (
-        endpoint_imports,
-        model_imports,
-        needs_any,
-        needs_roe_api_exception,
-        needs_translate_response,
-        needs_unset,
-    ) = _collect_generated_imports(spec)
-    lines = [HEADER]
-    if needs_any:
-        lines.append("from typing import Any\n")
-    lines.append("from uuid import UUID\n")
-    lines.append("\n")
-    lines.append("from roe._generated.client import AuthenticatedClient\n")
-    for package, names in sorted(endpoint_imports.items()):
-        unique_names = sorted(set(names))
-        if len(unique_names) == 1:
-            lines.append(f"from {package} import {unique_names[0]}\n")
-        else:
-            lines.append(f"from {package} import (\n")
-            for name in unique_names:
-                lines.append(f"    {name},\n")
-            lines.append(")\n")
-    for module, names in sorted(model_imports.items()):
-        joined = ", ".join(sorted(set(names)))
-        lines.append(f"from {module} import {joined}\n")
-    if needs_unset:
-        lines.append("from roe._generated.types import UNSET\n")
-    lines.append("from roe.config import RoeConfig\n")
-    if needs_roe_api_exception and needs_translate_response:
-        lines.append("from roe.exceptions import RoeAPIException, translate_response\n")
-    elif needs_roe_api_exception:
-        lines.append("from roe.exceptions import RoeAPIException\n")
-    elif needs_translate_response:
-        lines.append("from roe.exceptions import translate_response\n")
-    lines.append("from roe.utils.generated_request import request_json, request_raw\n")
-    lines.append("\n\n")
-
-    for namespace in (spec.get("namespaces") or {}).values():
-        rendered = _render_generated_class(
-            namespace["class_name"],
-            namespace["docstring"],
-            namespace.get("operations") or [],
-        )
-        if rendered:
-            lines.append(rendered)
-            lines.append("\n\n")
-
-    rendered = _render_generated_class(
-        spec["class_name"],
-        spec["docstring"],
-        spec.get("operations") or [],
-    )
-    if rendered:
-        lines.append(rendered)
-    return "".join(lines).rstrip() + "\n"
 
 
 def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
@@ -680,13 +531,12 @@ def main() -> None:
     contract = _load_contract()
     apis = contract["apis"]
     API_DIR.mkdir(parents=True, exist_ok=True)
+    for stale_partial in API_DIR.glob("_*_generated.py"):
+        stale_partial.unlink()
 
     registry_apis: dict[str, dict[str, Any]] = {}
     for api_name, spec in sorted(apis.items()):
         if _has_manual_operations(spec):
-            if _has_generated_operations(spec):
-                target = API_DIR / f"_{api_name}_generated.py"
-                target.write_text(_render_partial_api_module(api_name, spec))
             continue
         target = API_DIR / f"{api_name}.py"
         target.write_text(_render_api_module(api_name, spec))

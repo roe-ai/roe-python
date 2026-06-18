@@ -77,11 +77,6 @@ from roe._generated.models.patched_agent_version_update_request import (
     PatchedAgentVersionUpdateRequest,
 )
 from roe._generated.types import UNSET
-from roe.api._agents_generated import (
-    GeneratedAgentJobsAPI,
-    GeneratedAgentVersionsAPI,
-    GeneratedAgentsAPI,
-)
 from roe.config import RoeConfig
 from roe.exceptions import RoeAPIException, translate_response
 from roe.models.job import Job, JobBatch
@@ -102,7 +97,7 @@ def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequest:
     return body
 
 
-class AgentVersionsAPI(GeneratedAgentVersionsAPI):
+class AgentVersionsAPI:
     """Nested API for agent version operations."""
 
     def __init__(self, agents_api: "AgentsAPI"):
@@ -215,7 +210,7 @@ class AgentVersionsAPI(GeneratedAgentVersionsAPI):
         )
 
 
-class AgentJobsAPI(GeneratedAgentJobsAPI):
+class AgentJobsAPI:
     """Nested API for agent job operations."""
 
     _MAX_BATCH_SIZE = 1000
@@ -346,7 +341,7 @@ class AgentJobsAPI(GeneratedAgentJobsAPI):
         return AgentJobDeleteDataResponse.from_dict(response.json())
 
 
-class AgentsAPI(GeneratedAgentsAPI):
+class AgentsAPI:
     """API for managing and running agents."""
 
     _MAX_BATCH_SIZE = 1000

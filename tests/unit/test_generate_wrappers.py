@@ -22,35 +22,37 @@ def _load_generate_wrappers_module():
     return module
 
 
-def test_partial_module_imports_uuid_without_unset_usage():
+def test_main_deletes_stale_partial_modules_for_hand_maintained_apis(
+    tmp_path, monkeypatch
+):
     module = _load_generate_wrappers_module()
+    stale = tmp_path / "_agents_generated.py"
+    stale.write_text("# stale\n")
 
-    rendered = module._render_partial_api_module(
-        "widgets",
-        {
-            "class_name": "WidgetsAPI",
-            "docstring": "API for widgets.",
-            "operations": [
-                {
-                    "method_name": "list",
-                    "endpoint_module": "roe._generated.api.widgets.widgets_list",
-                    "return_import": "roe._generated.models.widget.Widget",
-                    "return_type": "Widget",
-                    "empty_response_message": "widgets list returned no data",
-                },
-                {
-                    "method_name": "patch",
-                    "endpoint_module": "roe._generated.api.widgets.widgets_patch",
-                    "return_type": "Any",
-                    "empty_response_message": "widgets patch returned no data",
+    monkeypatch.setattr(module, "API_DIR", tmp_path)
+    monkeypatch.setattr(module, "REGISTRY_PATH", tmp_path / "_generated_registry.py")
+    monkeypatch.setattr(
+        module,
+        "_load_contract",
+        lambda: {
+            "apis": {
+                "agents": {
+                    "class_name": "AgentsAPI",
+                    "docstring": "API for agents.",
+                    "operations": [
+                        {
+                            "kind": "manual",
+                            "method_name": "run",
+                            "docstring": "Run an agent.",
+                        }
+                    ],
                 }
-            ],
+            }
         },
     )
+    monkeypatch.setattr(module, "_sync_readme_release_banner", lambda: None)
+    monkeypatch.setattr(module, "_sync_readme_block", lambda: None)
 
-    assert "from typing import Any" in rendered
-    assert "from uuid import UUID" in rendered
-    assert "from roe.exceptions import RoeAPIException, translate_response" in rendered
-    assert "from roe._generated.types import UNSET" not in rendered
-    assert "config: RoeConfig" in rendered
-    assert "_raw: AuthenticatedClient" in rendered
+    module.main()
+
+    assert not stale.exists()
