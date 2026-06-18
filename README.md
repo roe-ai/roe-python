@@ -8,10 +8,10 @@ A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 > use cases.
 <!-- ROE-SDK:RELEASE-BANNER:END -->
 
-> **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
-> (`roe._generated`); ergonomic wrappers on `client.agents` and
-> `client.policies` remain. Noteworthy API and behavioral changes compared
-> to earlier releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
+> **v1.0.0** - The SDK delegates transport and type details to the generated
+> OpenAPI client behind stable public methods such as `client.agents` and
+> `client.policies`. Noteworthy API and behavioral changes compared to earlier
+> releases are listed in **[CHANGELOG.md](CHANGELOG.md)**.
 
 ## Installation
 
@@ -100,6 +100,8 @@ httpx layer. `Retry-After` is preserved exactly as sent, so it may be
 numeric seconds or an HTTP-date:
 
 ```python
+try:
+    client.agents.retrieve("00000000-0000-0000-0000-000000000000")
 except RoeAPIException as exc:
     if exc.status_code == 429 and exc.headers:
         retry_after = exc.headers.get("retry-after")
@@ -109,26 +111,6 @@ except RoeAPIException as exc:
 result carries `result["status"] == JobStatus.FAILURE` and
 `result["error_message"]`. Transport / HTTP errors hit the typed
 hierarchy above.
-
-## Raw API Access
-
-When the ergonomic wrappers don't expose an endpoint you need, the generated
-client is available as `client.raw` and the operation modules live under
-`roe._generated.api.<tag>.<operation_id>`. Submodule names follow the
-upstream OpenAPI tags + `operationId`s and may shift across releases, so the
-portable form uses `client.raw.get_httpx_client()` to send a request through
-the same auth-configured `httpx.Client`:
-
-```python
-from roe import RoeClient
-
-client = RoeClient(api_key="your-api-key", organization_id="your-org-uuid")
-response = client.raw.get_httpx_client().get("/v1/users/current_user/")
-print(response.status_code)
-```
-
-For typed request/response models, call the generated operation module
-directly — see `roe/_generated/api/` for the current surface.
 
 <!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->
 ## SDK Operation Groups
@@ -609,9 +591,13 @@ job = client.agents.run_version(
     url="https://example.com",
 )
 
-# Also works directly on agent and version models
+# Reuse a retrieved agent id when building the run request
 agent = client.agents.retrieve("agent-uuid")
-job = agent.run(metadata={"source": "sdk"}, url="https://example.com")
+job = client.agents.run(
+    agent_id=str(agent.id),
+    metadata={"source": "sdk"},
+    url="https://example.com",
+)
 ```
 
 ## Agent Management

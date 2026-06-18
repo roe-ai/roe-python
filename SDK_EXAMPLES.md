@@ -281,22 +281,12 @@ from roe import RoeClient
 
 client = RoeClient()
 
-agent_id = "agent_id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "PUT",
-    f"/v1/agents/{agent_id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "name": "name",  # optional
-        "disable_cache": True,  # optional
-        "cache_failed_jobs": True,  # optional
-    },
+result = client.agents.replace(
+    agent_id="agent_id",  # required
+    name="name",  # optional
+    disable_cache=True,  # optional
+    cache_failed_jobs=True,  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `agents_duplicate_create`
@@ -430,22 +420,12 @@ from roe import RoeClient
 
 client = RoeClient()
 
-agent_id = "agent_id"  # required path
-agent_version_id = "agent_version_id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "PUT",
-    f"/v1/agents/{agent_id}/versions/{agent_version_id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "version_name": "version_name",  # optional
-        "description": "description",  # optional
-    },
+result = client.agents.versions.replace(
+    agent_id="agent_id",  # required
+    version_id="version_id",  # required
+    version_name="version_name",  # optional
+    description="description",  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 ### Connections
@@ -459,19 +439,12 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "GET",
-    "/v1/connections/",
-    params={
-        "connector_type": "connector_type",  # optional
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-        "page": 1,  # optional
-        "page_size": 1,  # optional
-        "search": "search",  # optional
-    },
+result = client.connections.list(
+    connector_type="connector_type",  # optional
+    search="search",  # optional
+    page=1,  # optional
+    page_size=1,  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_create`
@@ -483,23 +456,13 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "POST",
-    "/v1/connections/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "connector_type": "connector_type",  # required
-        "name": "name",  # required
-        "description": "description",  # optional
-        "config": {},  # required
-        "auth_config": {},  # optional
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
+result = client.connections.create(
+    connector_type="connector_type",  # required
+    name="name",  # required
+    config={},  # required
+    description="description",  # optional
+    auth_config={},  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_test_credentials_create`
@@ -511,17 +474,11 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "POST",
-    "/v1/connections/test-credentials/",
-    json={
-        "connector_type": "connector_type",  # required
-        "config": {},  # required
-        "auth_config": {},  # optional
-    },
+result = client.connections.test_credentials(
+    connector_type="connector_type",  # required
+    config={},  # required
+    auth_config={},  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_destroy`
@@ -533,17 +490,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "DELETE",
-    f"/v1/connections/{id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
+result = client.connections.delete(
+    connection_id="connection_id",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_retrieve`
@@ -555,17 +504,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "GET",
-    f"/v1/connections/{id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
+result = client.connections.retrieve(
+    connection_id="connection_id",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_partial_update`
@@ -577,23 +518,13 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "PATCH",
-    f"/v1/connections/{id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "name": "name",  # optional
-        "description": "description",  # optional
-        "config": {},  # optional
-        "auth_config": {},  # optional
-    },
+result = client.connections.update(
+    connection_id="connection_id",  # required
+    name="name",  # optional
+    description="description",  # optional
+    config={},  # optional
+    auth_config={},  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_update`
@@ -605,23 +536,13 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "PUT",
-    f"/v1/connections/{id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "name": "name",  # optional
-        "description": "description",  # optional
-        "config": {},  # optional
-        "auth_config": {},  # optional
-    },
+result = client.connections.replace(
+    connection_id="connection_id",  # required
+    name="name",  # optional
+    description="description",  # optional
+    config={},  # optional
+    auth_config={},  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `connections_test_create`
@@ -633,17 +554,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "POST",
-    f"/v1/connections/{id}/test/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
+result = client.connections.test(
+    connection_id="connection_id",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 ### Connectors
@@ -657,12 +570,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "GET",
-    "/v1/connectors/",
-)
-response.raise_for_status()
-result = response.json()
+result = client.connectors.list()
 ```
 
 #### `connectors_retrieve_by_type`
@@ -674,14 +582,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-connector_type = "connector_type"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "GET",
-    f"/v1/connectors/{connector_type}/",
+result = client.connectors.retrieve(
+    connector_type="connector_type",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 ### Discovery
@@ -799,21 +702,11 @@ from roe import RoeClient
 
 client = RoeClient()
 
-id = "id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "PUT",
-    f"/v1/policies/{id}/",
-    params={
-        "organization_id": "00000000-0000-0000-0000-000000000000",  # optional
-    },
-    json={
-        "name": "name",  # required
-        "description": "description",  # optional
-    },
+result = client.policies.replace(
+    policy_id="policy_id",  # required
+    name="name",  # required
+    description="description",  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `policies_versions_list`
@@ -875,12 +768,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "GET",
-    "/v1/tables/",
-)
-response.raise_for_status()
-result = response.json()
+result = client.tables.list()
 ```
 
 #### `tables_query_create`
@@ -892,16 +780,10 @@ from roe import RoeClient
 
 client = RoeClient()
 
-response = client.raw.get_httpx_client().request(
-    "POST",
-    "/v1/tables/query/",
-    json={
-        "sql": "sql",  # required
-        "limit": 1,  # optional
-    },
+result = client.tables.query(
+    sql="sql",  # required
+    limit=1,  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `tables_query_result_retrieve`
@@ -913,14 +795,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_query_id = "table_query_id"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "GET",
-    f"/v1/tables/query/{table_query_id}/result/",
+result = client.tables.query_result(
+    table_query_id="table_query_id",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `tables_destroy`
@@ -932,14 +809,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "DELETE",
-    f"/v1/tables/{table_name}/",
+result = client.tables.delete(
+    table_name="table_name",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `tables_describe_retrieve`
@@ -951,14 +823,9 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "GET",
-    f"/v1/tables/{table_name}/describe/",
+result = client.tables.describe(
+    table_name="table_name",  # required
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `tables_preview_retrieve`
@@ -970,17 +837,10 @@ from roe import RoeClient
 
 client = RoeClient()
 
-table_name = "table_name"  # required path
-
-response = client.raw.get_httpx_client().request(
-    "GET",
-    f"/v1/tables/{table_name}/preview/",
-    params={
-        "limit": 1,  # optional
-    },
+result = client.tables.preview(
+    table_name="table_name",  # required
+    limit=1,  # optional
 )
-response.raise_for_status()
-result = response.json()
 ```
 
 #### `upload_table`

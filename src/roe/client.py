@@ -120,9 +120,10 @@ class RoeClient:
                 prompt="Analyze this document"
             )
 
-            # Get agent details and run
-            agent = client.agents.get("agent-uuid")
-            result = agent.run(
+            # Retrieve agent details and run by id
+            agent = client.agents.retrieve("agent-uuid")
+            result = client.agents.run(
+                agent_id=str(agent.id),
                 document="path/to/file.pdf",
                 prompt="Analyze this document"
             )
