@@ -85,25 +85,12 @@ def _load_project_version() -> str:
     return version
 
 
-def _load_release_marker() -> str:
-    marker = (
-        (ROOT_DIR / ".roe-main-release-version").read_text(encoding="utf-8").strip()
-    )
-    if not marker:
-        raise ValueError(".roe-main-release-version must not be empty")
-    return marker
-
-
 def _render_release_banner() -> str:
     version = _load_project_version()
-    marker = _load_release_marker()
     return (
-        f"> **v{version}** - Schema synchronization across the public SDKs: roe-ai\n"
-        f"> (Python), roe-typescript, and roe-golang. This release is generated from\n"
-        f"> SDK OpenAPI marker `{marker}`, and all public package metadata is bumped to\n"
-        f"> {version}.\n"
-        "> Python friendly wrappers are generated from `openapi/wrappers.yml`;\n"
-        "> current generated facades include `client.discovery` and `client.tables`."
+        f"> **v{version}** - SDK operation coverage is synchronized across Python,\n"
+        "> TypeScript, and Go. See `SDK_EXAMPLES.md` for copy-ready examples and\n"
+        "> use cases."
     )
 
 
@@ -294,6 +281,136 @@ def _table_upload_method(operation: dict[str, Any]) -> str:
 '''
 
 
+def _operation_kind(operation: dict[str, Any]) -> str:
+    return operation.get("kind", "simple")
+
+
+def _iter_specs(spec: dict[str, Any]):
+    yield spec
+    for namespace in (spec.get("namespaces") or {}).values():
+        yield namespace
+
+
+def _has_manual_operations(spec: dict[str, Any]) -> bool:
+    return any(
+        _operation_kind(operation) == "manual"
+        for scoped_spec in _iter_specs(spec)
+        for operation in scoped_spec.get("operations") or []
+    )
+
+
+def _field_expr(param: dict[str, Any]) -> str:
+    name = param["name"]
+    if param.get("coerce") == "uuid":
+        return f"UUID(str({name}))"
+    if param.get("or_empty") == "list":
+        return f"{name} or []"
+    if param.get("or_empty") == "dict":
+        return f"{name} or {{}}"
+    if param.get("pass_unset_when_none"):
+        return f"{name} if {name} is not None else UNSET"
+    return name
+
+
+def _signature_param(param: dict[str, Any]) -> str:
+    if "default" in param:
+        return (
+            f"{param['name']}: {param['annotation']} = "
+            f"{_default_expr(param['default'])}"
+        )
+    return f"{param['name']}: {param['annotation']}"
+
+
+def _body_method(operation: dict[str, Any]) -> str:
+    method_name = operation["method_name"]
+    return_type = operation.get("return_type")
+    docstring = operation.get("docstring", "")
+    params = operation.get("parameters") or []
+    path_params = [param for param in params if param.get("location") == "path"]
+    query_params = [
+        param for param in params if param.get("location", "query") == "query"
+    ]
+    body_params = [param for param in params if param.get("location") == "body"]
+
+    signature_parts = ["self", *[_signature_param(param) for param in params]]
+    if len(signature_parts) == 1:
+        signature_prefix = f"    def {method_name}(self)"
+    else:
+        formatted_signature = ",\n".join(f"        {part}" for part in signature_parts)
+        signature_prefix = f"    def {method_name}(\n{formatted_signature},\n    )"
+
+    annotated_return = (
+        f"list[{return_type}]"
+        if return_type and operation.get("return_shape") == "list"
+        else return_type or "None"
+    )
+    lines = [
+        f"{signature_prefix} -> {annotated_return}:\n",
+        f'        """{docstring}"""\n',
+    ]
+    body_type = operation.get("body_type")
+    if body_type:
+        lines.append(f"        body = {body_type}(\n")
+        if operation.get("inject_organization_id"):
+            lines.append("            organization_id=self._org_id,\n")
+        for param in body_params:
+            lines.append(f"            {param['name']}={_field_expr(param)},\n")
+        lines.append("        )\n")
+
+    endpoint_name = _module_import_parts(operation["endpoint_module"])[1]
+    call_args = ["            self._raw,\n", f"            {endpoint_name},\n"]
+    call_args.extend(f"            {_field_expr(param)},\n" for param in path_params)
+    if body_type:
+        call_args.append("            body=body,\n")
+    for param in query_params:
+        call_args.append(f"            {param['name']}={_field_expr(param)},\n")
+    if operation.get("inject_organization_id"):
+        call_args.append("            organization_id=self._org_id,\n")
+
+    if return_type or operation.get("refetch_with_retrieve"):
+        lines.append(
+            "        resp = request_json(\n"
+            if body_type
+            else "        response = request_raw(\n"
+        )
+    else:
+        lines.append(
+            "        request_json(\n" if body_type else "        request_raw(\n"
+        )
+    lines.extend(call_args)
+    lines.append("        )\n")
+
+    if operation.get("refetch_with_retrieve"):
+        first_path = path_params[0]["name"] if path_params else ""
+        lines.extend(
+            [
+                "        created = resp.parsed\n",
+                "        if created is None or created.id is None:\n",
+                '            raise RoeAPIException(f"Unexpected response from server: status={resp.status_code}")\n',
+                f"        return self.retrieve({first_path}, str(created.id))\n",
+            ]
+        )
+    elif return_type:
+        if body_type:
+            lines.append("        return resp.parsed  # type: ignore[return-value]\n")
+        elif operation.get("return_shape") == "list":
+            label = operation.get("list_error_label", return_type)
+            lines.extend(
+                [
+                    "        data = response.json()\n",
+                    "        if not isinstance(data, list):\n",
+                    f'            raise RoeAPIException(f"{label} returned unexpected response shape: {{data!r}}")\n',
+                    f"        return [{return_type}.from_dict(item) for item in data]\n",
+                ]
+            )
+        else:
+            lines.append(f"        return {return_type}.from_dict(response.json())\n")
+    else:
+        lines.append("        return None\n")
+
+    return "".join(lines)
+
+
 def _render_api_module(api_name: str, spec: dict[str, Any]) -> str:
     class_name = spec["class_name"]
     operations = spec.get("operations") or []
@@ -414,12 +531,18 @@ def main() -> None:
     contract = _load_contract()
     apis = contract["apis"]
     API_DIR.mkdir(parents=True, exist_ok=True)
+    for stale_partial in API_DIR.glob("_*_generated.py"):
+        stale_partial.unlink()
 
+    registry_apis: dict[str, dict[str, Any]] = {}
     for api_name, spec in sorted(apis.items()):
+        if _has_manual_operations(spec):
+            continue
         target = API_DIR / f"{api_name}.py"
         target.write_text(_render_api_module(api_name, spec))
+        registry_apis[api_name] = spec
 
-    REGISTRY_PATH.write_text(_render_registry(apis))
+    REGISTRY_PATH.write_text(_render_registry(registry_apis))
     _sync_readme_release_banner()
     _sync_readme_block()
     print(

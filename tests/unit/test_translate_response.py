@@ -102,7 +102,9 @@ def test_dict_body_uses_message_key_as_fallback():
     assert exc_info.value.message == "broken"
 
 
-def _resp_with_headers(status: int, headers: dict[str, str], content: bytes = b'{"detail":"x"}') -> httpx.Response:
+def _resp_with_headers(
+    status: int, headers: dict[str, str], content: bytes = b'{"detail":"x"}'
+) -> httpx.Response:
     return httpx.Response(status, headers=headers, content=content)
 
 

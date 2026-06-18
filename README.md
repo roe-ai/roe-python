@@ -3,12 +3,9 @@
 A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
 <!-- ROE-SDK:RELEASE-BANNER:START -->
-> **v1.1.0** - Schema synchronization across the public SDKs: roe-ai
-> (Python), roe-typescript, and roe-golang. This release is generated from
-> SDK OpenAPI marker `1-0-83`, and all public package metadata is bumped to
-> 1.1.0.
-> Python friendly wrappers are generated from `openapi/wrappers.yml`;
-> current generated facades include `client.discovery` and `client.tables`.
+> **v1.1.1** - SDK operation coverage is synchronized across Python,
+> TypeScript, and Go. See `SDK_EXAMPLES.md` for copy-ready examples and
+> use cases.
 <!-- ROE-SDK:RELEASE-BANNER:END -->
 
 > **v1.0.0** — The SDK delegates to OpenAPI-generated types and transports
@@ -134,9 +131,9 @@ For typed request/response models, call the generated operation module
 directly — see `roe/_generated/api/` for the current surface.
 
 <!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->
-## Generated Friendly APIs
+## SDK Operation Groups
 
-This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
+Common operations are available directly on the SDK client.
 
 ```python
 engines = client.discovery.list_agent_engine_types()
