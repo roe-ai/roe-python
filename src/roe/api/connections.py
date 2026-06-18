@@ -127,7 +127,6 @@ class ConnectionsAPI:
     ) -> Connection:
         """Update mutable connection fields."""
         body: dict[str, Any] = {}
-        body["organization_id"] = str(self._org_id)
         if name is not None:
             body["name"] = name
         if description is not None:
@@ -155,7 +154,6 @@ class ConnectionsAPI:
     ) -> Connection:
         """Replace a connection."""
         body: dict[str, Any] = {}
-        body["organization_id"] = str(self._org_id)
         if name is not None:
             body["name"] = name
         if description is not None:

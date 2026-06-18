@@ -327,7 +327,7 @@ def _dict_body_lines(
     if operation.get("body_format") != "dict":
         return []
     lines = ["        body: dict[str, Any] = {}\n"]
-    if operation.get("inject_organization_id"):
+    if operation.get("inject_organization_id") and operation.get("method") == "POST":
         lines.append('        body["organization_id"] = str(self._org_id)\n')
     for param in body_params:
         name = param["name"]
