@@ -12,7 +12,7 @@ jobs from getting stuck indefinitely. This is especially useful for:
 import os
 import time
 
-from roe import RoeClient
+from roe import JobStatus, RoeClient
 
 # Configuration - set these environment variables
 AGENT_ID = os.getenv("AGENT_ID", "your-agent-uuid-here")
@@ -209,11 +209,11 @@ def example_checking_status_manually():
 
         print(f"  [{elapsed:.1f}s] Status: {status.status}")
 
-        if status.status in (2, 6):  # SUCCESS or CACHED
+        if status.status in (JobStatus.SUCCESS, JobStatus.CACHED):
             job.retrieve_result()
             print("✓ Job completed successfully!")
             break
-        elif status.status in (3, 4):  # FAILURE or CANCELLED
+        elif status.status in (JobStatus.FAILURE, JobStatus.CANCELLED):
             print("✗ Job failed or was cancelled")
             break
 

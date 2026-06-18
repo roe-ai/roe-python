@@ -100,6 +100,8 @@ httpx layer. `Retry-After` is preserved exactly as sent, so it may be
 numeric seconds or an HTTP-date:
 
 ```python
+try:
+    client.agents.retrieve("00000000-0000-0000-0000-000000000000")
 except RoeAPIException as exc:
     if exc.status_code == 429 and exc.headers:
         retry_after = exc.headers.get("retry-after")
@@ -589,9 +591,13 @@ job = client.agents.run_version(
     url="https://example.com",
 )
 
-# Also works directly on agent and version models
+# Reuse a retrieved agent id when building the run request
 agent = client.agents.retrieve("agent-uuid")
-job = agent.run(metadata={"source": "sdk"}, url="https://example.com")
+job = client.agents.run(
+    agent_id=str(agent.id),
+    metadata={"source": "sdk"},
+    url="https://example.com",
+)
 ```
 
 ## Agent Management
