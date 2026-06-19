@@ -5,15 +5,11 @@
 
 from __future__ import annotations
 
-from roe.api.connections import ConnectionsAPI
-from roe.api.connectors import ConnectorsAPI
 from roe.api.discovery import DiscoveryAPI
 from roe.api.tables import TablesAPI
 
 
 GENERATED_API_CLASSES = {
-    "connections": ConnectionsAPI,
-    "connectors": ConnectorsAPI,
     "discovery": DiscoveryAPI,
     "tables": TablesAPI,
 }

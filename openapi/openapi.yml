@@ -449,8 +449,8 @@ paths:
   /v1/agents/{agent_id}/jobs/cancel-all/:
     post:
       operationId: agents_jobs_cancel_all_create
-      description: Cancel all running jobs for a given agent.
-      summary: Cancel all agent jobs
+      description: Cancel all running jobs for an agent.
+      summary: Cancel all running agent jobs (:cancelAll)
       parameters:
       - in: path
         name: agent_id
@@ -471,22 +471,13 @@ paths:
       - sdk
       security:
       - apiKeyAuth: []
-      deprecated: true
       responses:
-        '204':
-          description: All running agent jobs cancelled successfully
-        '403':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorDetailResponse'
-          description: Access forbidden
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDetailResponse'
-          description: Agent not found
+                $ref: '#/components/schemas/AgentJobCancelAllResponse'
+          description: ''
   /v1/agents/{agent_id}/versions/:
     get:
       operationId: agents_versions_list
@@ -918,7 +909,7 @@ paths:
                       accepts_multiple_files: null
                     engine_config:
                       text: ${text}
-                      model: gpt-5.5-2026-04-23
+                      model: gpt-4.1-2025-04-14
                       instruction: Process the text
                       temperature: '0.0'
                       output_schema: '{"type":"string","description":"The result"}'
@@ -3399,6 +3390,21 @@ components:
       - data_type
       - description
       - key
+    AgentJobCancelAllResponse:
+      type: object
+      properties:
+        task_id:
+          type:
+          - string
+          - 'null'
+        targeted_count:
+          type: integer
+        note:
+          type: string
+      required:
+      - note
+      - targeted_count
+      - task_id
     AgentJobDeleteDataResponse:
       type: object
       description: Response payload of purge_agent_job_data (delete-data and :purgeData).

@@ -11,45 +11,22 @@ from pathlib import Path
 from typing import BinaryIO
 from uuid import UUID
 
-from roe._generated.api.tables import (
-    tables_describe_retrieve,
-    tables_destroy,
-    tables_list,
-    tables_preview_retrieve,
-    tables_query_create,
-    tables_query_result_retrieve,
-    upload_table,
-)
+from roe._generated.api.tables import upload_table
 from roe._generated.client import AuthenticatedClient
-from roe._generated.models.table_describe_response import TableDescribeResponse
-from roe._generated.models.table_list_response import TableListResponse
-from roe._generated.models.table_preview_response import TablePreviewResponse
-from roe._generated.models.table_query_request import TableQueryRequest
-from roe._generated.models.table_query_result_response import TableQueryResultResponse
-from roe._generated.models.table_query_submit_response import TableQuerySubmitResponse
 from roe._generated.models.table_upload_request import TableUploadRequest
 from roe._generated.models.table_upload_response import TableUploadResponse
 from roe._generated.types import File, UNSET, Unset
 from roe.config import RoeConfig
 from roe.exceptions import RoeAPIException, translate_response
 from roe.models import FileUpload
-from roe.utils.generated_request import request_json, request_raw
 
 
 class TablesAPI:
-    """API for managing Roe tables."""
+    """API for uploading CSV files into Roe tables."""
 
     def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
         self.config = config
         self._raw = raw_client
-
-    def list(self) -> TableListResponse:
-        """List Roe tables."""
-        response = request_raw(
-            self._raw,
-            tables_list,
-        )
-        return TableListResponse.from_dict(response.json())
 
     def upload(
         self,
@@ -144,73 +121,6 @@ class TablesAPI:
             ),
             False,
         )
-
-    def query(
-        self,
-        sql: str,
-        limit: int | None = None,
-    ) -> TableQuerySubmitResponse:
-        """Run a read-only query against Roe tables."""
-        body = TableQueryRequest(
-            sql=sql,
-            limit=limit if limit is not None else UNSET,
-        )
-        resp = request_json(
-            self._raw,
-            tables_query_create,
-            body=body,
-        )
-        return resp.parsed  # type: ignore[return-value]
-
-    def query_result(
-        self,
-        table_query_id: str,
-    ) -> TableQueryResultResponse:
-        """Get the result for a submitted table query."""
-        response = request_raw(
-            self._raw,
-            tables_query_result_retrieve,
-            table_query_id,
-        )
-        return TableQueryResultResponse.from_dict(response.json())
-
-    def describe(
-        self,
-        table_name: str,
-    ) -> TableDescribeResponse:
-        """Describe a Roe table."""
-        response = request_raw(
-            self._raw,
-            tables_describe_retrieve,
-            table_name,
-        )
-        return TableDescribeResponse.from_dict(response.json())
-
-    def preview(
-        self,
-        table_name: str,
-        limit: int | None = None,
-    ) -> TablePreviewResponse:
-        """Preview rows from a Roe table."""
-        response = request_raw(
-            self._raw,
-            tables_preview_retrieve,
-            table_name,
-            limit=limit if limit is not None else UNSET,
-        )
-        return TablePreviewResponse.from_dict(response.json())
-
-    def delete(
-        self,
-        table_name: str,
-    ) -> None:
-        """Delete a Roe table."""
-        request_raw(
-            self._raw,
-            tables_destroy,
-            table_name,
-        )
-        return None
 
 
 def _mime_type(filename: str, override: str | None) -> str:

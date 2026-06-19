@@ -113,9 +113,9 @@ result carries `result["status"] == JobStatus.FAILURE` and
 hierarchy above.
 
 <!-- ROE-SDK:GENERATED-FRIENDLY-APIS:START -->
-## SDK Operation Groups
+## Generated Friendly APIs
 
-Common operations are available directly on the SDK client.
+This block is synced from `roe-main/roe-sdk/sdk_contract.yml` during SDK fan-out.
 
 ```python
 engines = client.discovery.list_agent_engine_types()
