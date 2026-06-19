@@ -918,7 +918,7 @@ paths:
                       accepts_multiple_files: null
                     engine_config:
                       text: ${text}
-                      model: gpt-4.1-2025-04-14
+                      model: gpt-5.5-2026-04-23
                       instruction: Process the text
                       temperature: '0.0'
                       output_schema: '{"type":"string","description":"The result"}'

@@ -143,7 +143,7 @@ agent = client.agents.create(
         {"key": "text", "data_type": "text/plain", "description": "Item description"},
     ],
     engine_config={
-        "model": "gpt-4.1-2025-04-14",
+        "model": "gpt-5.5-2026-04-23",
         "text": "${text}",
         "instruction": "Analyze this product listing. Is it counterfeit?",
         "output_schema": {
@@ -176,7 +176,7 @@ agent = client.agents.create(
         {"key": "pdf_files", "data_type": "application/pdf", "description": "Resume PDF"},
     ],
     engine_config={
-        "model": "gpt-4.1-2025-04-14",
+        "model": "gpt-5.5-2026-04-23",
         "pdf_files": "${pdf_files}",
         "instructions": "Extract candidate information from this resume.",
         "output_schema": {
@@ -207,7 +207,7 @@ agent = client.agents.create(
     ],
     engine_config={
         "url": "${url}",
-        "model": "gpt-4.1-2025-04-14",
+        "model": "gpt-5.5-2026-04-23",
         "instruction": "Extract company information from this website.",
         "vision_mode": False,
         "crawl_config": {
