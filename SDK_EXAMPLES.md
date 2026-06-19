@@ -36,7 +36,7 @@ result = client.agents.create(
     name="name",  # required
     engine_class_id="engine_class_id",  # required
     input_definitions=[{"key": "text", "data_type": "text/plain"}],  # optional
-    engine_config={"model": "gpt-4.1"},  # optional
+    engine_config={"model": "gpt-5.5-2026-04-23"},  # optional
     version_name="version_name",  # optional
     description="description",  # optional
 )
@@ -343,7 +343,7 @@ client = RoeClient()
 result = client.agents.versions.create(
     agent_id="agent_id",  # required
     input_definitions=[{"key": "text", "data_type": "text/plain"}],  # optional
-    engine_config={"model": "gpt-4.1"},  # optional
+    engine_config={"model": "gpt-5.5-2026-04-23"},  # optional
     version_name="version_name",  # optional
     description="description",  # optional
 )

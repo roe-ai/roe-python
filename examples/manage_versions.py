@@ -28,7 +28,7 @@ def main():
             },
         ],
         engine_config={
-            "model": "gpt-4.1-2025-04-14",
+            "model": "gpt-5.5-2026-04-23",
             "instruction": "Extract structured data from the text.",
             "temperature": "0",
         },

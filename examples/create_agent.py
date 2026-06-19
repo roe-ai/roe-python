@@ -23,7 +23,7 @@ def main():
             },
         ],
         engine_config={
-            "model": "gpt-4.1-2025-04-14",
+            "model": "gpt-5.5-2026-04-23",
             "instruction": "Summarize the key points of this document.",
             "output_schema": {
                 "type": "object",
