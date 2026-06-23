@@ -7,6 +7,7 @@ import httpx
 from roe._generated.client import AuthenticatedClient as RawClient
 from roe.api._generated_registry import GENERATED_API_CLASSES
 from roe.api.agents import AgentsAPI
+from roe.api.knowledge_base import KnowledgeBaseAPI
 from roe.api.policies import PoliciesAPI
 from roe.api.users import UsersAPI
 from roe.auth import RoeAuth
@@ -97,6 +98,7 @@ class RoeClient:
         self._agents = AgentsAPI(self.config, self._raw)
         self._policies = PoliciesAPI(self.config, self._raw)
         self._users = UsersAPI(self.config, self._raw)
+        self._knowledge_base = KnowledgeBaseAPI(self.config, self._raw)
         self._generated_apis = {
             name: api_cls(self.config, self._raw)
             for name, api_cls in GENERATED_API_CLASSES.items()
@@ -165,6 +167,28 @@ class RoeClient:
             me = client.users.me()
         """
         return self._users
+
+    @property
+    def knowledge_base(self) -> KnowledgeBaseAPI:
+        """Access the knowledge base API for managing lenses and drafts.
+
+        Returns:
+            KnowledgeBaseAPI instance for managing knowledge bases.
+
+        Examples:
+            # Create a knowledge base draft
+            kb = client.knowledge_base.create(
+                company="Acme Corp",
+                brief="A long-enough brief describing the company and goals.",
+            )
+
+            # List knowledge bases
+            knowledge_bases = client.knowledge_base.list()
+
+            # Finalize a draft into a permanent lens
+            client.knowledge_base.finalize(str(kb.id))
+        """
+        return self._knowledge_base
 
     @property
     def raw(self) -> RawClient:
