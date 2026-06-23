@@ -21,6 +21,7 @@ from roe._generated.api.agents import (
     agents_create,
     agents_destroy,
     agents_duplicate_create,
+    agents_jobs_artifacts_result_retrieve,
     agents_jobs_cancel_all_create,
     agents_jobs_cancel_create,
     agents_jobs_delete_data_create,
@@ -50,6 +51,10 @@ from roe._generated.client import AuthenticatedClient
 from roe._generated.models.agent_datum import AgentDatum
 from roe._generated.models.agent_execution_request import (
     AgentExecutionRequest,
+)
+from roe._generated.models.agent_job_artifact_result import AgentJobArtifactResult
+from roe._generated.models.agent_job_cancel_all_response import (
+    AgentJobCancelAllResponse,
 )
 from roe._generated.models.agent_job_delete_data_response import (
     AgentJobDeleteDataResponse,
@@ -334,13 +339,24 @@ class AgentJobsAPI:
         kwargs = agents_jobs_references_retrieve._get_kwargs(
             agent_job_id=UUID(str(job_id)),
             resource_id=resource_id,
-            organization_id=self._org_id,
         )
         if as_attachment:
             kwargs.setdefault("params", {})["download"] = "true"
         response = self._raw.get_httpx_client().request(**kwargs)
         translate_response(response)
         return response.content
+
+    def retrieve_artifact(
+        self, job_id: str, artifact_key: str
+    ) -> AgentJobArtifactResult:
+        response = request_raw(
+            self._raw,
+            agents_jobs_artifacts_result_retrieve,
+            str(job_id),
+            artifact_key=artifact_key,
+            organization_id=self._org_id,
+        )
+        return AgentJobArtifactResult.from_dict(response.json())
 
     def cancel(self, job_id: str) -> None:
         request_raw(
@@ -350,13 +366,14 @@ class AgentJobsAPI:
             organization_id=self._org_id,
         )
 
-    def cancel_all(self, agent_id: str) -> None:
-        request_raw(
+    def cancel_all(self, agent_id: str) -> AgentJobCancelAllResponse:
+        response = request_raw(
             self._raw,
             agents_jobs_cancel_all_create,
             UUID(str(agent_id)),
             organization_id=self._org_id,
         )
+        return AgentJobCancelAllResponse.from_dict(response.json())
 
     def delete_data(self, job_id: str) -> AgentJobDeleteDataResponse:
         response = request_raw(
