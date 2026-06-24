@@ -8,8 +8,8 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_job_result_response import AgentJobResultResponse
-from ...models.error_detail_response import ErrorDetailResponse
+from ...models.knowledge_base import KnowledgeBase
+from ...models.knowledge_base_import_lens_create_body import KnowledgeBaseImportLensCreateBody
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -17,12 +17,13 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    agent_job_id: UUID,
     *,
+    body: KnowledgeBaseImportLensCreateBody | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
-    
+    headers: dict[str, Any] = {}
+
 
     
 
@@ -38,41 +39,37 @@ def _get_kwargs(
 
 
     _kwargs: dict[str, Any] = {
-        "method": "get",
-        "url": "/v1/agents/jobs/{agent_job_id}/result/".format(agent_job_id=quote(str(agent_job_id), safe=""),),
+        "method": "post",
+        "url": "/v1/knowledge-base/import-lens/",
         "params": params,
     }
 
+    
+    if not isinstance(body, Unset):
+        _kwargs["json"] = body.to_dict()
 
+
+    headers["Content-Type"] = "application/json"
+
+    _kwargs["headers"] = headers
     return _kwargs
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> KnowledgeBase | None:
     if response.status_code == 200:
-        response_200 = AgentJobResultResponse.from_dict(response.json())
+        response_200 = KnowledgeBase.from_dict(response.json())
 
 
 
         return response_200
 
-    if response.status_code == 403:
-        response_403 = ErrorDetailResponse.from_dict(response.json())
+    if response.status_code == 201:
+        response_201 = KnowledgeBase.from_dict(response.json())
 
 
 
-        return response_403
-
-    if response.status_code == 404:
-        response_404 = ErrorDetailResponse.from_dict(response.json())
-
-
-
-        return response_404
-
-    if response.status_code == 500:
-        response_500 = cast(Any, None)
-        return response_500
+        return response_201
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -80,7 +77,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[KnowledgeBase]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -90,31 +87,36 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    agent_job_id: UUID,
     *,
     client: AuthenticatedClient,
+    body: KnowledgeBaseImportLensCreateBody | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> Response[KnowledgeBase]:
+    """  Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+    Creates a KnowledgeBase row in active state with the lens snapshot —
+    no draft involved.
+
+    POST /knowledge-base/import-lens/   body: { atlas_lens_id }
+
+    Idempotent: if a row for this org already points to the same
+    atlas_lens_id the existing record is synced and returned (200).
 
     Args:
-        agent_job_id (UUID):
         organization_id (UUID | Unset):
+        body (KnowledgeBaseImportLensCreateBody | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
+        Response[KnowledgeBase]
      """
 
 
     kwargs = _get_kwargs(
-        agent_job_id=agent_job_id,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -126,62 +128,72 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    agent_job_id: UUID,
     *,
     client: AuthenticatedClient,
+    body: KnowledgeBaseImportLensCreateBody | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> KnowledgeBase | None:
+    """  Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+    Creates a KnowledgeBase row in active state with the lens snapshot —
+    no draft involved.
+
+    POST /knowledge-base/import-lens/   body: { atlas_lens_id }
+
+    Idempotent: if a row for this org already points to the same
+    atlas_lens_id the existing record is synced and returned (200).
 
     Args:
-        agent_job_id (UUID):
         organization_id (UUID | Unset):
+        body (KnowledgeBaseImportLensCreateBody | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | Any | ErrorDetailResponse
+        KnowledgeBase
      """
 
 
     return sync_detailed(
-        agent_job_id=agent_job_id,
-client=client,
+        client=client,
+body=body,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
-    agent_job_id: UUID,
     *,
     client: AuthenticatedClient,
+    body: KnowledgeBaseImportLensCreateBody | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> Response[KnowledgeBase]:
+    """  Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+    Creates a KnowledgeBase row in active state with the lens snapshot —
+    no draft involved.
+
+    POST /knowledge-base/import-lens/   body: { atlas_lens_id }
+
+    Idempotent: if a row for this org already points to the same
+    atlas_lens_id the existing record is synced and returned (200).
 
     Args:
-        agent_job_id (UUID):
         organization_id (UUID | Unset):
+        body (KnowledgeBaseImportLensCreateBody | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
+        Response[KnowledgeBase]
      """
 
 
     kwargs = _get_kwargs(
-        agent_job_id=agent_job_id,
+        body=body,
 organization_id=organization_id,
 
     )
@@ -193,32 +205,37 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    agent_job_id: UUID,
     *,
     client: AuthenticatedClient,
+    body: KnowledgeBaseImportLensCreateBody | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> KnowledgeBase | None:
+    """  Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+    Creates a KnowledgeBase row in active state with the lens snapshot —
+    no draft involved.
+
+    POST /knowledge-base/import-lens/   body: { atlas_lens_id }
+
+    Idempotent: if a row for this org already points to the same
+    atlas_lens_id the existing record is synced and returned (200).
 
     Args:
-        agent_job_id (UUID):
         organization_id (UUID | Unset):
+        body (KnowledgeBaseImportLensCreateBody | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | Any | ErrorDetailResponse
+        KnowledgeBase
      """
 
 
     return (await asyncio_detailed(
-        agent_job_id=agent_job_id,
-client=client,
+        client=client,
+body=body,
 organization_id=organization_id,
 
     )).parsed

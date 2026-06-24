@@ -70,6 +70,21 @@ result = client.agents.jobs.retrieve_status_many(
 )
 ```
 
+#### `agents_jobs_artifacts_result_retrieve`
+
+Get tool result artifact (result only)
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.agents.jobs.retrieve_artifact(
+    job_id="job_id",  # required
+    artifact_key="artifact_key",  # required
+)
+```
+
 #### `agents_jobs_references_retrieve`
 
 Serve a reference file associated with an agent job.
@@ -305,7 +320,7 @@ result = client.agents.duplicate(
 
 #### `agents_jobs_cancel_all_create`
 
-Cancel all agent jobs
+Cancel all running agent jobs (:cancelAll)
 
 ```python
 from roe import RoeClient
@@ -613,6 +628,165 @@ from roe import RoeClient
 client = RoeClient()
 
 result = client.discovery.list_agent_engine_types()
+```
+
+### Knowledge Base
+
+#### `knowledge_base_list`
+
+List all KBs for the org, or start a new draft.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.list()
+```
+
+#### `knowledge_base_create`
+
+List all KBs for the org, or start a new draft.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.create()
+```
+
+#### `knowledge_base_catalog_retrieve`
+
+Names-only typology+tactic catalog.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.catalog()
+```
+
+#### `knowledge_base_import_lens_create`
+
+Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.import_lens()
+```
+
+#### `knowledge_base_lens_retrieve`
+
+Fetch a lens directly from Atlas by its atlas_lens_id and return the
+names-only projection.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.lens_by_atlas_id()
+```
+
+#### `knowledge_base_destroy`
+
+Get or delete a single KB.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.delete()
+```
+
+#### `knowledge_base_retrieve`
+
+Get or delete a single KB.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.retrieve()
+```
+
+#### `knowledge_base_draft_retrieve`
+
+Poll the atlas draft.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.poll_draft()
+```
+
+#### `knowledge_base_finalize_create`
+
+Commit the agreed selection into a lens and mark the KB active.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.finalize()
+```
+
+#### `knowledge_base_regenerate_create`
+
+Kick off another async generation round with feedback.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.regenerate()
+```
+
+#### `knowledge_base_resolve_create`
+
+Approve or decline a pending regeneration proposal.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.resolve()
+```
+
+#### `knowledge_base_selection_partial_update`
+
+Persist hand-edits to the working selection (typology + tactic opt-in/out).
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.patch_selection()
+```
+
+#### `knowledge_base_sync_create`
+
+Standalone best-effort lens sync (display mode).
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.knowledge_base.sync()
 ```
 
 ### Policies
