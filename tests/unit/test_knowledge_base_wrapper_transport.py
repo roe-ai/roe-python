@@ -86,3 +86,14 @@ def test_delete_sends_delete_with_org_query_and_no_body():
     assert "json" not in kwargs
     # path-arg is interpolated into the URL, not sent as a query param
     assert UUID(KB_ID).hex in kwargs["url"].replace("-", "")
+
+
+def test_unlink_sends_delete_to_unlink_endpoint_with_org_query():
+    api, request = _api(httpx.Response(204))
+
+    assert api.unlink(KB_ID) is None
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "delete"
+    assert kwargs["params"] == {"organization_id": ORG_ID}
+    assert kwargs["url"].endswith(f"/v1/knowledge-base/{KB_ID}/unlink/")

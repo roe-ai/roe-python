@@ -29,6 +29,7 @@ from roe._generated.api.knowledge_base import (
     knowledge_base_retrieve,
     knowledge_base_selection_partial_update,
     knowledge_base_sync_create,
+    knowledge_base_unlink_destroy,
 )
 from roe._generated.client import AuthenticatedClient
 from roe._generated.models.create_knowledge_base import CreateKnowledgeBase
@@ -123,6 +124,15 @@ class KnowledgeBaseAPI:
         request_raw(
             self._raw,
             knowledge_base_destroy,
+            UUID(str(knowledge_base_id)),
+            organization_id=self._org(),
+        )
+
+    def unlink(self, knowledge_base_id: str) -> None:
+        """Unlink a knowledge base locally, preserving the Atlas lens."""
+        request_raw(
+            self._raw,
+            knowledge_base_unlink_destroy,
             UUID(str(knowledge_base_id)),
             organization_id=self._org(),
         )
