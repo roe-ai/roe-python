@@ -510,6 +510,22 @@ apis:
             annotation: str
             coerce: uuid
         - kind: body
+          method_name: retrieve_artifact
+          docstring: ''
+          method: GET
+          path: /v1/agents/jobs/{agent_job_id}/artifacts/result/
+          endpoint_module: roe._generated.api.agents.agents_jobs_artifacts_result_retrieve
+          return_type: AgentJobArtifactResult
+          return_import: roe._generated.models.agent_job_artifact_result.AgentJobArtifactResult
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: artifact_key
+            location: query
+            annotation: str
+        - kind: body
           method_name: cancel
           docstring: ''
           method: POST
@@ -559,6 +575,80 @@ apis:
           docstring: Download a binary reference produced by an agent job.
           method: GET
           path: /v1/agents/jobs/{agent_job_id}/references/{resource_id}/
+  knowledge_base:
+    class_name: KnowledgeBaseAPI
+    docstring: API for managing Knowledge Base lenses and drafts.
+    operations:
+    - kind: manual
+      method_name: list
+      docstring: List all knowledge bases for the organisation.
+      method: GET
+      path: /v1/knowledge-base/
+    - kind: manual
+      method_name: create
+      docstring: Create a new knowledge base draft (async generation).
+      method: POST
+      path: /v1/knowledge-base/
+    - kind: manual
+      method_name: retrieve
+      docstring: Retrieve a single knowledge base record.
+      method: GET
+      path: /v1/knowledge-base/{id}/
+    - kind: manual
+      method_name: delete
+      docstring: Delete a knowledge base and its associated Atlas draft or lens.
+      method: DELETE
+      path: /v1/knowledge-base/{id}/
+    - kind: manual
+      method_name: poll_draft
+      docstring: Poll the Atlas draft status until ready or error.
+      method: GET
+      path: /v1/knowledge-base/{id}/draft/
+    - kind: manual
+      method_name: patch_selection
+      docstring: Patch the draft's typology/tactic selection.
+      method: PATCH
+      path: /v1/knowledge-base/{id}/selection/
+    - kind: manual
+      method_name: regenerate
+      docstring: Kick off an async regeneration round with optional feedback.
+      method: POST
+      path: /v1/knowledge-base/{id}/regenerate/
+    - kind: manual
+      method_name: resolve
+      docstring: Approve or decline a pending regeneration proposal.
+      method: POST
+      path: /v1/knowledge-base/{id}/resolve/
+    - kind: manual
+      method_name: finalize
+      docstring: Commit the draft into a permanent Atlas lens.
+      method: POST
+      path: /v1/knowledge-base/{id}/finalize/
+    - kind: manual
+      method_name: sync
+      docstring: Sync the lens snapshot from Atlas (best-effort).
+      method: POST
+      path: /v1/knowledge-base/{id}/sync/
+    - kind: manual
+      method_name: unlink
+      docstring: Unlink a knowledge base locally, preserving the Atlas lens.
+      method: DELETE
+      path: /v1/knowledge-base/{id}/unlink/
+    - kind: manual
+      method_name: catalog
+      docstring: Fetch the names-only typology and tactic catalog.
+      method: GET
+      path: /v1/knowledge-base/catalog/
+    - kind: manual
+      method_name: lens_by_atlas_id
+      docstring: Fetch and optionally sync a lens by its Atlas ID.
+      method: GET
+      path: /v1/knowledge-base/lens/{atlas_lens_id}/
+    - kind: manual
+      method_name: import_lens
+      docstring: Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+      method: POST
+      path: /v1/knowledge-base/import-lens/
   connections:
     class_name: ConnectionsAPI
     docstring: API for managing external data connections.

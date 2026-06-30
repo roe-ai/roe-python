@@ -6,6 +6,8 @@ from .agent_engine_type_list_engines_item import AgentEngineTypeListEnginesItem
 from .agent_execution_request import AgentExecutionRequest
 from .agent_execution_request_metadata_type_0 import AgentExecutionRequestMetadataType0
 from .agent_input_definition import AgentInputDefinition
+from .agent_job_artifact_result import AgentJobArtifactResult
+from .agent_job_cancel_all_response import AgentJobCancelAllResponse
 from .agent_job_delete_data_response import AgentJobDeleteDataResponse
 from .agent_job_result_item import AgentJobResultItem
 from .agent_job_result_many_request import AgentJobResultManyRequest
@@ -61,26 +63,39 @@ from .connector_type_enum import ConnectorTypeEnum
 from .create_connection_request import CreateConnectionRequest
 from .create_connection_request_auth_config import CreateConnectionRequestAuthConfig
 from .create_connection_request_config import CreateConnectionRequestConfig
+from .create_knowledge_base import CreateKnowledgeBase
+from .create_knowledge_base_request import CreateKnowledgeBaseRequest
 from .create_policy import CreatePolicy
 from .create_policy_request import CreatePolicyRequest
 from .create_policy_version import CreatePolicyVersion
 from .create_policy_version_request import CreatePolicyVersionRequest
 from .dependent_agent_info import DependentAgentInfo
 from .discovery_supported_models_list_response_400 import DiscoverySupportedModelsListResponse400
+from .draft import Draft
+from .draft_ref import DraftRef
+from .draft_status_enum import DraftStatusEnum
 from .duplicate_connection_existing import DuplicateConnectionExisting
 from .duplicate_connection_response import DuplicateConnectionResponse
 from .error_detail_response import ErrorDetailResponse
+from .finalize_request import FinalizeRequest
+from .knowledge_base import KnowledgeBase
+from .knowledge_base_import_lens_create_body import KnowledgeBaseImportLensCreateBody
+from .knowledge_base_status_enum import KnowledgeBaseStatusEnum
 from .message_response import MessageResponse
 from .paginated_base_agent_list import PaginatedBaseAgentList
 from .paginated_connection_list_list import PaginatedConnectionListList
+from .paginated_knowledge_base_list import PaginatedKnowledgeBaseList
 from .paginated_policy_list import PaginatedPolicyList
 from .paginated_policy_version_list import PaginatedPolicyVersionList
 from .patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
 from .patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
+from .patched_patch_selection_request import PatchedPatchSelectionRequest
+from .patched_patch_selection_request_refs_item import PatchedPatchSelectionRequestRefsItem
 from .patched_update_connection_request import PatchedUpdateConnectionRequest
 from .patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
 from .patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
 from .patched_update_policy_request import PatchedUpdatePolicyRequest
+from .pending_proposal import PendingProposal
 from .policies_create_response_400 import PoliciesCreateResponse400
 from .policies_partial_update_response_400 import PoliciesPartialUpdateResponse400
 from .policies_update_response_400 import PoliciesUpdateResponse400
@@ -90,6 +105,10 @@ from .policy_delete_conflict import PolicyDeleteConflict
 from .policy_version import PolicyVersion
 from .policy_version_created_by import PolicyVersionCreatedBy
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
+from .regenerate_request import RegenerateRequest
+from .relevance_enum import RelevanceEnum
+from .resolve_request import ResolveRequest
+from .resolve_request_refs_item import ResolveRequestRefsItem
 from .status_enum import StatusEnum
 from .supported_llm_model import SupportedLLMModel
 from .supported_llm_model_list import SupportedLLMModelList
@@ -131,6 +150,8 @@ __all__ = (
     "AgentExecutionRequest",
     "AgentExecutionRequestMetadataType0",
     "AgentInputDefinition",
+    "AgentJobArtifactResult",
+    "AgentJobCancelAllResponse",
     "AgentJobDeleteDataResponse",
     "AgentJobResultItem",
     "AgentJobResultManyRequest",
@@ -186,26 +207,39 @@ __all__ = (
     "CreateConnectionRequest",
     "CreateConnectionRequestAuthConfig",
     "CreateConnectionRequestConfig",
+    "CreateKnowledgeBase",
+    "CreateKnowledgeBaseRequest",
     "CreatePolicy",
     "CreatePolicyRequest",
     "CreatePolicyVersion",
     "CreatePolicyVersionRequest",
     "DependentAgentInfo",
     "DiscoverySupportedModelsListResponse400",
+    "Draft",
+    "DraftRef",
+    "DraftStatusEnum",
     "DuplicateConnectionExisting",
     "DuplicateConnectionResponse",
     "ErrorDetailResponse",
+    "FinalizeRequest",
+    "KnowledgeBase",
+    "KnowledgeBaseImportLensCreateBody",
+    "KnowledgeBaseStatusEnum",
     "MessageResponse",
     "PaginatedBaseAgentList",
     "PaginatedConnectionListList",
+    "PaginatedKnowledgeBaseList",
     "PaginatedPolicyList",
     "PaginatedPolicyVersionList",
     "PatchedAgentVersionUpdateRequest",
     "PatchedBaseAgentUpdateRequest",
+    "PatchedPatchSelectionRequest",
+    "PatchedPatchSelectionRequestRefsItem",
     "PatchedUpdateConnectionRequest",
     "PatchedUpdateConnectionRequestAuthConfig",
     "PatchedUpdateConnectionRequestConfig",
     "PatchedUpdatePolicyRequest",
+    "PendingProposal",
     "PoliciesCreateResponse400",
     "PoliciesPartialUpdateResponse400",
     "PoliciesUpdateResponse400",
@@ -215,6 +249,10 @@ __all__ = (
     "PolicyVersion",
     "PolicyVersionCreatedBy",
     "QdrantCleanupErrorResponse",
+    "RegenerateRequest",
+    "RelevanceEnum",
+    "ResolveRequest",
+    "ResolveRequestRefsItem",
     "StatusEnum",
     "SupportedLLMModel",
     "SupportedLLMModelList",

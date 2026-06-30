@@ -36,6 +36,8 @@ class CreateConnectionRequest:
                 * `sharepoint` - SHAREPOINT
                 * `zendesk` - ZENDESK
                 * `google_drive` - GOOGLE_DRIVE
+                * `google_docs` - GOOGLE_DOCS
+                * `google_sheets` - GOOGLE_SHEETS
                 * `salesforce` - SALESFORCE
                 * `web_application` - WEB_APPLICATION
                 * `custom_api` - CUSTOM_API

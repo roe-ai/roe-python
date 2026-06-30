@@ -25,7 +25,6 @@ def _get_kwargs(
     resource_id: str,
     *,
     download: bool | Unset = UNSET,
-    organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
@@ -35,11 +34,6 @@ def _get_kwargs(
     params: dict[str, Any] = {}
 
     params["download"] = download
-
-    json_organization_id: str | Unset = UNSET
-    if not isinstance(organization_id, Unset):
-        json_organization_id = str(organization_id)
-    params["organization_id"] = json_organization_id
 
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
@@ -156,7 +150,6 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     download: bool | Unset = UNSET,
-    organization_id: UUID | Unset = UNSET,
 
 ) -> Response[AgentsJobsReferencesRetrieveResponse400Type1 | AgentsJobsReferencesRetrieveResponse400Type2 | list[str] | ApiErrorResponse | ErrorDetailResponse | File]:
     """  Serve a reference file associated with an agent job.
@@ -165,7 +158,6 @@ def sync_detailed(
         agent_job_id (UUID):
         resource_id (str):
         download (bool | Unset):
-        organization_id (UUID | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -180,7 +172,6 @@ def sync_detailed(
         agent_job_id=agent_job_id,
 resource_id=resource_id,
 download=download,
-organization_id=organization_id,
 
     )
 
@@ -196,7 +187,6 @@ def sync(
     *,
     client: AuthenticatedClient,
     download: bool | Unset = UNSET,
-    organization_id: UUID | Unset = UNSET,
 
 ) -> AgentsJobsReferencesRetrieveResponse400Type1 | AgentsJobsReferencesRetrieveResponse400Type2 | list[str] | ApiErrorResponse | ErrorDetailResponse | File | None:
     """  Serve a reference file associated with an agent job.
@@ -205,7 +195,6 @@ def sync(
         agent_job_id (UUID):
         resource_id (str):
         download (bool | Unset):
-        organization_id (UUID | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -221,7 +210,6 @@ def sync(
 resource_id=resource_id,
 client=client,
 download=download,
-organization_id=organization_id,
 
     ).parsed
 
@@ -231,7 +219,6 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     download: bool | Unset = UNSET,
-    organization_id: UUID | Unset = UNSET,
 
 ) -> Response[AgentsJobsReferencesRetrieveResponse400Type1 | AgentsJobsReferencesRetrieveResponse400Type2 | list[str] | ApiErrorResponse | ErrorDetailResponse | File]:
     """  Serve a reference file associated with an agent job.
@@ -240,7 +227,6 @@ async def asyncio_detailed(
         agent_job_id (UUID):
         resource_id (str):
         download (bool | Unset):
-        organization_id (UUID | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -255,7 +241,6 @@ async def asyncio_detailed(
         agent_job_id=agent_job_id,
 resource_id=resource_id,
 download=download,
-organization_id=organization_id,
 
     )
 
@@ -271,7 +256,6 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     download: bool | Unset = UNSET,
-    organization_id: UUID | Unset = UNSET,
 
 ) -> AgentsJobsReferencesRetrieveResponse400Type1 | AgentsJobsReferencesRetrieveResponse400Type2 | list[str] | ApiErrorResponse | ErrorDetailResponse | File | None:
     """  Serve a reference file associated with an agent job.
@@ -280,7 +264,6 @@ async def asyncio(
         agent_job_id (UUID):
         resource_id (str):
         download (bool | Unset):
-        organization_id (UUID | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -296,6 +279,5 @@ async def asyncio(
 resource_id=resource_id,
 client=client,
 download=download,
-organization_id=organization_id,
 
     )).parsed

@@ -449,8 +449,8 @@ paths:
   /v1/agents/{agent_id}/jobs/cancel-all/:
     post:
       operationId: agents_jobs_cancel_all_create
-      description: Cancel all running jobs for a given agent.
-      summary: Cancel all agent jobs
+      description: Cancel all running jobs for an agent.
+      summary: Cancel all running agent jobs (:cancelAll)
       parameters:
       - in: path
         name: agent_id
@@ -471,22 +471,13 @@ paths:
       - sdk
       security:
       - apiKeyAuth: []
-      deprecated: true
       responses:
-        '204':
-          description: All running agent jobs cancelled successfully
-        '403':
+        '200':
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/ErrorDetailResponse'
-          description: Access forbidden
-        '404':
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/ErrorDetailResponse'
-          description: Agent not found
+                $ref: '#/components/schemas/AgentJobCancelAllResponse'
+          description: ''
   /v1/agents/{agent_id}/versions/:
     get:
       operationId: agents_versions_list
@@ -955,6 +946,55 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
+  /v1/agents/jobs/{agent_job_id}/artifacts/result/:
+    get:
+      operationId: agents_jobs_artifacts_result_retrieve
+      description: Fetches a tool result artifact for an agent job, returning only
+        the `result` field. Internal fields (`metadata`, `input`, and cost/token `usage`
+        data) are stripped. The artifact_key is available in the agent job result
+        output (e.g. `evidence_data` values).
+      summary: Get tool result artifact (result only)
+      parameters:
+      - in: path
+        name: agent_job_id
+        schema:
+          type: string
+        description: The agent job ID
+        required: true
+      - in: query
+        name: artifact_key
+        schema:
+          type: string
+        description: The artifact key (e.g., 'agent-job-xxx/extraction_123.json')
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - agents
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobArtifactResult'
+          description: The artifact's result field
+        '400':
+          description: Missing artifact_key query parameter
+        '401':
+          description: Missing or invalid API key
+        '403':
+          description: Access denied to this agent job
+        '404':
+          description: Artifact not found in storage
   /v1/agents/jobs/{agent_job_id}/references/{resource_id}/:
     get:
       operationId: agents_jobs_references_retrieve
@@ -976,14 +1016,6 @@ paths:
         schema:
           type: string
         required: true
-      - name: organization_id
-        in: query
-        required: false
-        schema:
-          type: string
-          format: uuid
-        description: Organization ID. This is required for access control. It can
-          be provided via query or request body depending on the endpoint.
       tags:
       - agents
       - sdk
@@ -1063,7 +1095,8 @@ paths:
   /v1/agents/jobs/{agent_job_id}/result/:
     get:
       operationId: agents_jobs_result_retrieve
-      description: Get agent job result data.
+      description: Get agent job result data. If the output references artifact keys
+        (e.g. `evidence_data` values), fetch their full content via GET /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
       parameters:
       - in: path
         name: agent_job_id
@@ -2562,6 +2595,494 @@ paths:
                     detail: 'Unknown connector: foo. Available: slack, gmail'
                   summary: Not found
           description: Connector type not found
+  /v1/knowledge-base/:
+    get:
+      operationId: knowledge_base_list
+      description: List all KBs for the org, or start a new draft.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedKnowledgeBaseList'
+          description: ''
+    post:
+      operationId: knowledge_base_create
+      description: List all KBs for the org, or start a new draft.
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateKnowledgeBaseRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateKnowledgeBase'
+          description: ''
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/knowledge-base/{id}/:
+    get:
+      operationId: knowledge_base_retrieve
+      description: Get or delete a single KB. GET triggers a best-effort display sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBase'
+          description: ''
+    delete:
+      operationId: knowledge_base_destroy
+      description: Get or delete a single KB. GET triggers a best-effort display sync.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: Deleted.
+  /v1/knowledge-base/{id}/draft/:
+    get:
+      operationId: knowledge_base_draft_retrieve
+      description: |-
+        Poll the atlas draft. Returns the projected draft status + refs.
+        Use until draft_status == 'ready' (or 'error').
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+          description: ''
+  /v1/knowledge-base/{id}/finalize/:
+    post:
+      operationId: knowledge_base_finalize_create
+      description: |-
+        Commit the agreed selection into a lens and mark the KB active.
+        Operation sync: strict — propagate atlas errors; reconcile in finally.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/FinalizeRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBase'
+          description: ''
+  /v1/knowledge-base/{id}/regenerate/:
+    post:
+      operationId: knowledge_base_regenerate_create
+      description: |-
+        Kick off another async generation round with feedback.
+        Operation sync: propagate atlas errors; finally reconcile.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegenerateRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '202':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+          description: ''
+  /v1/knowledge-base/{id}/resolve/:
+    post:
+      operationId: knowledge_base_resolve_create
+      description: |-
+        Approve or decline a pending regeneration proposal.
+
+        A regeneration round lands as draft.pendingProposal WITHOUT changing the
+        agreed selection. The reviewer resolves it here:
+          - apply:   { refs, suggested_name?, accept_summary? } — refs is the
+                     resolved selection (per-item accept/reject computed client-side).
+          - decline: { discard: true } — keep the prior selection untouched.
+
+        finalize is blocked by atlas (409) until this is called.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResolveRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+          description: ''
+  /v1/knowledge-base/{id}/selection/:
+    patch:
+      operationId: knowledge_base_selection_partial_update
+      description: |-
+        Persist hand-edits to the working selection (typology + tactic opt-in/out).
+        Operation sync: if atlas rejects, the error propagates; reconciling sync
+        runs in finally.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedPatchSelectionRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Draft'
+          description: ''
+  /v1/knowledge-base/{id}/sync/:
+    post:
+      operationId: knowledge_base_sync_create
+      description: |-
+        Standalone best-effort lens sync (display mode).
+        POST /knowledge-base/<id>/sync/
+        Always returns 200; sync_error describes any failure.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBase'
+          description: ''
+  /v1/knowledge-base/{id}/unlink/:
+    delete:
+      operationId: knowledge_base_unlink_destroy
+      description: |-
+        Unlink a knowledge base: remove the local KnowledgeBase row only, leaving
+        the Atlas lens (and any in-progress draft) untouched.
+
+        This is the non-destructive counterpart to DELETE /<id>/. Use it to stop
+        tracking a lens in this org without deleting it from Atlas — e.g. the lens
+        is shared, or you intend to re-import it later via import-lens. Unlike
+        DELETE /<id>/, this never calls atlas.delete_draft / atlas.delete_lens.
+
+        DELETE /knowledge-base/<id>/unlink/
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: 'Unlinked: local row removed; Atlas lens preserved.'
+  /v1/knowledge-base/catalog/:
+    get:
+      operationId: knowledge_base_catalog_retrieve
+      description: Names-only typology+tactic catalog. Powers typology/tactic opt-in
+        UI.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: List of typologies with tactic names.
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/knowledge-base/import-lens/:
+    post:
+      operationId: knowledge_base_import_lens_create
+      description: |-
+        Import a finalized Atlas lens into roe-main by its atlas_lens_id.
+        Creates a KnowledgeBase row in active state with the lens snapshot —
+        no draft involved.
+
+        POST /knowledge-base/import-lens/   body: { atlas_lens_id }
+
+        Idempotent: if a row for this org already points to the same
+        atlas_lens_id the existing record is synced and returned (200).
+      tags:
+      - knowledge-base
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              additionalProperties: {}
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBase'
+          description: ''
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/KnowledgeBase'
+          description: ''
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/knowledge-base/lens/{atlas_lens_id}/:
+    get:
+      operationId: knowledge_base_lens_retrieve
+      description: |-
+        Fetch a lens directly from Atlas by its atlas_lens_id and return the
+        names-only projection. Does NOT require a KnowledgeBase row to exist.
+
+        If a KnowledgeBase row for this org already points to the given
+        atlas_lens_id, it is also synced (best-effort) and returned under
+        the "knowledge_base" key.
+
+        GET  /knowledge-base/lens/<atlas_lens_id>/
+      parameters:
+      - in: path
+        name: atlas_lens_id
+        schema:
+          type: string
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - knowledge-base
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          description: Lens projection and optional local KB record.
   /v1/policies/:
     get:
       operationId: policies_list
@@ -3399,6 +3920,31 @@ components:
       - data_type
       - description
       - key
+    AgentJobArtifactResult:
+      type: object
+      properties:
+        result:
+          oneOf:
+          - {}
+          - type: 'null'
+          description: The artifact's result content (any JSON value).
+      required:
+      - result
+    AgentJobCancelAllResponse:
+      type: object
+      properties:
+        task_id:
+          type:
+          - string
+          - 'null'
+        targeted_count:
+          type: integer
+        note:
+          type: string
+      required:
+      - note
+      - targeted_count
+      - task_id
     AgentJobDeleteDataResponse:
       type: object
       description: Response payload of purge_agent_job_data (delete-data and :purgeData).
@@ -3820,7 +4366,10 @@ components:
           type:
           - integer
           - 'null'
-          description: Job count from annotation, or None when not fetched (use /agents/job-stats/).
+          description: |-
+            Served job count: cached baseline + live delta, annotated by the views
+            as ``job_count``. ``None`` when stats weren't fetched (the list can be
+            requested with ``include_job_stats=false``; use /agents/job-stats/).
           readOnly: true
         most_recent_job:
           type:
@@ -4078,6 +4627,8 @@ components:
       - sharepoint
       - zendesk
       - google_drive
+      - google_docs
+      - google_sheets
       - salesforce
       - web_application
       - custom_api
@@ -4096,6 +4647,8 @@ components:
         * `sharepoint` - SHAREPOINT
         * `zendesk` - ZENDESK
         * `google_drive` - GOOGLE_DRIVE
+        * `google_docs` - GOOGLE_DOCS
+        * `google_sheets` - GOOGLE_SHEETS
         * `salesforce` - SALESFORCE
         * `web_application` - WEB_APPLICATION
         * `custom_api` - CUSTOM_API
@@ -4136,6 +4689,51 @@ components:
       - config
       - connector_type
       - name
+    CreateKnowledgeBase:
+      type: object
+      description: Body for POST /knowledge-base/ — starts a new draft.
+      properties:
+        company:
+          type: string
+          maxLength: 255
+        name:
+          type: string
+          maxLength: 255
+        product_name:
+          type: string
+          maxLength: 255
+        website_url:
+          type: string
+          format: uri
+        brief:
+          type: string
+          minLength: 10
+      required:
+      - brief
+      - company
+    CreateKnowledgeBaseRequest:
+      type: object
+      description: Body for POST /knowledge-base/ — starts a new draft.
+      properties:
+        company:
+          type: string
+          minLength: 1
+          maxLength: 255
+        name:
+          type: string
+          maxLength: 255
+        product_name:
+          type: string
+          maxLength: 255
+        website_url:
+          type: string
+          format: uri
+        brief:
+          type: string
+          minLength: 10
+      required:
+      - brief
+      - company
     CreatePolicy:
       type: object
       description: Serializer for creating a new policy with initial version
@@ -4249,6 +4847,92 @@ components:
       - base_agent_id
       - version_id
       - version_name
+    Draft:
+      type: object
+      description: Projected atlas draft returned from poll/regenerate/resolve endpoints.
+      properties:
+        id:
+          type: string
+        status:
+          $ref: '#/components/schemas/DraftStatusEnum'
+        error:
+          type:
+          - string
+          - 'null'
+        company:
+          type: string
+        productName:
+          type:
+          - string
+          - 'null'
+        suggestedName:
+          type: string
+        productSummary:
+          type: string
+        iterationCount:
+          type: integer
+        refs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftRef'
+        pendingProposal:
+          oneOf:
+          - $ref: '#/components/schemas/PendingProposal'
+          - type: 'null'
+        createdAt:
+          type:
+          - string
+          - 'null'
+        updatedAt:
+          type:
+          - string
+          - 'null'
+      required:
+      - company
+      - id
+      - iterationCount
+      - productSummary
+      - refs
+      - status
+      - suggestedName
+    DraftRef:
+      type: object
+      description: A single ref in a selection (names-only projection from atlas).
+      properties:
+        typologyId:
+          type: string
+        typologyName:
+          type: string
+        relevance:
+          allOf:
+          - $ref: '#/components/schemas/RelevanceEnum'
+          default: watch
+        rationale:
+          type: string
+        tacticIds:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+        tacticNames:
+          type:
+          - array
+          - 'null'
+          items:
+            type: string
+      required:
+      - typologyId
+    DraftStatusEnum:
+      enum:
+      - generating
+      - ready
+      - error
+      type: string
+      description: |-
+        * `generating` - generating
+        * `ready` - ready
+        * `error` - error
     DuplicateConnectionExisting:
       type: object
       description: Identifying summary of the existing connection that triggered a
@@ -4283,6 +4967,100 @@ components:
           description: Human-readable error detail
       required:
       - detail
+    FinalizeRequest:
+      type: object
+      description: Body for POST /knowledge-base/<id>/finalize/.
+      properties:
+        name:
+          type: string
+        mcp_enabled:
+          type: boolean
+          default: true
+        public:
+          type: boolean
+          default: true
+    KnowledgeBase:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        company:
+          type: string
+          maxLength: 255
+        status:
+          allOf:
+          - $ref: '#/components/schemas/KnowledgeBaseStatusEnum'
+          readOnly: true
+        atlas_draft_id:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        atlas_lens_id:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        mcp_url:
+          type: string
+          readOnly: true
+        lens_snapshot:
+          oneOf:
+          - {}
+          - type: 'null'
+          readOnly: true
+        last_synced_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        sync_error:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - atlas_draft_id
+      - atlas_lens_id
+      - company
+      - created_at
+      - id
+      - last_synced_at
+      - lens_snapshot
+      - mcp_url
+      - name
+      - organization_id
+      - status
+      - sync_error
+      - updated_at
+    KnowledgeBaseStatusEnum:
+      enum:
+      - drafting
+      - active
+      - orphaned
+      type: string
+      description: |-
+        * `drafting` - Drafting
+        * `active` - Active
+        * `orphaned` - Orphaned
     MessageResponse:
       type: object
       description: 'Simple success acknowledgement body: `{"message": ...}`.'
@@ -4337,6 +5115,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/ConnectionList'
+    PaginatedKnowledgeBaseList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/KnowledgeBase'
     PaginatedPolicyList:
       type: object
       required:
@@ -4408,6 +5209,17 @@ components:
         cache_failed_jobs:
           type: boolean
           description: Whether to cache failed jobs for this agent.
+    PatchedPatchSelectionRequest:
+      type: object
+      description: Body for PATCH /knowledge-base/<id>/selection/.
+      properties:
+        refs:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        suggested_name:
+          type: string
     PatchedUpdateConnectionRequest:
       type: object
       description: |-
@@ -4447,6 +5259,33 @@ components:
           maxLength: 255
         description:
           type: string
+    PendingProposal:
+      type: object
+      description: A staged regeneration awaiting reviewer approval (names-only).
+      properties:
+        refs:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftRef'
+        baseSelection:
+          type: array
+          items:
+            $ref: '#/components/schemas/DraftRef'
+        feedback:
+          type:
+          - string
+          - 'null'
+        suggestedName:
+          type: string
+        productSummary:
+          type: string
+        createdAt:
+          type:
+          - string
+          - 'null'
+      required:
+      - baseSelection
+      - refs
     Policy:
       type: object
       description: Policy serializer
@@ -4580,6 +5419,44 @@ components:
       required:
       - detail
       - failed_collections
+    RegenerateRequest:
+      type: object
+      description: Body for POST /knowledge-base/<id>/regenerate/.
+      properties:
+        feedback:
+          type: string
+    RelevanceEnum:
+      enum:
+      - core
+      - watch
+      - edge
+      type: string
+      description: |-
+        * `core` - core
+        * `watch` - watch
+        * `edge` - edge
+    ResolveRequest:
+      type: object
+      description: |-
+        Body for POST /knowledge-base/<id>/resolve/.
+
+        discard=True declines the pending proposal. Otherwise refs is the reviewer's
+        resolved selection (opaque-handle dicts) and suggested_name / accept_summary
+        optionally adopt the proposal's name / summary.
+      properties:
+        refs:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+        suggested_name:
+          type: string
+        accept_summary:
+          type: boolean
+          default: false
+        discard:
+          type: boolean
+          default: false
     StatusEnum:
       enum:
       - active
