@@ -103,6 +103,48 @@ def test_agent_version_replace_uses_put_with_org_query_and_model_body():
     assert result.message == "ok"
 
 
+def test_download_reference_omits_organization_id_query_param():
+    # The references endpoint dropped organization_id; the wrapper must not send
+    # it, or _get_kwargs raises TypeError (org is derived from the job).
+    api, request = _api(httpx.Response(200, content=b"file-bytes"))
+
+    content = api.jobs.download_reference(JOB_ID, "resource-1")
+
+    kwargs = request.call_args.kwargs
+    assert "organization_id" not in (kwargs.get("params") or {})
+    assert content == b"file-bytes"
+
+
+def test_retrieve_artifact_sends_artifact_key_and_org_query():
+    api, request = _api(httpx.Response(200, json={"result": {"value": 1}}))
+
+    result = api.jobs.retrieve_artifact(JOB_ID, artifact_key="evidence_data")
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "get"
+    assert kwargs["params"]["artifact_key"] == "evidence_data"
+    assert kwargs["params"]["organization_id"] == ORG_ID
+    assert JOB_ID in kwargs["url"]
+    assert result.result == {"value": 1}
+
+
+def test_cancel_all_returns_structured_response_body():
+    api, request = _api(
+        httpx.Response(
+            200,
+            json={"task_id": "task-1", "targeted_count": 3, "note": "cancelling"},
+        )
+    )
+
+    result = api.jobs.cancel_all(AGENT_ID)
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "post"
+    assert kwargs["params"] == {"organization_id": ORG_ID}
+    assert result.targeted_count == 3
+    assert result.note == "cancelling"
+
+
 def test_retrieve_status_parses_single_status_shape_without_id():
     # GET /v1/agents/jobs/{job_id}/status/ returns AgentJobSingleStatus
     # ({status, timestamp, error_message?}) with no "id" field — parsing it

@@ -8,7 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.error_detail_response import ErrorDetailResponse
+from ...models.agent_job_cancel_all_response import AgentJobCancelAllResponse
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -47,24 +47,13 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Any | ErrorDetailResponse | None:
-    if response.status_code == 204:
-        response_204 = cast(Any, None)
-        return response_204
-
-    if response.status_code == 403:
-        response_403 = ErrorDetailResponse.from_dict(response.json())
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobCancelAllResponse | None:
+    if response.status_code == 200:
+        response_200 = AgentJobCancelAllResponse.from_dict(response.json())
 
 
 
-        return response_403
-
-    if response.status_code == 404:
-        response_404 = ErrorDetailResponse.from_dict(response.json())
-
-
-
-        return response_404
+        return response_200
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -72,7 +61,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Any | ErrorDetailResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobCancelAllResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -87,10 +76,10 @@ def sync_detailed(
     client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorDetailResponse]:
-    """ Cancel all agent jobs
+) -> Response[AgentJobCancelAllResponse]:
+    """ Cancel all running agent jobs (:cancelAll)
 
-     Cancel all running jobs for a given agent.
+     Cancel all running jobs for an agent.
 
     Args:
         agent_id (UUID):
@@ -101,7 +90,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorDetailResponse]
+        Response[AgentJobCancelAllResponse]
      """
 
 
@@ -123,10 +112,10 @@ def sync(
     client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorDetailResponse | None:
-    """ Cancel all agent jobs
+) -> AgentJobCancelAllResponse | None:
+    """ Cancel all running agent jobs (:cancelAll)
 
-     Cancel all running jobs for a given agent.
+     Cancel all running jobs for an agent.
 
     Args:
         agent_id (UUID):
@@ -137,7 +126,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorDetailResponse
+        AgentJobCancelAllResponse
      """
 
 
@@ -154,10 +143,10 @@ async def asyncio_detailed(
     client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Any | ErrorDetailResponse]:
-    """ Cancel all agent jobs
+) -> Response[AgentJobCancelAllResponse]:
+    """ Cancel all running agent jobs (:cancelAll)
 
-     Cancel all running jobs for a given agent.
+     Cancel all running jobs for an agent.
 
     Args:
         agent_id (UUID):
@@ -168,7 +157,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Any | ErrorDetailResponse]
+        Response[AgentJobCancelAllResponse]
      """
 
 
@@ -190,10 +179,10 @@ async def asyncio(
     client: AuthenticatedClient,
     organization_id: UUID | Unset = UNSET,
 
-) -> Any | ErrorDetailResponse | None:
-    """ Cancel all agent jobs
+) -> AgentJobCancelAllResponse | None:
+    """ Cancel all running agent jobs (:cancelAll)
 
-     Cancel all running jobs for a given agent.
+     Cancel all running jobs for an agent.
 
     Args:
         agent_id (UUID):
@@ -204,7 +193,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Any | ErrorDetailResponse
+        AgentJobCancelAllResponse
      """
 
 

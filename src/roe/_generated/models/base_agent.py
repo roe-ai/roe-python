@@ -39,7 +39,9 @@ class BaseAgent:
             organization_id (UUID): Organization ID that owns this agent.
             engine_class_id (str):
             current_version_id (UUID): UUID of the current agent version.
-            job_count (int | None): Job count from annotation, or None when not fetched (use /agents/job-stats/).
+            job_count (int | None): Served job count: cached baseline + live delta, annotated by the views
+                as ``job_count``. ``None`` when stats weren't fetched (the list can be
+                requested with ``include_job_stats=false``; use /agents/job-stats/).
             most_recent_job (datetime.datetime | None):
             engine_name (str): Engine Display Name
             tags (list[AgentTag]):

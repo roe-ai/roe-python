@@ -8,8 +8,7 @@ from ...client import AuthenticatedClient, Client
 from ...types import Response, UNSET
 from ... import errors
 
-from ...models.agent_job_result_response import AgentJobResultResponse
-from ...models.error_detail_response import ErrorDetailResponse
+from ...models.agent_job_artifact_result import AgentJobArtifactResult
 from ...types import UNSET, Unset
 from typing import cast
 from uuid import UUID
@@ -17,8 +16,9 @@ from uuid import UUID
 
 
 def _get_kwargs(
-    agent_job_id: UUID,
+    agent_job_id: str,
     *,
+    artifact_key: str,
     organization_id: UUID | Unset = UNSET,
 
 ) -> dict[str, Any]:
@@ -27,6 +27,8 @@ def _get_kwargs(
     
 
     params: dict[str, Any] = {}
+
+    params["artifact_key"] = artifact_key
 
     json_organization_id: str | Unset = UNSET
     if not isinstance(organization_id, Unset):
@@ -39,7 +41,7 @@ def _get_kwargs(
 
     _kwargs: dict[str, Any] = {
         "method": "get",
-        "url": "/v1/agents/jobs/{agent_job_id}/result/".format(agent_job_id=quote(str(agent_job_id), safe=""),),
+        "url": "/v1/agents/jobs/{agent_job_id}/artifacts/result/".format(agent_job_id=quote(str(agent_job_id), safe=""),),
         "params": params,
     }
 
@@ -48,31 +50,29 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> AgentJobArtifactResult | Any | None:
     if response.status_code == 200:
-        response_200 = AgentJobResultResponse.from_dict(response.json())
+        response_200 = AgentJobArtifactResult.from_dict(response.json())
 
 
 
         return response_200
 
+    if response.status_code == 400:
+        response_400 = cast(Any, None)
+        return response_400
+
+    if response.status_code == 401:
+        response_401 = cast(Any, None)
+        return response_401
+
     if response.status_code == 403:
-        response_403 = ErrorDetailResponse.from_dict(response.json())
-
-
-
+        response_403 = cast(Any, None)
         return response_403
 
     if response.status_code == 404:
-        response_404 = ErrorDetailResponse.from_dict(response.json())
-
-
-
+        response_404 = cast(Any, None)
         return response_404
-
-    if response.status_code == 500:
-        response_500 = cast(Any, None)
-        return response_500
 
     if client.raise_on_unexpected_status:
         raise errors.UnexpectedStatus(response.status_code, response.content)
@@ -80,7 +80,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[AgentJobArtifactResult | Any]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -90,18 +90,22 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 
 
 def sync_detailed(
-    agent_job_id: UUID,
+    agent_job_id: str,
     *,
     client: AuthenticatedClient,
+    artifact_key: str,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> Response[AgentJobArtifactResult | Any]:
+    """ Get tool result artifact (result only)
+
+     Fetches a tool result artifact for an agent job, returning only the `result` field. Internal fields
+    (`metadata`, `input`, and cost/token `usage` data) are stripped. The artifact_key is available in
+    the agent job result output (e.g. `evidence_data` values).
 
     Args:
-        agent_job_id (UUID):
+        agent_job_id (str):
+        artifact_key (str):
         organization_id (UUID | Unset):
 
     Raises:
@@ -109,12 +113,13 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
+        Response[AgentJobArtifactResult | Any]
      """
 
 
     kwargs = _get_kwargs(
         agent_job_id=agent_job_id,
+artifact_key=artifact_key,
 organization_id=organization_id,
 
     )
@@ -126,18 +131,22 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 def sync(
-    agent_job_id: UUID,
+    agent_job_id: str,
     *,
     client: AuthenticatedClient,
+    artifact_key: str,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> AgentJobArtifactResult | Any | None:
+    """ Get tool result artifact (result only)
+
+     Fetches a tool result artifact for an agent job, returning only the `result` field. Internal fields
+    (`metadata`, `input`, and cost/token `usage` data) are stripped. The artifact_key is available in
+    the agent job result output (e.g. `evidence_data` values).
 
     Args:
-        agent_job_id (UUID):
+        agent_job_id (str):
+        artifact_key (str):
         organization_id (UUID | Unset):
 
     Raises:
@@ -145,30 +154,35 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | Any | ErrorDetailResponse
+        AgentJobArtifactResult | Any
      """
 
 
     return sync_detailed(
         agent_job_id=agent_job_id,
 client=client,
+artifact_key=artifact_key,
 organization_id=organization_id,
 
     ).parsed
 
 async def asyncio_detailed(
-    agent_job_id: UUID,
+    agent_job_id: str,
     *,
     client: AuthenticatedClient,
+    artifact_key: str,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[AgentJobResultResponse | Any | ErrorDetailResponse]:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> Response[AgentJobArtifactResult | Any]:
+    """ Get tool result artifact (result only)
+
+     Fetches a tool result artifact for an agent job, returning only the `result` field. Internal fields
+    (`metadata`, `input`, and cost/token `usage` data) are stripped. The artifact_key is available in
+    the agent job result output (e.g. `evidence_data` values).
 
     Args:
-        agent_job_id (UUID):
+        agent_job_id (str):
+        artifact_key (str):
         organization_id (UUID | Unset):
 
     Raises:
@@ -176,12 +190,13 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[AgentJobResultResponse | Any | ErrorDetailResponse]
+        Response[AgentJobArtifactResult | Any]
      """
 
 
     kwargs = _get_kwargs(
         agent_job_id=agent_job_id,
+artifact_key=artifact_key,
 organization_id=organization_id,
 
     )
@@ -193,18 +208,22 @@ organization_id=organization_id,
     return _build_response(client=client, response=response)
 
 async def asyncio(
-    agent_job_id: UUID,
+    agent_job_id: str,
     *,
     client: AuthenticatedClient,
+    artifact_key: str,
     organization_id: UUID | Unset = UNSET,
 
-) -> AgentJobResultResponse | Any | ErrorDetailResponse | None:
-    """  Get agent job result data. If the output references artifact keys (e.g. `evidence_data` values),
-    fetch their full content via GET
-    /v1/agents/jobs/{agent_job_id}/artifacts/result/?artifact_key=<key>.
+) -> AgentJobArtifactResult | Any | None:
+    """ Get tool result artifact (result only)
+
+     Fetches a tool result artifact for an agent job, returning only the `result` field. Internal fields
+    (`metadata`, `input`, and cost/token `usage` data) are stripped. The artifact_key is available in
+    the agent job result output (e.g. `evidence_data` values).
 
     Args:
-        agent_job_id (UUID):
+        agent_job_id (str):
+        artifact_key (str):
         organization_id (UUID | Unset):
 
     Raises:
@@ -212,13 +231,14 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        AgentJobResultResponse | Any | ErrorDetailResponse
+        AgentJobArtifactResult | Any
      """
 
 
     return (await asyncio_detailed(
         agent_job_id=agent_job_id,
 client=client,
+artifact_key=artifact_key,
 organization_id=organization_id,
 
     )).parsed
