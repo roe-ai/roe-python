@@ -641,7 +641,10 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.list()
+result = client.knowledge_base.list(
+    page=1,  # optional
+    page_size=10,  # optional
+)
 ```
 
 #### `knowledge_base_create`
