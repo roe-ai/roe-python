@@ -653,10 +653,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.create(
-    company="company",
-    brief="brief",
-)
+result = client.knowledge_base.create()
 ```
 
 #### `knowledge_base_catalog_retrieve`
@@ -680,7 +677,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.import_lens("atlas_lens_id")
+result = client.knowledge_base.import_lens()
 ```
 
 #### `knowledge_base_lens_retrieve`
@@ -693,7 +690,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.lens_by_atlas_id("atlas_lens_id")
+result = client.knowledge_base.lens_by_atlas_id()
 ```
 
 #### `knowledge_base_destroy`
@@ -705,7 +702,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-client.knowledge_base.delete("knowledge_base_id")
+result = client.knowledge_base.delete()
 ```
 
 #### `knowledge_base_retrieve`
@@ -717,7 +714,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.retrieve("knowledge_base_id")
+result = client.knowledge_base.retrieve()
 ```
 
 #### `knowledge_base_draft_retrieve`
@@ -729,7 +726,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.poll_draft("knowledge_base_id")
+result = client.knowledge_base.poll_draft()
 ```
 
 #### `knowledge_base_finalize_create`
@@ -741,7 +738,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.finalize("knowledge_base_id")
+result = client.knowledge_base.finalize()
 ```
 
 #### `knowledge_base_regenerate_create`
@@ -753,7 +750,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.regenerate("knowledge_base_id")
+result = client.knowledge_base.regenerate()
 ```
 
 #### `knowledge_base_resolve_create`
@@ -765,7 +762,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.resolve("knowledge_base_id")
+result = client.knowledge_base.resolve()
 ```
 
 #### `knowledge_base_selection_partial_update`
@@ -777,10 +774,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.patch_selection(
-    "knowledge_base_id",
-    refs=[],
-)
+result = client.knowledge_base.patch_selection()
 ```
 
 #### `knowledge_base_sync_create`
@@ -792,7 +786,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-result = client.knowledge_base.sync("knowledge_base_id")
+result = client.knowledge_base.sync()
 ```
 
 #### `knowledge_base_unlink_destroy`
@@ -805,7 +799,7 @@ from roe import RoeClient
 
 client = RoeClient()
 
-client.knowledge_base.unlink("knowledge_base_id")
+result = client.knowledge_base.unlink()
 ```
 
 ### Policies
