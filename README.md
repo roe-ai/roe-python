@@ -3,7 +3,7 @@
 A Python SDK for the [Roe](https://www.roe-ai.com/) API.
 
 <!-- ROE-SDK:RELEASE-BANNER:START -->
-> **v1.1.2** - SDK operation coverage is synchronized across Python,
+> **v1.1.3** - SDK operation coverage is synchronized across Python,
 > TypeScript, and Go. See `SDK_EXAMPLES.md` for copy-ready examples and
 > use cases.
 <!-- ROE-SDK:RELEASE-BANNER:END -->
