@@ -11,10 +11,31 @@ paths:
       summary: List agents or create a new agent.
       parameters:
       - in: query
-        name: engine_class_id
+        name: created_from
         schema:
           type: string
-        description: Filter agents by engine type.
+          format: date-time
+        description: Filter agents created at or after this timestamp.
+      - in: query
+        name: created_to
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents created at or before this timestamp.
+      - in: query
+        name: creator_id
+        schema:
+          type: array
+          items:
+            type: integer
+        description: Filter agents by creator user ID. Can be provided multiple times.
+      - in: query
+        name: engine_class_id
+        schema:
+          type: array
+          items:
+            type: string
+        description: Filter agents by engine type. Can be provided multiple times.
       - in: query
         name: exclude_engine_class_id
         schema:
@@ -26,6 +47,41 @@ paths:
           type: boolean
         description: 'Include job_count and most_recent_job in response (default:
           true). Set to false for faster response.'
+      - in: query
+        name: include_untagged
+        schema:
+          type: boolean
+        description: Include agents with no visible user tags. Hidden agent-group
+          tags are ignored.
+      - in: query
+        name: job_count_max
+        schema:
+          type: integer
+        description: Filter agents whose served job count is less than or equal to
+          this value.
+      - in: query
+        name: job_count_min
+        schema:
+          type: integer
+        description: Filter agents whose served job count is greater than or equal
+          to this value.
+      - in: query
+        name: most_recent_job_from
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose most recent job was at or after this timestamp.
+      - in: query
+        name: most_recent_job_to
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose most recent job was at or before this timestamp.
+      - in: query
+        name: name
+        schema:
+          type: string
+        description: Filter agents by a case-insensitive substring of the agent name.
       - in: query
         name: ordering
         schema:
