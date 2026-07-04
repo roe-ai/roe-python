@@ -12,16 +12,27 @@ from ...models.agents_list_response_400 import AgentsListResponse400
 from ...models.error_detail_response import ErrorDetailResponse
 from ...models.paginated_base_agent_list import PaginatedBaseAgentList
 from ...types import UNSET, Unset
+from dateutil.parser import isoparse
 from typing import cast
 from uuid import UUID
+import datetime
 
 
 
 def _get_kwargs(
     *,
-    engine_class_id: str | Unset = UNSET,
+    created_from: datetime.datetime | Unset = UNSET,
+    created_to: datetime.datetime | Unset = UNSET,
+    creator_id: list[int] | Unset = UNSET,
+    engine_class_id: list[str] | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
+    include_untagged: bool | Unset = UNSET,
+    job_count_max: int | Unset = UNSET,
+    job_count_min: int | Unset = UNSET,
+    most_recent_job_from: datetime.datetime | Unset = UNSET,
+    most_recent_job_to: datetime.datetime | Unset = UNSET,
+    name: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID,
     page: int | Unset = UNSET,
@@ -36,11 +47,51 @@ def _get_kwargs(
 
     params: dict[str, Any] = {}
 
-    params["engine_class_id"] = engine_class_id
+    json_created_from: str | Unset = UNSET
+    if not isinstance(created_from, Unset):
+        json_created_from = created_from.isoformat()
+    params["created_from"] = json_created_from
+
+    json_created_to: str | Unset = UNSET
+    if not isinstance(created_to, Unset):
+        json_created_to = created_to.isoformat()
+    params["created_to"] = json_created_to
+
+    json_creator_id: list[int] | Unset = UNSET
+    if not isinstance(creator_id, Unset):
+        json_creator_id = creator_id
+
+
+    params["creator_id"] = json_creator_id
+
+    json_engine_class_id: list[str] | Unset = UNSET
+    if not isinstance(engine_class_id, Unset):
+        json_engine_class_id = engine_class_id
+
+
+    params["engine_class_id"] = json_engine_class_id
 
     params["exclude_engine_class_id"] = exclude_engine_class_id
 
     params["include_job_stats"] = include_job_stats
+
+    params["include_untagged"] = include_untagged
+
+    params["job_count_max"] = job_count_max
+
+    params["job_count_min"] = job_count_min
+
+    json_most_recent_job_from: str | Unset = UNSET
+    if not isinstance(most_recent_job_from, Unset):
+        json_most_recent_job_from = most_recent_job_from.isoformat()
+    params["most_recent_job_from"] = json_most_recent_job_from
+
+    json_most_recent_job_to: str | Unset = UNSET
+    if not isinstance(most_recent_job_to, Unset):
+        json_most_recent_job_to = most_recent_job_to.isoformat()
+    params["most_recent_job_to"] = json_most_recent_job_to
+
+    params["name"] = name
 
     params["ordering"] = ordering
 
@@ -122,9 +173,18 @@ def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Res
 def sync_detailed(
     *,
     client: AuthenticatedClient,
-    engine_class_id: str | Unset = UNSET,
+    created_from: datetime.datetime | Unset = UNSET,
+    created_to: datetime.datetime | Unset = UNSET,
+    creator_id: list[int] | Unset = UNSET,
+    engine_class_id: list[str] | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
+    include_untagged: bool | Unset = UNSET,
+    job_count_max: int | Unset = UNSET,
+    job_count_min: int | Unset = UNSET,
+    most_recent_job_from: datetime.datetime | Unset = UNSET,
+    most_recent_job_to: datetime.datetime | Unset = UNSET,
+    name: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID,
     page: int | Unset = UNSET,
@@ -138,9 +198,18 @@ def sync_detailed(
      Retrieve a list of agents or create a new agent.
 
     Args:
-        engine_class_id (str | Unset):
+        created_from (datetime.datetime | Unset):
+        created_to (datetime.datetime | Unset):
+        creator_id (list[int] | Unset):
+        engine_class_id (list[str] | Unset):
         exclude_engine_class_id (str | Unset):
         include_job_stats (bool | Unset):
+        include_untagged (bool | Unset):
+        job_count_max (int | Unset):
+        job_count_min (int | Unset):
+        most_recent_job_from (datetime.datetime | Unset):
+        most_recent_job_to (datetime.datetime | Unset):
+        name (str | Unset):
         ordering (str | Unset):
         organization_id (UUID):
         page (int | Unset):
@@ -158,9 +227,18 @@ def sync_detailed(
 
 
     kwargs = _get_kwargs(
-        engine_class_id=engine_class_id,
+        created_from=created_from,
+created_to=created_to,
+creator_id=creator_id,
+engine_class_id=engine_class_id,
 exclude_engine_class_id=exclude_engine_class_id,
 include_job_stats=include_job_stats,
+include_untagged=include_untagged,
+job_count_max=job_count_max,
+job_count_min=job_count_min,
+most_recent_job_from=most_recent_job_from,
+most_recent_job_to=most_recent_job_to,
+name=name,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -179,9 +257,18 @@ tags=tags,
 def sync(
     *,
     client: AuthenticatedClient,
-    engine_class_id: str | Unset = UNSET,
+    created_from: datetime.datetime | Unset = UNSET,
+    created_to: datetime.datetime | Unset = UNSET,
+    creator_id: list[int] | Unset = UNSET,
+    engine_class_id: list[str] | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
+    include_untagged: bool | Unset = UNSET,
+    job_count_max: int | Unset = UNSET,
+    job_count_min: int | Unset = UNSET,
+    most_recent_job_from: datetime.datetime | Unset = UNSET,
+    most_recent_job_to: datetime.datetime | Unset = UNSET,
+    name: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID,
     page: int | Unset = UNSET,
@@ -195,9 +282,18 @@ def sync(
      Retrieve a list of agents or create a new agent.
 
     Args:
-        engine_class_id (str | Unset):
+        created_from (datetime.datetime | Unset):
+        created_to (datetime.datetime | Unset):
+        creator_id (list[int] | Unset):
+        engine_class_id (list[str] | Unset):
         exclude_engine_class_id (str | Unset):
         include_job_stats (bool | Unset):
+        include_untagged (bool | Unset):
+        job_count_max (int | Unset):
+        job_count_min (int | Unset):
+        most_recent_job_from (datetime.datetime | Unset):
+        most_recent_job_to (datetime.datetime | Unset):
+        name (str | Unset):
         ordering (str | Unset):
         organization_id (UUID):
         page (int | Unset):
@@ -216,9 +312,18 @@ def sync(
 
     return sync_detailed(
         client=client,
+created_from=created_from,
+created_to=created_to,
+creator_id=creator_id,
 engine_class_id=engine_class_id,
 exclude_engine_class_id=exclude_engine_class_id,
 include_job_stats=include_job_stats,
+include_untagged=include_untagged,
+job_count_max=job_count_max,
+job_count_min=job_count_min,
+most_recent_job_from=most_recent_job_from,
+most_recent_job_to=most_recent_job_to,
+name=name,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -231,9 +336,18 @@ tags=tags,
 async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
-    engine_class_id: str | Unset = UNSET,
+    created_from: datetime.datetime | Unset = UNSET,
+    created_to: datetime.datetime | Unset = UNSET,
+    creator_id: list[int] | Unset = UNSET,
+    engine_class_id: list[str] | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
+    include_untagged: bool | Unset = UNSET,
+    job_count_max: int | Unset = UNSET,
+    job_count_min: int | Unset = UNSET,
+    most_recent_job_from: datetime.datetime | Unset = UNSET,
+    most_recent_job_to: datetime.datetime | Unset = UNSET,
+    name: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID,
     page: int | Unset = UNSET,
@@ -247,9 +361,18 @@ async def asyncio_detailed(
      Retrieve a list of agents or create a new agent.
 
     Args:
-        engine_class_id (str | Unset):
+        created_from (datetime.datetime | Unset):
+        created_to (datetime.datetime | Unset):
+        creator_id (list[int] | Unset):
+        engine_class_id (list[str] | Unset):
         exclude_engine_class_id (str | Unset):
         include_job_stats (bool | Unset):
+        include_untagged (bool | Unset):
+        job_count_max (int | Unset):
+        job_count_min (int | Unset):
+        most_recent_job_from (datetime.datetime | Unset):
+        most_recent_job_to (datetime.datetime | Unset):
+        name (str | Unset):
         ordering (str | Unset):
         organization_id (UUID):
         page (int | Unset):
@@ -267,9 +390,18 @@ async def asyncio_detailed(
 
 
     kwargs = _get_kwargs(
-        engine_class_id=engine_class_id,
+        created_from=created_from,
+created_to=created_to,
+creator_id=creator_id,
+engine_class_id=engine_class_id,
 exclude_engine_class_id=exclude_engine_class_id,
 include_job_stats=include_job_stats,
+include_untagged=include_untagged,
+job_count_max=job_count_max,
+job_count_min=job_count_min,
+most_recent_job_from=most_recent_job_from,
+most_recent_job_to=most_recent_job_to,
+name=name,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -288,9 +420,18 @@ tags=tags,
 async def asyncio(
     *,
     client: AuthenticatedClient,
-    engine_class_id: str | Unset = UNSET,
+    created_from: datetime.datetime | Unset = UNSET,
+    created_to: datetime.datetime | Unset = UNSET,
+    creator_id: list[int] | Unset = UNSET,
+    engine_class_id: list[str] | Unset = UNSET,
     exclude_engine_class_id: str | Unset = UNSET,
     include_job_stats: bool | Unset = UNSET,
+    include_untagged: bool | Unset = UNSET,
+    job_count_max: int | Unset = UNSET,
+    job_count_min: int | Unset = UNSET,
+    most_recent_job_from: datetime.datetime | Unset = UNSET,
+    most_recent_job_to: datetime.datetime | Unset = UNSET,
+    name: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID,
     page: int | Unset = UNSET,
@@ -304,9 +445,18 @@ async def asyncio(
      Retrieve a list of agents or create a new agent.
 
     Args:
-        engine_class_id (str | Unset):
+        created_from (datetime.datetime | Unset):
+        created_to (datetime.datetime | Unset):
+        creator_id (list[int] | Unset):
+        engine_class_id (list[str] | Unset):
         exclude_engine_class_id (str | Unset):
         include_job_stats (bool | Unset):
+        include_untagged (bool | Unset):
+        job_count_max (int | Unset):
+        job_count_min (int | Unset):
+        most_recent_job_from (datetime.datetime | Unset):
+        most_recent_job_to (datetime.datetime | Unset):
+        name (str | Unset):
         ordering (str | Unset):
         organization_id (UUID):
         page (int | Unset):
@@ -325,9 +475,18 @@ async def asyncio(
 
     return (await asyncio_detailed(
         client=client,
+created_from=created_from,
+created_to=created_to,
+creator_id=creator_id,
 engine_class_id=engine_class_id,
 exclude_engine_class_id=exclude_engine_class_id,
 include_job_stats=include_job_stats,
+include_untagged=include_untagged,
+job_count_max=job_count_max,
+job_count_min=job_count_min,
+most_recent_job_from=most_recent_job_from,
+most_recent_job_to=most_recent_job_to,
+name=name,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
