@@ -9,11 +9,15 @@ from .agent_input_definition import AgentInputDefinition
 from .agent_job_artifact_result import AgentJobArtifactResult
 from .agent_job_cancel_all_response import AgentJobCancelAllResponse
 from .agent_job_delete_data_response import AgentJobDeleteDataResponse
+from .agent_job_evaluation import AgentJobEvaluation
+from .agent_job_feedback_nested import AgentJobFeedbackNested
 from .agent_job_result_item import AgentJobResultItem
 from .agent_job_result_many_request import AgentJobResultManyRequest
 from .agent_job_result_response import AgentJobResultResponse
 from .agent_job_single_status import AgentJobSingleStatus
 from .agent_job_status import AgentJobStatus
+from .agent_job_status_event import AgentJobStatusEvent
+from .agent_job_status_event_error_details import AgentJobStatusEventErrorDetails
 from .agent_job_status_many_request import AgentJobStatusManyRequest
 from .agent_run_async_many_request import AgentRunAsyncManyRequest
 from .agent_tag import AgentTag
@@ -21,6 +25,8 @@ from .agent_version import AgentVersion
 from .agent_version_create_request import AgentVersionCreateRequest
 from .agent_version_update_request import AgentVersionUpdateRequest
 from .agents_create_response_400 import AgentsCreateResponse400
+from .agents_jobs_list_ordering_item import AgentsJobsListOrderingItem
+from .agents_jobs_list_response_400 import AgentsJobsListResponse400
 from .agents_jobs_references_retrieve_response_400_type_1 import AgentsJobsReferencesRetrieveResponse400Type1
 from .agents_jobs_references_retrieve_response_400_type_2 import AgentsJobsReferencesRetrieveResponse400Type2
 from .agents_jobs_results_create_response_400 import AgentsJobsResultsCreateResponse400
@@ -78,13 +84,17 @@ from .duplicate_connection_existing import DuplicateConnectionExisting
 from .duplicate_connection_response import DuplicateConnectionResponse
 from .error_detail_response import ErrorDetailResponse
 from .finalize_request import FinalizeRequest
+from .job_input import JobInput
 from .knowledge_base import KnowledgeBase
 from .knowledge_base_import_lens_create_body import KnowledgeBaseImportLensCreateBody
 from .knowledge_base_status_enum import KnowledgeBaseStatusEnum
+from .list_agent_job import ListAgentJob
+from .list_agent_job_metadata import ListAgentJobMetadata
 from .message_response import MessageResponse
 from .paginated_base_agent_list import PaginatedBaseAgentList
 from .paginated_connection_list_list import PaginatedConnectionListList
 from .paginated_knowledge_base_list import PaginatedKnowledgeBaseList
+from .paginated_list_agent_job_list import PaginatedListAgentJobList
 from .paginated_policy_list import PaginatedPolicyList
 from .paginated_policy_version_list import PaginatedPolicyVersionList
 from .patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
@@ -109,6 +119,7 @@ from .regenerate_request import RegenerateRequest
 from .relevance_enum import RelevanceEnum
 from .resolve_request import ResolveRequest
 from .resolve_request_refs_item import ResolveRequestRefsItem
+from .review_status_enum import ReviewStatusEnum
 from .status_enum import StatusEnum
 from .supported_llm_model import SupportedLLMModel
 from .supported_llm_model_list import SupportedLLMModelList
@@ -153,14 +164,20 @@ __all__ = (
     "AgentJobArtifactResult",
     "AgentJobCancelAllResponse",
     "AgentJobDeleteDataResponse",
+    "AgentJobEvaluation",
+    "AgentJobFeedbackNested",
     "AgentJobResultItem",
     "AgentJobResultManyRequest",
     "AgentJobResultResponse",
     "AgentJobSingleStatus",
     "AgentJobStatus",
+    "AgentJobStatusEvent",
+    "AgentJobStatusEventErrorDetails",
     "AgentJobStatusManyRequest",
     "AgentRunAsyncManyRequest",
     "AgentsCreateResponse400",
+    "AgentsJobsListOrderingItem",
+    "AgentsJobsListResponse400",
     "AgentsJobsReferencesRetrieveResponse400Type1",
     "AgentsJobsReferencesRetrieveResponse400Type2",
     "AgentsJobsResultsCreateResponse400",
@@ -222,13 +239,17 @@ __all__ = (
     "DuplicateConnectionResponse",
     "ErrorDetailResponse",
     "FinalizeRequest",
+    "JobInput",
     "KnowledgeBase",
     "KnowledgeBaseImportLensCreateBody",
     "KnowledgeBaseStatusEnum",
+    "ListAgentJob",
+    "ListAgentJobMetadata",
     "MessageResponse",
     "PaginatedBaseAgentList",
     "PaginatedConnectionListList",
     "PaginatedKnowledgeBaseList",
+    "PaginatedListAgentJobList",
     "PaginatedPolicyList",
     "PaginatedPolicyVersionList",
     "PatchedAgentVersionUpdateRequest",
@@ -253,6 +274,7 @@ __all__ = (
     "RelevanceEnum",
     "ResolveRequest",
     "ResolveRequestRefsItem",
+    "ReviewStatusEnum",
     "StatusEnum",
     "SupportedLLMModel",
     "SupportedLLMModelList",

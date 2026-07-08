@@ -318,6 +318,29 @@ result = client.agents.duplicate(
 )
 ```
 
+#### `agents_jobs_list`
+
+List agent jobs or create a new agent job.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.agents.jobs.list(
+    agent_id="agent_id",  # required
+    page=1,  # optional
+    page_size=1,  # optional
+    status_code="status_code",  # optional
+    version_name="version_name",  # optional
+    metadata="metadata",  # optional
+    created_from="created_from",  # optional
+    created_to="created_to",  # optional
+    search="search",  # optional
+    ordering="ordering",  # optional
+)
+```
+
 #### `agents_jobs_cancel_all_create`
 
 Cancel all running agent jobs (:cancelAll)

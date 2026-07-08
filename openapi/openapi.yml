@@ -502,6 +502,180 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent not found.
+  /v1/agents/{agent_id}/jobs/:
+    get:
+      operationId: agents_jobs_list
+      description: Retrieve a list of jobs for a specific agent or create a new job
+      summary: List agent jobs or create a new agent job.
+      parameters:
+      - in: path
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: query
+        name: created_from
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: created_to
+        schema:
+          type: string
+          format: date-time
+      - in: query
+        name: exclude_metadata
+        schema:
+          type: string
+      - in: query
+        name: job_id
+        schema:
+          type: string
+      - in: query
+        name: job_inputs
+        schema:
+          type: string
+      - name: limit
+        required: false
+        in: query
+        description: Maximum number of most-recent jobs to consider and count. Caps
+          the reported total so pagination stays fast for agents with large job histories.
+          Defaults to 100000; pass 0 for no cap (full count, slower).
+        schema:
+          type: integer
+          default: 100000
+          minimum: 0
+          maximum: 1000000
+      - in: query
+        name: metadata
+        schema:
+          type: string
+      - in: query
+        name: ordering
+        schema:
+          type: array
+          items:
+            type: string
+            enum:
+            - -agent_version_name
+            - -cost
+            - -created_at
+            - -duration
+            - -grader_score
+            - -id
+            - -last_updated_at
+            - -status_code
+            - agent_version_name
+            - cost
+            - created_at
+            - duration
+            - grader_score
+            - id
+            - last_updated_at
+            - status_code
+        description: |-
+          Ordering
+
+          * `id` - Job ID
+          * `-id` - Job ID (descending)
+          * `agent_version_name` - Version
+          * `-agent_version_name` - Version (descending)
+          * `status_code` - Status
+          * `-status_code` - Status (descending)
+          * `created_at` - Created At
+          * `-created_at` - Created At (descending)
+          * `last_updated_at` - Last Updated At
+          * `-last_updated_at` - Last Updated At (descending)
+          * `cost` - Cost
+          * `-cost` - Cost (descending)
+          * `duration` - Time Elapsed
+          * `-duration` - Time Elapsed (descending)
+          * `grader_score` - Score
+          * `-grader_score` - Score (descending)
+        explode: false
+        style: form
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: query
+        name: search
+        schema:
+          type: string
+      - in: query
+        name: semantic_string
+        schema:
+          type: string
+        description: Semantic search string for finding similar jobs using embeddings
+      - in: query
+        name: status_code
+        schema:
+          type: string
+      - in: query
+        name: verdict
+        schema:
+          type: string
+      - in: query
+        name: version_name
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - agents
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedListAgentJobList'
+          description: Successfully retrieved paginated list of agent jobs.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  oneOf:
+                  - type: array
+                    items:
+                      type: string
+                  - type: string
+                description: 'Validation failure: a map of field name to a list of
+                  error messages (DRF serializers) or a single message (e.g. organization_id
+                  validation).'
+          description: Invalid filter parameters.
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Access to the Agents feature is forbidden or permission to
+            access this agent denied.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Invalid page requested.
   /v1/agents/{agent_id}/jobs/cancel-all/:
     post:
       operationId: agents_jobs_cancel_all_create
@@ -4039,6 +4213,69 @@ components:
       - errors
       - failed_count
       - status
+    AgentJobEvaluation:
+      type: object
+      properties:
+        reference:
+          oneOf:
+          - {}
+          - type: 'null'
+        human_score:
+          type:
+          - number
+          - 'null'
+          format: double
+        grader_score:
+          type:
+          - number
+          - 'null'
+          format: double
+        feedback:
+          type: string
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - updated_at
+    AgentJobFeedbackNested:
+      type: object
+      properties:
+        review_status:
+          allOf:
+          - $ref: '#/components/schemas/ReviewStatusEnum'
+          description: |-
+            Current review status of this job
+
+            * `pending` - Pending Review
+            * `approved` - Approved
+            * `rejected` - Rejected
+        corrected_verdict:
+          type:
+          - string
+          - 'null'
+          description: Human-selected correct verdict when they disagree with agent
+        review_comment:
+          type: string
+          description: Reviewer's comment explaining their decision
+        reviewed_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          description: Timestamp when the review was completed
+        reviewed_by:
+          type:
+          - string
+          - 'null'
+          readOnly: true
+      required:
+      - reviewed_by
     AgentJobResultItem:
       type: object
       description: Serializer for individual agent job result item.
@@ -4220,6 +4457,25 @@ components:
       - id
       - last_updated_at
       - status
+    AgentJobStatusEvent:
+      type: object
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status_code:
+          type: integer
+        error_message:
+          type: string
+        error_details:
+          type: object
+          additionalProperties: {}
+          description: Error details as key-value pairs
+        count:
+          type: integer
+      required:
+      - status_code
+      - timestamp
     AgentJobStatusManyRequest:
       type: object
       description: Serializer for bulk agent job status request.
@@ -5035,6 +5291,30 @@ components:
         public:
           type: boolean
           default: true
+    JobInput:
+      type: object
+      description: Serializer for individual job input data
+      properties:
+        key:
+          type: string
+          description: The input key
+        description:
+          type: string
+          description: Description of the input
+        data_type:
+          type: string
+          description: The data type of the input
+        value:
+          type: string
+          description: The input value
+        file_name:
+          type: string
+          description: File name if this input is a file
+      required:
+      - data_type
+      - description
+      - key
+      - value
     KnowledgeBase:
       type: object
       properties:
@@ -5117,6 +5397,84 @@ components:
         * `drafting` - Drafting
         * `active` - Active
         * `orphaned` - Orphaned
+    ListAgentJob:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        agent_version_name:
+          type:
+          - string
+          - 'null'
+          description: Get the agent version name, handling null agent and annotation.
+          readOnly: true
+        status_events:
+          type: array
+          items:
+            $ref: '#/components/schemas/AgentJobStatusEvent'
+        status_code:
+          type: integer
+          description: Current status code of the job (0=PENDING, 1=STARTED, 2=RETRY,
+            3=SUCCESS, 4=FAILURE, 5=CANCELLED, 6=CACHED)
+        created_at:
+          type: string
+          format: date-time
+          description: When the job was created
+        last_updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        duration_ms:
+          type:
+          - integer
+          - 'null'
+          readOnly: true
+          description: Job duration in milliseconds, computed from status_events.
+            End time is the last non-CACHED event so trailing cache hits don't inflate
+            duration. Null while the job is still running or when timestamps are missing.
+        job_inputs:
+          type: array
+          items:
+            $ref: '#/components/schemas/JobInput'
+          description: List of input data provided to the agent job
+        metadata:
+          type: object
+          additionalProperties:
+            type: string
+          description: Key-value pairs of metadata associated with the job
+        ui_fields:
+          readOnly: true
+          description: 'Denormalized fields from agent output for list/metrics without
+            loading S3 '
+        evaluation:
+          oneOf:
+          - $ref: '#/components/schemas/AgentJobEvaluation'
+          - type: 'null'
+          readOnly: true
+        feedback_review:
+          oneOf:
+          - $ref: '#/components/schemas/AgentJobFeedbackNested'
+          - type: 'null'
+          readOnly: true
+        creator:
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+          readOnly: true
+      required:
+      - agent_version_name
+      - created_at
+      - creator
+      - duration_ms
+      - evaluation
+      - feedback_review
+      - id
+      - last_updated_at
+      - status_code
+      - status_events
+      - ui_fields
     MessageResponse:
       type: object
       description: 'Simple success acknowledgement body: `{"message": ...}`.'
@@ -5194,6 +5552,29 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/KnowledgeBase'
+    PaginatedListAgentJobList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/ListAgentJob'
     PaginatedPolicyList:
       type: object
       required:
@@ -5513,6 +5894,16 @@ components:
         discard:
           type: boolean
           default: false
+    ReviewStatusEnum:
+      enum:
+      - pending
+      - approved
+      - rejected
+      type: string
+      description: |-
+        * `pending` - Pending Review
+        * `approved` - Approved
+        * `rejected` - Rejected
     StatusEnum:
       enum:
       - active
