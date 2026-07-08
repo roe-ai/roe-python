@@ -13,6 +13,7 @@ through the generated endpoint's URL/auth/query machinery.
 
 from __future__ import annotations
 
+import datetime
 import time
 from typing import Any
 from uuid import UUID
@@ -25,6 +26,7 @@ from roe._generated.api.agents import (
     agents_jobs_cancel_all_create,
     agents_jobs_cancel_create,
     agents_jobs_delete_data_create,
+    agents_jobs_list,
     agents_jobs_references_retrieve,
     agents_jobs_result_retrieve,
     agents_jobs_results_create,
@@ -65,6 +67,9 @@ from roe._generated.models.agent_job_result_many_request import (
 from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
 from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
+from roe._generated.models.agents_jobs_list_ordering_item import (
+    AgentsJobsListOrderingItem,
+)
 from roe._generated.models.agent_job_status import AgentJobStatus
 from roe._generated.models.agent_job_status_many_request import (
     AgentJobStatusManyRequest,
@@ -75,6 +80,9 @@ from roe._generated.models.agent_run_async_many_request import (
 from roe._generated.models.agent_version import AgentVersion
 from roe._generated.models.agent_version_create_request import AgentVersionCreateRequest
 from roe._generated.models.agent_version_update_request import AgentVersionUpdateRequest
+from roe._generated.models.paginated_list_agent_job_list import (
+    PaginatedListAgentJobList,
+)
 from roe._generated.models.base_agent import BaseAgent
 from roe._generated.models.base_agent_create_request import BaseAgentCreateRequest
 from roe._generated.models.base_agent_update_request import BaseAgentUpdateRequest
@@ -262,6 +270,43 @@ class AgentJobsAPI:
     def _iter_chunks(items, chunk_size: int):
         for i in range(0, len(items), chunk_size):
             yield items[i : i + chunk_size]
+
+    def list(
+        self,
+        agent_id: str,
+        page: int | None = None,
+        page_size: int | None = None,
+        status_code: str | None = None,
+        version_name: str | None = None,
+        metadata: str | None = None,
+        created_from: str | None = None,
+        created_to: str | None = None,
+        search: str | None = None,
+        ordering: str | None = None,
+    ) -> PaginatedListAgentJobList:
+        """List an agent's jobs (paginated), with filter and sort options."""
+        response = request_raw(
+            self._raw,
+            agents_jobs_list,
+            UUID(str(agent_id)),
+            page=page if page is not None else UNSET,
+            page_size=page_size if page_size is not None else UNSET,
+            status_code=status_code if status_code is not None else UNSET,
+            version_name=version_name if version_name is not None else UNSET,
+            metadata=metadata if metadata is not None else UNSET,
+            created_from=datetime.datetime.fromisoformat(created_from)
+            if created_from is not None
+            else UNSET,
+            created_to=datetime.datetime.fromisoformat(created_to)
+            if created_to is not None
+            else UNSET,
+            search=search if search is not None else UNSET,
+            ordering=[AgentsJobsListOrderingItem(ordering)]
+            if ordering is not None
+            else UNSET,
+            organization_id=self._org_id,
+        )
+        return PaginatedListAgentJobList.from_dict(response.json())
 
     def retrieve_status(self, job_id: str) -> AgentJobSingleStatus:
         response = request_raw(

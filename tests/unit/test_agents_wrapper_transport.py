@@ -103,6 +103,33 @@ def test_agent_version_replace_uses_put_with_org_query_and_model_body():
     assert result.message == "ok"
 
 
+def test_jobs_list_sends_filters_and_parses_paginated_response():
+    api, request = _api(httpx.Response(200, json={"count": 0, "results": []}))
+
+    result = api.jobs.list(
+        AGENT_ID,
+        page=2,
+        page_size=10,
+        status_code="4",
+        created_from="2026-01-01T00:00:00+00:00",
+        ordering="-created_at",
+    )
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "get"
+    params = kwargs["params"]
+    assert params["organization_id"] == ORG_ID
+    assert params["page"] == 2
+    assert params["page_size"] == 10
+    assert params["status_code"] == "4"
+    # created_from is accepted as an ISO string and serialized back to ISO
+    assert params["created_from"] == "2026-01-01T00:00:00+00:00"
+    assert params["ordering"] == ["-created_at"]
+    assert "version_name" not in params
+    assert AGENT_ID in kwargs["url"]
+    assert result.count == 0
+
+
 def test_download_reference_omits_organization_id_query_param():
     # The references endpoint dropped organization_id; the wrapper must not send
     # it, or _get_kwargs raises TypeError (org is derived from the job).

@@ -484,6 +484,64 @@ apis:
         docstring: Nested API for agent job operations.
         operations:
         - kind: body
+          method_name: list
+          docstring: List an agent's jobs (paginated), with filter and sort options.
+          method: GET
+          path: /v1/agents/{agent_id}/jobs/
+          endpoint_module: roe._generated.api.agents.agents_jobs_list
+          return_type: PaginatedListAgentJobList
+          return_import: roe._generated.models.paginated_list_agent_job_list.PaginatedListAgentJobList
+          parameters:
+          - name: agent_id
+            location: path
+            annotation: str
+            coerce: uuid
+          - name: page
+            location: query
+            annotation: int | None
+            default: null
+            pass_unset_when_none: true
+          - name: page_size
+            location: query
+            annotation: int | None
+            default: null
+            pass_unset_when_none: true
+          - name: status_code
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: version_name
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: metadata
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: created_from
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: created_to
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: search
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+          - name: ordering
+            location: query
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
+        - kind: body
           method_name: retrieve_status
           docstring: ''
           method: GET
