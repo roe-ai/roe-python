@@ -1,5 +1,18 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- `skip_cache=True` parameter on `client.agents.run(...)`, `run_many(...)`,
+  `run_sync(...)`, `run_version(...)`, and `run_version_sync(...)`. Sends the
+  `X-Skip-Cache: true` header so the backend bypasses the job-result cache and
+  forces a fresh run (the fresh result still refreshes the cache).
+  Note: `skip_cache` is now a reserved parameter name on these methods (like
+  `metadata` and `idempotency_key`); an agent input literally named
+  `skip_cache` can no longer be passed via `**inputs` — use `run_many`'s
+  dict-based inputs for such agents.
+
 ## 1.0.802
 
 Version synchronization across `roe-ai` (Python), `roe-typescript`,
