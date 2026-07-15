@@ -74,6 +74,108 @@ def test_run_passes_idempotency_key_through_dynamic_wrapper():
     assert job.id == JOB_ID
 
 
+def test_run_passes_skip_cache_header_through_dynamic_wrapper():
+    api, request = _api(httpx.Response(200, json=JOB_ID))
+
+    job = api.run(AGENT_ID, skip_cache=True, prompt="hello")
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["headers"]["X-Skip-Cache"] == "true"
+    assert job.id == JOB_ID
+
+
+def test_run_omits_skip_cache_header_by_default():
+    api, request = _api(httpx.Response(200, json=JOB_ID))
+
+    api.run(AGENT_ID, prompt="hello")
+
+    kwargs = request.call_args.kwargs
+    assert "X-Skip-Cache" not in kwargs["headers"]
+
+
+def test_run_sync_passes_skip_cache_header():
+    api, request = _api(httpx.Response(200, json=[]))
+
+    api.run_sync(AGENT_ID, skip_cache=True, prompt="hello")
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["headers"]["X-Skip-Cache"] == "true"
+
+
+def test_run_version_passes_skip_cache_and_idempotency_headers():
+    api, request = _api(httpx.Response(200, json=JOB_ID))
+
+    api.run_version(
+        AGENT_ID,
+        VERSION_ID,
+        idempotency_key="idem-456",
+        skip_cache=True,
+        prompt="hello",
+    )
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["headers"]["Idempotency-Key"] == "idem-456"
+    assert kwargs["headers"]["X-Skip-Cache"] == "true"
+
+
+def test_run_version_sync_passes_skip_cache_header():
+    api, request = _api(httpx.Response(200, json=[]))
+
+    api.run_version_sync(AGENT_ID, VERSION_ID, skip_cache=True, prompt="hello")
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["headers"]["X-Skip-Cache"] == "true"
+
+
+def test_run_many_passes_skip_cache_header_on_json_batch():
+    api, request = _api(httpx.Response(200, json=[JOB_ID]))
+
+    batch = api.run_many(AGENT_ID, [{"prompt": "hello"}], skip_cache=True)
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["headers"]["X-Skip-Cache"] == "true"
+    assert kwargs["headers"]["Content-Type"] == "application/json"
+    assert batch.job_ids == [JOB_ID]
+
+
+def test_run_many_omits_skip_cache_header_by_default():
+    api, request = _api(httpx.Response(200, json=[JOB_ID]))
+
+    api.run_many(AGENT_ID, [{"prompt": "hello"}])
+
+    kwargs = request.call_args.kwargs
+    assert "X-Skip-Cache" not in kwargs["headers"]
+
+
+def test_run_many_sends_skip_cache_header_on_every_chunk():
+    api, request = _api(httpx.Response(200, json=[JOB_ID]))
+
+    api.run_many(AGENT_ID, [{"prompt": "hello"}] * 1001, skip_cache=True)
+
+    assert request.call_count == 2
+    for call in request.call_args_list:
+        assert call.kwargs["headers"]["X-Skip-Cache"] == "true"
+
+
+def test_sync_and_version_runs_omit_skip_cache_header_by_default():
+    api, request = _api(httpx.Response(200, json=[]))
+
+    api.run_sync(AGENT_ID, prompt="hello")
+    api.run_version_sync(AGENT_ID, VERSION_ID, prompt="hello")
+
+    for call in request.call_args_list:
+        assert "X-Skip-Cache" not in call.kwargs["headers"]
+
+
+def test_run_version_omits_skip_cache_header_by_default():
+    api, request = _api(httpx.Response(200, json=JOB_ID))
+
+    api.run_version(AGENT_ID, VERSION_ID, prompt="hello")
+
+    kwargs = request.call_args.kwargs
+    assert "X-Skip-Cache" not in kwargs["headers"]
+
+
 def test_agent_replace_uses_put_with_org_query_and_model_body():
     api, request = _api(httpx.Response(200, json=_base_agent_json()))
 

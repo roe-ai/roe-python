@@ -20,6 +20,7 @@ def request_raw(
     ep_module: Any,
     *path_args: Any,
     body: Any = UNSET,
+    extra_headers: dict[str, str] | None = None,
     **kwargs: Any,
 ) -> Any:
     """Call a generated endpoint while forcing JSON body serialization."""
@@ -35,6 +36,9 @@ def request_raw(
         headers["Content-Type"] = "application/json"
     else:
         request_kwargs = ep_module._get_kwargs(*path_args, **kwargs)
+
+    if extra_headers:
+        request_kwargs.setdefault("headers", {}).update(extra_headers)
 
     response = raw.get_httpx_client().request(**request_kwargs)
     translate_response(response)

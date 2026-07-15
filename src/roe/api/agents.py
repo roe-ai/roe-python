@@ -102,6 +102,19 @@ from roe.utils._dynamic_call import call_dynamic
 from roe.utils.generated_request import request_json, request_raw
 
 
+def _build_run_headers(
+    idempotency_key: str | None = None,
+    skip_cache: bool = False,
+) -> dict[str, str] | None:
+    """Build the optional per-run request headers shared by the run methods."""
+    headers: dict[str, str] = {}
+    if idempotency_key:
+        headers["Idempotency-Key"] = idempotency_key
+    if skip_cache:
+        headers["X-Skip-Cache"] = "true"
+    return headers or None
+
+
 def _build_aer(inputs: dict[str, Any]) -> AgentExecutionRequest:
     """Pack a free-form ``inputs`` dict into an ``AgentExecutionRequest``.
 
@@ -585,9 +598,14 @@ class AgentsAPI:
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        skip_cache: bool = False,
         **inputs: Any,
     ) -> Job:
-        """Run an agent asynchronously and return a ``Job`` handle."""
+        """Run an agent asynchronously and return a ``Job`` handle.
+
+        Set ``skip_cache=True`` to bypass the job-result cache and force a
+        fresh run (the fresh result still refreshes the cache).
+        """
         response = call_dynamic(
             self._raw,
             agents_run_async_create,
@@ -595,9 +613,7 @@ class AgentsAPI:
             metadata=metadata,
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
-            extra_headers=(
-                {"Idempotency-Key": idempotency_key} if idempotency_key else None
-            ),
+            extra_headers=_build_run_headers(idempotency_key, skip_cache),
         )
         job_id = response.json()
         if not isinstance(job_id, str):
@@ -612,8 +628,13 @@ class AgentsAPI:
         batch_inputs: list[dict[str, Any]],
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
+        skip_cache: bool = False,
     ) -> JobBatch:
-        """Run an agent across many inputs (JSON body, no multipart)."""
+        """Run an agent across many inputs (JSON body, no multipart).
+
+        Set ``skip_cache=True`` to bypass the job-result cache and force
+        fresh runs (the fresh results still refresh the cache).
+        """
         all_job_ids: list[str] = []
         is_first_chunk = True
         for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
@@ -631,6 +652,7 @@ class AgentsAPI:
                 UUID(str(agent_id)),
                 body=body,
                 organization_id=self._org_id,
+                extra_headers=_build_run_headers(skip_cache=skip_cache),
             )
             chunk_ids = response.json()
             if not isinstance(chunk_ids, list):
@@ -649,9 +671,14 @@ class AgentsAPI:
         self,
         agent_id: str,
         metadata: dict[str, Any] | None = None,
+        skip_cache: bool = False,
         **inputs: Any,
     ) -> list[AgentDatum]:
-        """Run an agent synchronously and return the outputs."""
+        """Run an agent synchronously and return the outputs.
+
+        Set ``skip_cache=True`` to bypass the job-result cache and force a
+        fresh run (the fresh result still refreshes the cache).
+        """
         response = call_dynamic(
             self._raw,
             agents_run,
@@ -659,6 +686,7 @@ class AgentsAPI:
             metadata=metadata,
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
+            extra_headers=_build_run_headers(skip_cache=skip_cache),
         )
         return [AgentDatum.from_dict(d) for d in response.json()]
 
@@ -669,8 +697,14 @@ class AgentsAPI:
         timeout_seconds: int | None = None,
         metadata: dict[str, Any] | None = None,
         idempotency_key: str | None = None,
+        skip_cache: bool = False,
         **inputs: Any,
     ) -> Job:
+        """Run a specific agent version asynchronously and return a ``Job``.
+
+        Set ``skip_cache=True`` to bypass the job-result cache and force a
+        fresh run (the fresh result still refreshes the cache).
+        """
         response = call_dynamic(
             self._raw,
             agents_run_versions_async_create,
@@ -679,9 +713,7 @@ class AgentsAPI:
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
             agent_version_id=UUID(str(version_id)),
-            extra_headers=(
-                {"Idempotency-Key": idempotency_key} if idempotency_key else None
-            ),
+            extra_headers=_build_run_headers(idempotency_key, skip_cache),
         )
         job_id = response.json()
         if not isinstance(job_id, str):
@@ -695,8 +727,14 @@ class AgentsAPI:
         agent_id: str,
         version_id: str,
         metadata: dict[str, Any] | None = None,
+        skip_cache: bool = False,
         **inputs: Any,
     ) -> list[AgentDatum]:
+        """Run a specific agent version synchronously and return the outputs.
+
+        Set ``skip_cache=True`` to bypass the job-result cache and force a
+        fresh run (the fresh result still refreshes the cache).
+        """
         response = call_dynamic(
             self._raw,
             agents_run_version,
@@ -705,5 +743,6 @@ class AgentsAPI:
             organization_id=self._org_id,
             agent_id=UUID(str(agent_id)),
             agent_version_id=UUID(str(version_id)),
+            extra_headers=_build_run_headers(skip_cache=skip_cache),
         )
         return [AgentDatum.from_dict(d) for d in response.json()]

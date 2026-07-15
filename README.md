@@ -553,6 +553,11 @@ batch = client.agents.run_many(
     batch_inputs=[{"text": "input1"}, {"text": "input2"}]
 )
 results = batch.wait()
+
+# Skip the job-result cache and force a fresh run
+# (available on run, run_sync, run_many, run_version, run_version_sync;
+# the fresh result still refreshes the cache)
+job = client.agents.run(agent_id="uuid", skip_cache=True, text="input")
 ```
 
 ## Metadata
