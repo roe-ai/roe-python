@@ -14,6 +14,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
   from ..models.patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
+  from ..models.patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
 
 
 
@@ -44,12 +45,14 @@ class PatchedUpdateConnectionRequest:
             description (str | Unset):
             config (PatchedUpdateConnectionRequestConfig | Unset):
             auth_config (PatchedUpdateConnectionRequestAuthConfig | Unset):
+            dynamic_inputs (PatchedUpdateConnectionRequestDynamicInputs | Unset):
      """
 
     name: str | Unset = UNSET
     description: str | Unset = UNSET
     config: PatchedUpdateConnectionRequestConfig | Unset = UNSET
     auth_config: PatchedUpdateConnectionRequestAuthConfig | Unset = UNSET
+    dynamic_inputs: PatchedUpdateConnectionRequestDynamicInputs | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -59,6 +62,7 @@ class PatchedUpdateConnectionRequest:
     def to_dict(self) -> dict[str, Any]:
         from ..models.patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
         from ..models.patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
+        from ..models.patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
         name = self.name
 
         description = self.description
@@ -70,6 +74,10 @@ class PatchedUpdateConnectionRequest:
         auth_config: dict[str, Any] | Unset = UNSET
         if not isinstance(self.auth_config, Unset):
             auth_config = self.auth_config.to_dict()
+
+        dynamic_inputs: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.dynamic_inputs, Unset):
+            dynamic_inputs = self.dynamic_inputs.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -84,6 +92,8 @@ class PatchedUpdateConnectionRequest:
             field_dict["config"] = config
         if auth_config is not UNSET:
             field_dict["auth_config"] = auth_config
+        if dynamic_inputs is not UNSET:
+            field_dict["dynamic_inputs"] = dynamic_inputs
 
         return field_dict
 
@@ -93,6 +103,7 @@ class PatchedUpdateConnectionRequest:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
         from ..models.patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
+        from ..models.patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
         d = dict(src_dict)
         name = d.pop("name", UNSET)
 
@@ -118,11 +129,22 @@ class PatchedUpdateConnectionRequest:
 
 
 
+        _dynamic_inputs = d.pop("dynamic_inputs", UNSET)
+        dynamic_inputs: PatchedUpdateConnectionRequestDynamicInputs | Unset
+        if isinstance(_dynamic_inputs,  Unset):
+            dynamic_inputs = UNSET
+        else:
+            dynamic_inputs = PatchedUpdateConnectionRequestDynamicInputs.from_dict(_dynamic_inputs)
+
+
+
+
         patched_update_connection_request = cls(
             name=name,
             description=description,
             config=config,
             auth_config=auth_config,
+            dynamic_inputs=dynamic_inputs,
         )
 
 

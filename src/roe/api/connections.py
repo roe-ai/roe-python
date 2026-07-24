@@ -66,6 +66,7 @@ class ConnectionsAPI:
         config: dict[str, Any],
         description: str | None = None,
         auth_config: dict[str, Any] | None = None,
+        dynamic_inputs: dict[str, str] | None = None,
     ) -> Connection:
         """Create a connection."""
         body: dict[str, Any] = {}
@@ -77,6 +78,8 @@ class ConnectionsAPI:
             body["description"] = description
         if auth_config is not None:
             body["auth_config"] = auth_config
+        if dynamic_inputs is not None:
+            body["dynamic_inputs"] = dynamic_inputs
         resp = request_json(
             self._raw,
             connections_create,
@@ -90,6 +93,7 @@ class ConnectionsAPI:
         connector_type: str,
         config: dict[str, Any],
         auth_config: dict[str, Any] | None = None,
+        dynamic_inputs: dict[str, str] | None = None,
     ) -> TestConnection:
         """Test connection credentials without saving a connection."""
         body: dict[str, Any] = {}
@@ -97,6 +101,8 @@ class ConnectionsAPI:
         body["config"] = config
         if auth_config is not None:
             body["auth_config"] = auth_config
+        if dynamic_inputs is not None:
+            body["dynamic_inputs"] = dynamic_inputs
         resp = request_json(
             self._raw,
             connections_test_credentials_create,
@@ -124,6 +130,7 @@ class ConnectionsAPI:
         description: str | None = None,
         config: dict[str, Any] | None = None,
         auth_config: dict[str, Any] | None = None,
+        dynamic_inputs: dict[str, str] | None = None,
     ) -> Connection:
         """Update mutable connection fields."""
         body: dict[str, Any] = {}
@@ -135,6 +142,8 @@ class ConnectionsAPI:
             body["config"] = config
         if auth_config is not None:
             body["auth_config"] = auth_config
+        if dynamic_inputs is not None:
+            body["dynamic_inputs"] = dynamic_inputs
         resp = request_json(
             self._raw,
             connections_partial_update,
@@ -151,6 +160,7 @@ class ConnectionsAPI:
         description: str | None = None,
         config: dict[str, Any] | None = None,
         auth_config: dict[str, Any] | None = None,
+        dynamic_inputs: dict[str, str] | None = None,
     ) -> Connection:
         """Replace a connection."""
         body: dict[str, Any] = {}
@@ -162,6 +172,8 @@ class ConnectionsAPI:
             body["config"] = config
         if auth_config is not None:
             body["auth_config"] = auth_config
+        if dynamic_inputs is not None:
+            body["dynamic_inputs"] = dynamic_inputs
         resp = request_json(
             self._raw,
             connections_update,

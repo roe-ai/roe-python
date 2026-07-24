@@ -87,7 +87,7 @@ paths:
         schema:
           type: string
         description: 'Field to order results by. Prefix with ''-'' for descending.
-          Options: name, created_at, most_recent_job, job_count, engine_class_id,
+          Options: name, created_at, updated_at, most_recent_job, job_count, engine_class_id,
           creator.'
       - in: query
         name: organization_id
@@ -121,6 +121,19 @@ paths:
           items:
             type: string
         description: Filter agents by tag IDs. Can be provided multiple times.
+      - in: query
+        name: updated_from
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose last config update was at or after this timestamp.
+      - in: query
+        name: updated_to
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose last config update was at or before this
+          timestamp.
       tags:
       - agents
       - sdk
@@ -4652,6 +4665,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
         name:
           type: string
           maxLength: 200
@@ -4711,6 +4728,7 @@ components:
       - name
       - organization_id
       - tags
+      - updated_at
     BaseAgentCreateRequest:
       type: object
       description: Serializer for creating base agents with proper JSON field handling
@@ -4810,6 +4828,16 @@ components:
         description:
           type: string
         config: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        dynamic_input_test_disabled_reason:
+          type:
+          - string
+          - 'null'
+          readOnly: true
         auth_config:
           type: object
           additionalProperties: {}
@@ -4829,6 +4857,8 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - dynamic_input_test_disabled_reason
+      - dynamic_inputs
       - id
       - name
       - organization
@@ -4872,6 +4902,16 @@ components:
         description:
           type: string
         config: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        dynamic_input_test_disabled_reason:
+          type:
+          - string
+          - 'null'
+          readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
         created_at:
@@ -4886,6 +4926,8 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - dynamic_input_test_disabled_reason
+      - dynamic_inputs
       - id
       - name
       - organization
@@ -4922,6 +4964,16 @@ components:
           oneOf:
           - {}
           - type: 'null'
+        dynamic_input_fields:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        dynamic_input_test_fields:
+          type: array
+          items:
+            type: string
       required:
       - auth_schema
       - category
@@ -4929,6 +4981,8 @@ components:
       - delivery_config_schema
       - description
       - display_name
+      - dynamic_input_fields
+      - dynamic_input_test_fields
       - icon
       - id
       - supports_delivery
@@ -4992,6 +5046,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
         organization_id:
           type:
           - string
@@ -5686,6 +5745,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
     PatchedUpdatePolicyRequest:
       type: object
       description: Serializer for updating policy metadata (name, description)
@@ -6233,6 +6297,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
       required:
       - config
       - connector_type
@@ -6265,6 +6334,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)
