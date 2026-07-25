@@ -780,6 +780,12 @@ apis:
         annotation: dict[str, Any] | None
         default: null
         pass_unset_when_none: true
+      - name: dynamic_inputs
+        location: body
+        wire_name: dynamic_inputs
+        annotation: dict[str, str] | None
+        default: null
+        pass_unset_when_none: true
     - kind: body
       method_name: test_credentials
       docstring: Test connection credentials without saving a connection.
@@ -802,6 +808,12 @@ apis:
         location: body
         wire_name: auth_config
         annotation: dict[str, Any] | None
+        default: null
+        pass_unset_when_none: true
+      - name: dynamic_inputs
+        location: body
+        wire_name: dynamic_inputs
+        annotation: dict[str, str] | None
         default: null
         pass_unset_when_none: true
     - kind: body
@@ -857,6 +869,12 @@ apis:
         annotation: dict[str, Any] | None
         default: null
         pass_unset_when_none: true
+      - name: dynamic_inputs
+        location: body
+        wire_name: dynamic_inputs
+        annotation: dict[str, str] | None
+        default: null
+        pass_unset_when_none: true
     - kind: body
       method_name: replace
       docstring: Replace a connection.
@@ -894,6 +912,12 @@ apis:
         location: body
         wire_name: auth_config
         annotation: dict[str, Any] | None
+        default: null
+        pass_unset_when_none: true
+      - name: dynamic_inputs
+        location: body
+        wire_name: dynamic_inputs
+        annotation: dict[str, str] | None
         default: null
         pass_unset_when_none: true
     - kind: body

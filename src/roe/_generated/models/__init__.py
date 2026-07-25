@@ -16,8 +16,6 @@ from .agent_job_result_many_request import AgentJobResultManyRequest
 from .agent_job_result_response import AgentJobResultResponse
 from .agent_job_single_status import AgentJobSingleStatus
 from .agent_job_status import AgentJobStatus
-from .agent_job_status_event import AgentJobStatusEvent
-from .agent_job_status_event_error_details import AgentJobStatusEventErrorDetails
 from .agent_job_status_many_request import AgentJobStatusManyRequest
 from .agent_run_async_many_request import AgentRunAsyncManyRequest
 from .agent_tag import AgentTag
@@ -53,7 +51,9 @@ from .color_enum import ColorEnum
 from .connection import Connection
 from .connection_auth_config import ConnectionAuthConfig
 from .connection_delete_error_response import ConnectionDeleteErrorResponse
+from .connection_dynamic_inputs import ConnectionDynamicInputs
 from .connection_list import ConnectionList
+from .connection_list_dynamic_inputs import ConnectionListDynamicInputs
 from .connections_create_response_400_type_1 import ConnectionsCreateResponse400Type1
 from .connections_create_response_400_type_2 import ConnectionsCreateResponse400Type2
 from .connections_list_response_400 import ConnectionsListResponse400
@@ -65,10 +65,12 @@ from .connections_update_response_400_type_1 import ConnectionsUpdateResponse400
 from .connections_update_response_400_type_2 import ConnectionsUpdateResponse400Type2
 from .connector_list_response import ConnectorListResponse
 from .connector_metadata import ConnectorMetadata
+from .connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
 from .connector_type_enum import ConnectorTypeEnum
 from .create_connection_request import CreateConnectionRequest
 from .create_connection_request_auth_config import CreateConnectionRequestAuthConfig
 from .create_connection_request_config import CreateConnectionRequestConfig
+from .create_connection_request_dynamic_inputs import CreateConnectionRequestDynamicInputs
 from .create_knowledge_base import CreateKnowledgeBase
 from .create_knowledge_base_request import CreateKnowledgeBaseRequest
 from .create_policy import CreatePolicy
@@ -104,6 +106,7 @@ from .patched_patch_selection_request_refs_item import PatchedPatchSelectionRequ
 from .patched_update_connection_request import PatchedUpdateConnectionRequest
 from .patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
 from .patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
+from .patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
 from .patched_update_policy_request import PatchedUpdatePolicyRequest
 from .pending_proposal import PendingProposal
 from .policies_create_response_400 import PoliciesCreateResponse400
@@ -114,6 +117,8 @@ from .policy import Policy
 from .policy_delete_conflict import PolicyDeleteConflict
 from .policy_version import PolicyVersion
 from .policy_version_created_by import PolicyVersionCreatedBy
+from .public_agent_job_status_event import PublicAgentJobStatusEvent
+from .public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
 from .regenerate_request import RegenerateRequest
 from .relevance_enum import RelevanceEnum
@@ -144,9 +149,11 @@ from .test_connection import TestConnection
 from .test_connection_credentials_request import TestConnectionCredentialsRequest
 from .test_connection_credentials_request_auth_config import TestConnectionCredentialsRequestAuthConfig
 from .test_connection_credentials_request_config import TestConnectionCredentialsRequestConfig
+from .test_connection_credentials_request_dynamic_inputs import TestConnectionCredentialsRequestDynamicInputs
 from .update_connection_request import UpdateConnectionRequest
 from .update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
 from .update_connection_request_config import UpdateConnectionRequestConfig
+from .update_connection_request_dynamic_inputs import UpdateConnectionRequestDynamicInputs
 from .update_policy import UpdatePolicy
 from .update_policy_request import UpdatePolicyRequest
 from .upload_table_response_400_type_1 import UploadTableResponse400Type1
@@ -171,8 +178,6 @@ __all__ = (
     "AgentJobResultResponse",
     "AgentJobSingleStatus",
     "AgentJobStatus",
-    "AgentJobStatusEvent",
-    "AgentJobStatusEventErrorDetails",
     "AgentJobStatusManyRequest",
     "AgentRunAsyncManyRequest",
     "AgentsCreateResponse400",
@@ -208,7 +213,9 @@ __all__ = (
     "Connection",
     "ConnectionAuthConfig",
     "ConnectionDeleteErrorResponse",
+    "ConnectionDynamicInputs",
     "ConnectionList",
+    "ConnectionListDynamicInputs",
     "ConnectionsCreateResponse400Type1",
     "ConnectionsCreateResponse400Type2",
     "ConnectionsListResponse400",
@@ -220,10 +227,12 @@ __all__ = (
     "ConnectionsUpdateResponse400Type2",
     "ConnectorListResponse",
     "ConnectorMetadata",
+    "ConnectorMetadataDynamicInputFields",
     "ConnectorTypeEnum",
     "CreateConnectionRequest",
     "CreateConnectionRequestAuthConfig",
     "CreateConnectionRequestConfig",
+    "CreateConnectionRequestDynamicInputs",
     "CreateKnowledgeBase",
     "CreateKnowledgeBaseRequest",
     "CreatePolicy",
@@ -259,6 +268,7 @@ __all__ = (
     "PatchedUpdateConnectionRequest",
     "PatchedUpdateConnectionRequestAuthConfig",
     "PatchedUpdateConnectionRequestConfig",
+    "PatchedUpdateConnectionRequestDynamicInputs",
     "PatchedUpdatePolicyRequest",
     "PendingProposal",
     "PoliciesCreateResponse400",
@@ -269,6 +279,8 @@ __all__ = (
     "PolicyDeleteConflict",
     "PolicyVersion",
     "PolicyVersionCreatedBy",
+    "PublicAgentJobStatusEvent",
+    "PublicAgentJobStatusEventErrorDetails",
     "QdrantCleanupErrorResponse",
     "RegenerateRequest",
     "RelevanceEnum",
@@ -299,9 +311,11 @@ __all__ = (
     "TestConnectionCredentialsRequest",
     "TestConnectionCredentialsRequestAuthConfig",
     "TestConnectionCredentialsRequestConfig",
+    "TestConnectionCredentialsRequestDynamicInputs",
     "UpdateConnectionRequest",
     "UpdateConnectionRequestAuthConfig",
     "UpdateConnectionRequestConfig",
+    "UpdateConnectionRequestDynamicInputs",
     "UpdatePolicy",
     "UpdatePolicyRequest",
     "UploadTableResponse400Type1",

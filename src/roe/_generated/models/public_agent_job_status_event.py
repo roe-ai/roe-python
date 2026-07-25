@@ -14,31 +14,37 @@ from typing import cast
 import datetime
 
 if TYPE_CHECKING:
-  from ..models.agent_job_status_event_error_details import AgentJobStatusEventErrorDetails
+  from ..models.public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
 
 
 
 
 
-T = TypeVar("T", bound="AgentJobStatusEvent")
+T = TypeVar("T", bound="PublicAgentJobStatusEvent")
 
 
 
 @_attrs_define
-class AgentJobStatusEvent:
-    """ 
+class PublicAgentJobStatusEvent:
+    """ Customer-facing view of a status event.
+
+    Same stored shape, but error text and error_details are passed through the
+    read-time sanitizer so raw technical detail never reaches a customer. Use this
+    on any endpoint a customer can reach; use the parent for staff-only surfaces
+    (e.g. diagnostic runs) and for writes.
+
         Attributes:
             timestamp (datetime.datetime):
             status_code (int):
             error_message (str | Unset):
-            error_details (AgentJobStatusEventErrorDetails | Unset): Error details as key-value pairs
+            error_details (PublicAgentJobStatusEventErrorDetails | Unset): Error details as key-value pairs
             count (int | Unset):
      """
 
     timestamp: datetime.datetime
     status_code: int
     error_message: str | Unset = UNSET
-    error_details: AgentJobStatusEventErrorDetails | Unset = UNSET
+    error_details: PublicAgentJobStatusEventErrorDetails | Unset = UNSET
     count: int | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -47,7 +53,7 @@ class AgentJobStatusEvent:
 
 
     def to_dict(self) -> dict[str, Any]:
-        from ..models.agent_job_status_event_error_details import AgentJobStatusEventErrorDetails
+        from ..models.public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
         timestamp = self.timestamp.isoformat()
 
         status_code = self.status_code
@@ -80,7 +86,7 @@ class AgentJobStatusEvent:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
-        from ..models.agent_job_status_event_error_details import AgentJobStatusEventErrorDetails
+        from ..models.public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
         d = dict(src_dict)
         timestamp = isoparse(d.pop("timestamp"))
 
@@ -92,18 +98,18 @@ class AgentJobStatusEvent:
         error_message = d.pop("error_message", UNSET)
 
         _error_details = d.pop("error_details", UNSET)
-        error_details: AgentJobStatusEventErrorDetails | Unset
+        error_details: PublicAgentJobStatusEventErrorDetails | Unset
         if isinstance(_error_details,  Unset):
             error_details = UNSET
         else:
-            error_details = AgentJobStatusEventErrorDetails.from_dict(_error_details)
+            error_details = PublicAgentJobStatusEventErrorDetails.from_dict(_error_details)
 
 
 
 
         count = d.pop("count", UNSET)
 
-        agent_job_status_event = cls(
+        public_agent_job_status_event = cls(
             timestamp=timestamp,
             status_code=status_code,
             error_message=error_message,
@@ -112,8 +118,8 @@ class AgentJobStatusEvent:
         )
 
 
-        agent_job_status_event.additional_properties = d
-        return agent_job_status_event
+        public_agent_job_status_event.additional_properties = d
+        return public_agent_job_status_event
 
     @property
     def additional_keys(self) -> list[str]:

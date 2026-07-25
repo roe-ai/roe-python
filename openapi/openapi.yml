@@ -87,7 +87,7 @@ paths:
         schema:
           type: string
         description: 'Field to order results by. Prefix with ''-'' for descending.
-          Options: name, created_at, most_recent_job, job_count, engine_class_id,
+          Options: name, created_at, updated_at, most_recent_job, job_count, engine_class_id,
           creator.'
       - in: query
         name: organization_id
@@ -121,6 +121,19 @@ paths:
           items:
             type: string
         description: Filter agents by tag IDs. Can be provided multiple times.
+      - in: query
+        name: updated_from
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose last config update was at or after this timestamp.
+      - in: query
+        name: updated_to
+        schema:
+          type: string
+          format: date-time
+        description: Filter agents whose last config update was at or before this
+          timestamp.
       tags:
       - agents
       - sdk
@@ -4457,25 +4470,6 @@ components:
       - id
       - last_updated_at
       - status
-    AgentJobStatusEvent:
-      type: object
-      properties:
-        timestamp:
-          type: string
-          format: date-time
-        status_code:
-          type: integer
-        error_message:
-          type: string
-        error_details:
-          type: object
-          additionalProperties: {}
-          description: Error details as key-value pairs
-        count:
-          type: integer
-      required:
-      - status_code
-      - timestamp
     AgentJobStatusManyRequest:
       type: object
       description: Serializer for bulk agent job status request.
@@ -4652,6 +4646,10 @@ components:
           type: string
           format: date-time
           readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
         name:
           type: string
           maxLength: 200
@@ -4711,6 +4709,7 @@ components:
       - name
       - organization_id
       - tags
+      - updated_at
     BaseAgentCreateRequest:
       type: object
       description: Serializer for creating base agents with proper JSON field handling
@@ -4810,6 +4809,16 @@ components:
         description:
           type: string
         config: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        dynamic_input_test_disabled_reason:
+          type:
+          - string
+          - 'null'
+          readOnly: true
         auth_config:
           type: object
           additionalProperties: {}
@@ -4829,6 +4838,8 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - dynamic_input_test_disabled_reason
+      - dynamic_inputs
       - id
       - name
       - organization
@@ -4872,6 +4883,16 @@ components:
         description:
           type: string
         config: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+          readOnly: true
+        dynamic_input_test_disabled_reason:
+          type:
+          - string
+          - 'null'
+          readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
         created_at:
@@ -4886,6 +4907,8 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - dynamic_input_test_disabled_reason
+      - dynamic_inputs
       - id
       - name
       - organization
@@ -4922,6 +4945,16 @@ components:
           oneOf:
           - {}
           - type: 'null'
+        dynamic_input_fields:
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        dynamic_input_test_fields:
+          type: array
+          items:
+            type: string
       required:
       - auth_schema
       - category
@@ -4929,6 +4962,8 @@ components:
       - delivery_config_schema
       - description
       - display_name
+      - dynamic_input_fields
+      - dynamic_input_test_fields
       - icon
       - id
       - supports_delivery
@@ -4992,6 +5027,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
         organization_id:
           type:
           - string
@@ -5413,7 +5453,7 @@ components:
         status_events:
           type: array
           items:
-            $ref: '#/components/schemas/AgentJobStatusEvent'
+            $ref: '#/components/schemas/PublicAgentJobStatusEvent'
         status_code:
           type: integer
           description: Current status code of the job (0=PENDING, 1=STARTED, 2=RETRY,
@@ -5686,6 +5726,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
     PatchedUpdatePolicyRequest:
       type: object
       description: Serializer for updating policy metadata (name, description)
@@ -5840,6 +5885,32 @@ components:
       - display_name
       - email
       - id
+    PublicAgentJobStatusEvent:
+      type: object
+      description: |-
+        Customer-facing view of a status event.
+
+        Same stored shape, but error text and error_details are passed through the
+        read-time sanitizer so raw technical detail never reaches a customer. Use this
+        on any endpoint a customer can reach; use the parent for staff-only surfaces
+        (e.g. diagnostic runs) and for writes.
+      properties:
+        timestamp:
+          type: string
+          format: date-time
+        status_code:
+          type: integer
+        error_message:
+          type: string
+        error_details:
+          type: object
+          additionalProperties: {}
+          description: Error details as key-value pairs
+        count:
+          type: integer
+      required:
+      - status_code
+      - timestamp
     QdrantCleanupErrorResponse:
       type: object
       description: 500 body when deleting an agent/version fails Qdrant collection
@@ -6233,6 +6304,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
       required:
       - config
       - connector_type
@@ -6265,6 +6341,11 @@ components:
         auth_config:
           type: object
           additionalProperties: {}
+        dynamic_inputs:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)

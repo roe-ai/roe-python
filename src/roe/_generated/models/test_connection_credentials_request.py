@@ -15,6 +15,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.test_connection_credentials_request_auth_config import TestConnectionCredentialsRequestAuthConfig
   from ..models.test_connection_credentials_request_config import TestConnectionCredentialsRequestConfig
+  from ..models.test_connection_credentials_request_dynamic_inputs import TestConnectionCredentialsRequestDynamicInputs
 
 
 
@@ -49,11 +50,13 @@ class TestConnectionCredentialsRequest:
                 * `custom_mcp` - CUSTOM_MCP
             config (TestConnectionCredentialsRequestConfig):
             auth_config (TestConnectionCredentialsRequestAuthConfig | Unset):
+            dynamic_inputs (TestConnectionCredentialsRequestDynamicInputs | Unset):
      """
 
     connector_type: ConnectorTypeEnum
     config: TestConnectionCredentialsRequestConfig
     auth_config: TestConnectionCredentialsRequestAuthConfig | Unset = UNSET
+    dynamic_inputs: TestConnectionCredentialsRequestDynamicInputs | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -63,6 +66,7 @@ class TestConnectionCredentialsRequest:
     def to_dict(self) -> dict[str, Any]:
         from ..models.test_connection_credentials_request_auth_config import TestConnectionCredentialsRequestAuthConfig
         from ..models.test_connection_credentials_request_config import TestConnectionCredentialsRequestConfig
+        from ..models.test_connection_credentials_request_dynamic_inputs import TestConnectionCredentialsRequestDynamicInputs
         connector_type = self.connector_type.value
 
         config = self.config.to_dict()
@@ -70,6 +74,10 @@ class TestConnectionCredentialsRequest:
         auth_config: dict[str, Any] | Unset = UNSET
         if not isinstance(self.auth_config, Unset):
             auth_config = self.auth_config.to_dict()
+
+        dynamic_inputs: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.dynamic_inputs, Unset):
+            dynamic_inputs = self.dynamic_inputs.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -80,6 +88,8 @@ class TestConnectionCredentialsRequest:
         })
         if auth_config is not UNSET:
             field_dict["auth_config"] = auth_config
+        if dynamic_inputs is not UNSET:
+            field_dict["dynamic_inputs"] = dynamic_inputs
 
         return field_dict
 
@@ -89,6 +99,7 @@ class TestConnectionCredentialsRequest:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.test_connection_credentials_request_auth_config import TestConnectionCredentialsRequestAuthConfig
         from ..models.test_connection_credentials_request_config import TestConnectionCredentialsRequestConfig
+        from ..models.test_connection_credentials_request_dynamic_inputs import TestConnectionCredentialsRequestDynamicInputs
         d = dict(src_dict)
         connector_type = ConnectorTypeEnum(d.pop("connector_type"))
 
@@ -110,10 +121,21 @@ class TestConnectionCredentialsRequest:
 
 
 
+        _dynamic_inputs = d.pop("dynamic_inputs", UNSET)
+        dynamic_inputs: TestConnectionCredentialsRequestDynamicInputs | Unset
+        if isinstance(_dynamic_inputs,  Unset):
+            dynamic_inputs = UNSET
+        else:
+            dynamic_inputs = TestConnectionCredentialsRequestDynamicInputs.from_dict(_dynamic_inputs)
+
+
+
+
         test_connection_credentials_request = cls(
             connector_type=connector_type,
             config=config,
             auth_config=auth_config,
+            dynamic_inputs=dynamic_inputs,
         )
 
 

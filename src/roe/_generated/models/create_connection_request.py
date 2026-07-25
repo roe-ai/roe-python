@@ -16,6 +16,7 @@ from uuid import UUID
 if TYPE_CHECKING:
   from ..models.create_connection_request_auth_config import CreateConnectionRequestAuthConfig
   from ..models.create_connection_request_config import CreateConnectionRequestConfig
+  from ..models.create_connection_request_dynamic_inputs import CreateConnectionRequestDynamicInputs
 
 
 
@@ -53,6 +54,7 @@ class CreateConnectionRequest:
             config (CreateConnectionRequestConfig):
             description (str | Unset):
             auth_config (CreateConnectionRequestAuthConfig | Unset):
+            dynamic_inputs (CreateConnectionRequestDynamicInputs | Unset):
             organization_id (None | Unset | UUID):
      """
 
@@ -61,6 +63,7 @@ class CreateConnectionRequest:
     config: CreateConnectionRequestConfig
     description: str | Unset = UNSET
     auth_config: CreateConnectionRequestAuthConfig | Unset = UNSET
+    dynamic_inputs: CreateConnectionRequestDynamicInputs | Unset = UNSET
     organization_id: None | Unset | UUID = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -71,6 +74,7 @@ class CreateConnectionRequest:
     def to_dict(self) -> dict[str, Any]:
         from ..models.create_connection_request_auth_config import CreateConnectionRequestAuthConfig
         from ..models.create_connection_request_config import CreateConnectionRequestConfig
+        from ..models.create_connection_request_dynamic_inputs import CreateConnectionRequestDynamicInputs
         connector_type = self.connector_type.value
 
         name = self.name
@@ -82,6 +86,10 @@ class CreateConnectionRequest:
         auth_config: dict[str, Any] | Unset = UNSET
         if not isinstance(self.auth_config, Unset):
             auth_config = self.auth_config.to_dict()
+
+        dynamic_inputs: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.dynamic_inputs, Unset):
+            dynamic_inputs = self.dynamic_inputs.to_dict()
 
         organization_id: None | str | Unset
         if isinstance(self.organization_id, Unset):
@@ -103,6 +111,8 @@ class CreateConnectionRequest:
             field_dict["description"] = description
         if auth_config is not UNSET:
             field_dict["auth_config"] = auth_config
+        if dynamic_inputs is not UNSET:
+            field_dict["dynamic_inputs"] = dynamic_inputs
         if organization_id is not UNSET:
             field_dict["organization_id"] = organization_id
 
@@ -114,6 +124,7 @@ class CreateConnectionRequest:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.create_connection_request_auth_config import CreateConnectionRequestAuthConfig
         from ..models.create_connection_request_config import CreateConnectionRequestConfig
+        from ..models.create_connection_request_dynamic_inputs import CreateConnectionRequestDynamicInputs
         d = dict(src_dict)
         connector_type = ConnectorTypeEnum(d.pop("connector_type"))
 
@@ -135,6 +146,16 @@ class CreateConnectionRequest:
             auth_config = UNSET
         else:
             auth_config = CreateConnectionRequestAuthConfig.from_dict(_auth_config)
+
+
+
+
+        _dynamic_inputs = d.pop("dynamic_inputs", UNSET)
+        dynamic_inputs: CreateConnectionRequestDynamicInputs | Unset
+        if isinstance(_dynamic_inputs,  Unset):
+            dynamic_inputs = UNSET
+        else:
+            dynamic_inputs = CreateConnectionRequestDynamicInputs.from_dict(_dynamic_inputs)
 
 
 
@@ -165,6 +186,7 @@ class CreateConnectionRequest:
             config=config,
             description=description,
             auth_config=auth_config,
+            dynamic_inputs=dynamic_inputs,
             organization_id=organization_id,
         )
 

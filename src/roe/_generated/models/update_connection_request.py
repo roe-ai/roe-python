@@ -14,6 +14,7 @@ from typing import cast
 if TYPE_CHECKING:
   from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
   from ..models.update_connection_request_config import UpdateConnectionRequestConfig
+  from ..models.update_connection_request_dynamic_inputs import UpdateConnectionRequestDynamicInputs
 
 
 
@@ -44,12 +45,14 @@ class UpdateConnectionRequest:
             description (str | Unset):
             config (UpdateConnectionRequestConfig | Unset):
             auth_config (UpdateConnectionRequestAuthConfig | Unset):
+            dynamic_inputs (UpdateConnectionRequestDynamicInputs | Unset):
      """
 
     name: str | Unset = UNSET
     description: str | Unset = UNSET
     config: UpdateConnectionRequestConfig | Unset = UNSET
     auth_config: UpdateConnectionRequestAuthConfig | Unset = UNSET
+    dynamic_inputs: UpdateConnectionRequestDynamicInputs | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -59,6 +62,7 @@ class UpdateConnectionRequest:
     def to_dict(self) -> dict[str, Any]:
         from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
         from ..models.update_connection_request_config import UpdateConnectionRequestConfig
+        from ..models.update_connection_request_dynamic_inputs import UpdateConnectionRequestDynamicInputs
         name = self.name
 
         description = self.description
@@ -70,6 +74,10 @@ class UpdateConnectionRequest:
         auth_config: dict[str, Any] | Unset = UNSET
         if not isinstance(self.auth_config, Unset):
             auth_config = self.auth_config.to_dict()
+
+        dynamic_inputs: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.dynamic_inputs, Unset):
+            dynamic_inputs = self.dynamic_inputs.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -84,6 +92,8 @@ class UpdateConnectionRequest:
             field_dict["config"] = config
         if auth_config is not UNSET:
             field_dict["auth_config"] = auth_config
+        if dynamic_inputs is not UNSET:
+            field_dict["dynamic_inputs"] = dynamic_inputs
 
         return field_dict
 
@@ -93,6 +103,7 @@ class UpdateConnectionRequest:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.update_connection_request_auth_config import UpdateConnectionRequestAuthConfig
         from ..models.update_connection_request_config import UpdateConnectionRequestConfig
+        from ..models.update_connection_request_dynamic_inputs import UpdateConnectionRequestDynamicInputs
         d = dict(src_dict)
         name = d.pop("name", UNSET)
 
@@ -118,11 +129,22 @@ class UpdateConnectionRequest:
 
 
 
+        _dynamic_inputs = d.pop("dynamic_inputs", UNSET)
+        dynamic_inputs: UpdateConnectionRequestDynamicInputs | Unset
+        if isinstance(_dynamic_inputs,  Unset):
+            dynamic_inputs = UNSET
+        else:
+            dynamic_inputs = UpdateConnectionRequestDynamicInputs.from_dict(_dynamic_inputs)
+
+
+
+
         update_connection_request = cls(
             name=name,
             description=description,
             config=config,
             auth_config=auth_config,
+            dynamic_inputs=dynamic_inputs,
         )
 
 

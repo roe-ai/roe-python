@@ -39,6 +39,8 @@ def _get_kwargs(
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
+    updated_from: datetime.datetime | Unset = UNSET,
+    updated_to: datetime.datetime | Unset = UNSET,
 
 ) -> dict[str, Any]:
     
@@ -110,6 +112,16 @@ def _get_kwargs(
 
 
     params["tags"] = json_tags
+
+    json_updated_from: str | Unset = UNSET
+    if not isinstance(updated_from, Unset):
+        json_updated_from = updated_from.isoformat()
+    params["updated_from"] = json_updated_from
+
+    json_updated_to: str | Unset = UNSET
+    if not isinstance(updated_to, Unset):
+        json_updated_to = updated_to.isoformat()
+    params["updated_to"] = json_updated_to
 
 
     params = {k: v for k, v in params.items() if v is not UNSET and v is not None}
@@ -191,6 +203,8 @@ def sync_detailed(
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
+    updated_from: datetime.datetime | Unset = UNSET,
+    updated_to: datetime.datetime | Unset = UNSET,
 
 ) -> Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]:
     """ List agents or create a new agent.
@@ -216,6 +230,8 @@ def sync_detailed(
         page_size (int | Unset):
         search (str | Unset):
         tags (list[str] | Unset):
+        updated_from (datetime.datetime | Unset):
+        updated_to (datetime.datetime | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -245,6 +261,8 @@ page=page,
 page_size=page_size,
 search=search,
 tags=tags,
+updated_from=updated_from,
+updated_to=updated_to,
 
     )
 
@@ -275,6 +293,8 @@ def sync(
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
+    updated_from: datetime.datetime | Unset = UNSET,
+    updated_to: datetime.datetime | Unset = UNSET,
 
 ) -> AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList | None:
     """ List agents or create a new agent.
@@ -300,6 +320,8 @@ def sync(
         page_size (int | Unset):
         search (str | Unset):
         tags (list[str] | Unset):
+        updated_from (datetime.datetime | Unset):
+        updated_to (datetime.datetime | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -330,6 +352,8 @@ page=page,
 page_size=page_size,
 search=search,
 tags=tags,
+updated_from=updated_from,
+updated_to=updated_to,
 
     ).parsed
 
@@ -354,6 +378,8 @@ async def asyncio_detailed(
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
+    updated_from: datetime.datetime | Unset = UNSET,
+    updated_to: datetime.datetime | Unset = UNSET,
 
 ) -> Response[AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList]:
     """ List agents or create a new agent.
@@ -379,6 +405,8 @@ async def asyncio_detailed(
         page_size (int | Unset):
         search (str | Unset):
         tags (list[str] | Unset):
+        updated_from (datetime.datetime | Unset):
+        updated_to (datetime.datetime | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -408,6 +436,8 @@ page=page,
 page_size=page_size,
 search=search,
 tags=tags,
+updated_from=updated_from,
+updated_to=updated_to,
 
     )
 
@@ -438,6 +468,8 @@ async def asyncio(
     page_size: int | Unset = UNSET,
     search: str | Unset = UNSET,
     tags: list[str] | Unset = UNSET,
+    updated_from: datetime.datetime | Unset = UNSET,
+    updated_to: datetime.datetime | Unset = UNSET,
 
 ) -> AgentsListResponse400 | ErrorDetailResponse | PaginatedBaseAgentList | None:
     """ List agents or create a new agent.
@@ -463,6 +495,8 @@ async def asyncio(
         page_size (int | Unset):
         search (str | Unset):
         tags (list[str] | Unset):
+        updated_from (datetime.datetime | Unset):
+        updated_to (datetime.datetime | Unset):
 
     Raises:
         errors.UnexpectedStatus: If the server returns an undocumented status code and Client.raise_on_unexpected_status is True.
@@ -493,5 +527,7 @@ page=page,
 page_size=page_size,
 search=search,
 tags=tags,
+updated_from=updated_from,
+updated_to=updated_to,
 
     )).parsed
