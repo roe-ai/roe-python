@@ -33,6 +33,7 @@ class BaseAgent:
         Attributes:
             id (UUID):
             created_at (datetime.datetime):
+            updated_at (datetime.datetime):
             name (str):
             disable_cache (bool): Whether to disable job cache fetching for this agent.
             cache_failed_jobs (bool): Whether to cache failed jobs for this agent.
@@ -50,6 +51,7 @@ class BaseAgent:
 
     id: UUID
     created_at: datetime.datetime
+    updated_at: datetime.datetime
     name: str
     disable_cache: bool
     cache_failed_jobs: bool
@@ -73,6 +75,8 @@ class BaseAgent:
         id = str(self.id)
 
         created_at = self.created_at.isoformat()
+
+        updated_at = self.updated_at.isoformat()
 
         name = self.name
 
@@ -118,6 +122,7 @@ class BaseAgent:
         field_dict.update({
             "id": id,
             "created_at": created_at,
+            "updated_at": updated_at,
             "name": name,
             "disable_cache": disable_cache,
             "cache_failed_jobs": cache_failed_jobs,
@@ -147,6 +152,11 @@ class BaseAgent:
 
 
         created_at = isoparse(d.pop("created_at"))
+
+
+
+
+        updated_at = isoparse(d.pop("updated_at"))
 
 
 
@@ -230,6 +240,7 @@ class BaseAgent:
         base_agent = cls(
             id=id,
             created_at=created_at,
+            updated_at=updated_at,
             name=name,
             disable_cache=disable_cache,
             cache_failed_jobs=cache_failed_jobs,

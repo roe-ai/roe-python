@@ -10,6 +10,8 @@ from ..types import UNSET, Unset
 
 from typing import cast
 
+if TYPE_CHECKING:
+  from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
 
 
 
@@ -33,6 +35,8 @@ class ConnectorMetadata:
             auth_schema (Any):
             supports_delivery (bool):
             delivery_config_schema (Any | None):
+            dynamic_input_fields (ConnectorMetadataDynamicInputFields):
+            dynamic_input_test_fields (list[str]):
      """
 
     id: str
@@ -44,6 +48,8 @@ class ConnectorMetadata:
     auth_schema: Any
     supports_delivery: bool
     delivery_config_schema: Any | None
+    dynamic_input_fields: ConnectorMetadataDynamicInputFields
+    dynamic_input_test_fields: list[str]
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -51,6 +57,7 @@ class ConnectorMetadata:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
         id = self.id
 
         display_name = self.display_name
@@ -70,6 +77,12 @@ class ConnectorMetadata:
         delivery_config_schema: Any | None
         delivery_config_schema = self.delivery_config_schema
 
+        dynamic_input_fields = self.dynamic_input_fields.to_dict()
+
+        dynamic_input_test_fields = self.dynamic_input_test_fields
+
+
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -83,6 +96,8 @@ class ConnectorMetadata:
             "auth_schema": auth_schema,
             "supports_delivery": supports_delivery,
             "delivery_config_schema": delivery_config_schema,
+            "dynamic_input_fields": dynamic_input_fields,
+            "dynamic_input_test_fields": dynamic_input_test_fields,
         })
 
         return field_dict
@@ -91,6 +106,7 @@ class ConnectorMetadata:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
         d = dict(src_dict)
         id = d.pop("id")
 
@@ -116,6 +132,14 @@ class ConnectorMetadata:
         delivery_config_schema = _parse_delivery_config_schema(d.pop("delivery_config_schema"))
 
 
+        dynamic_input_fields = ConnectorMetadataDynamicInputFields.from_dict(d.pop("dynamic_input_fields"))
+
+
+
+
+        dynamic_input_test_fields = cast(list[str], d.pop("dynamic_input_test_fields"))
+
+
         connector_metadata = cls(
             id=id,
             display_name=display_name,
@@ -126,6 +150,8 @@ class ConnectorMetadata:
             auth_schema=auth_schema,
             supports_delivery=supports_delivery,
             delivery_config_schema=delivery_config_schema,
+            dynamic_input_fields=dynamic_input_fields,
+            dynamic_input_test_fields=dynamic_input_test_fields,
         )
 
 

@@ -17,9 +17,9 @@ import datetime
 if TYPE_CHECKING:
   from ..models.agent_job_evaluation import AgentJobEvaluation
   from ..models.agent_job_feedback_nested import AgentJobFeedbackNested
-  from ..models.agent_job_status_event import AgentJobStatusEvent
   from ..models.job_input import JobInput
   from ..models.list_agent_job_metadata import ListAgentJobMetadata
+  from ..models.public_agent_job_status_event import PublicAgentJobStatusEvent
   from ..models.user_info import UserInfo
 
 
@@ -36,7 +36,7 @@ class ListAgentJob:
         Attributes:
             id (UUID):
             agent_version_name (None | str): Get the agent version name, handling null agent and annotation.
-            status_events (list[AgentJobStatusEvent]):
+            status_events (list[PublicAgentJobStatusEvent]):
             status_code (int): Current status code of the job (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE,
                 5=CANCELLED, 6=CACHED)
             created_at (datetime.datetime): When the job was created
@@ -54,7 +54,7 @@ class ListAgentJob:
 
     id: UUID
     agent_version_name: None | str
-    status_events: list[AgentJobStatusEvent]
+    status_events: list[PublicAgentJobStatusEvent]
     status_code: int
     created_at: datetime.datetime
     last_updated_at: datetime.datetime
@@ -74,9 +74,9 @@ class ListAgentJob:
     def to_dict(self) -> dict[str, Any]:
         from ..models.agent_job_evaluation import AgentJobEvaluation
         from ..models.agent_job_feedback_nested import AgentJobFeedbackNested
-        from ..models.agent_job_status_event import AgentJobStatusEvent
         from ..models.job_input import JobInput
         from ..models.list_agent_job_metadata import ListAgentJobMetadata
+        from ..models.public_agent_job_status_event import PublicAgentJobStatusEvent
         from ..models.user_info import UserInfo
         id = str(self.id)
 
@@ -161,9 +161,9 @@ class ListAgentJob:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.agent_job_evaluation import AgentJobEvaluation
         from ..models.agent_job_feedback_nested import AgentJobFeedbackNested
-        from ..models.agent_job_status_event import AgentJobStatusEvent
         from ..models.job_input import JobInput
         from ..models.list_agent_job_metadata import ListAgentJobMetadata
+        from ..models.public_agent_job_status_event import PublicAgentJobStatusEvent
         from ..models.user_info import UserInfo
         d = dict(src_dict)
         id = UUID(d.pop("id"))
@@ -182,7 +182,7 @@ class ListAgentJob:
         status_events = []
         _status_events = d.pop("status_events")
         for status_events_item_data in (_status_events):
-            status_events_item = AgentJobStatusEvent.from_dict(status_events_item_data)
+            status_events_item = PublicAgentJobStatusEvent.from_dict(status_events_item_data)
 
 
 

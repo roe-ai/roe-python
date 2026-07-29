@@ -14,17 +14,16 @@ from ..types import UNSET, Unset
 
 
 
-T = TypeVar("T", bound="AgentJobStatusEventErrorDetails")
+T = TypeVar("T", bound="ConnectionDynamicInputs")
 
 
 
 @_attrs_define
-class AgentJobStatusEventErrorDetails:
-    """ Error details as key-value pairs
-
+class ConnectionDynamicInputs:
+    """ 
      """
 
-    additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
+    additional_properties: dict[str, str] = _attrs_field(init=False, factory=dict)
 
 
 
@@ -42,21 +41,21 @@ class AgentJobStatusEventErrorDetails:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
-        agent_job_status_event_error_details = cls(
+        connection_dynamic_inputs = cls(
         )
 
 
-        agent_job_status_event_error_details.additional_properties = d
-        return agent_job_status_event_error_details
+        connection_dynamic_inputs.additional_properties = d
+        return connection_dynamic_inputs
 
     @property
     def additional_keys(self) -> list[str]:
         return list(self.additional_properties.keys())
 
-    def __getitem__(self, key: str) -> Any:
+    def __getitem__(self, key: str) -> str:
         return self.additional_properties[key]
 
-    def __setitem__(self, key: str, value: Any) -> None:
+    def __setitem__(self, key: str, value: str) -> None:
         self.additional_properties[key] = value
 
     def __delitem__(self, key: str) -> None:

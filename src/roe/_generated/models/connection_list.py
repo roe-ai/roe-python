@@ -15,6 +15,8 @@ from typing import cast
 from uuid import UUID
 import datetime
 
+if TYPE_CHECKING:
+  from ..models.connection_list_dynamic_inputs import ConnectionListDynamicInputs
 
 
 
@@ -36,6 +38,8 @@ class ConnectionList:
             connector_type (str):
             connector_display_name (str): Get the display name for the connector type.
             name (str):
+            dynamic_inputs (ConnectionListDynamicInputs):
+            dynamic_input_test_disabled_reason (None | str):
             created_at (datetime.datetime):
             updated_at (datetime.datetime):
             description (str | Unset):
@@ -50,6 +54,8 @@ class ConnectionList:
     connector_type: str
     connector_display_name: str
     name: str
+    dynamic_inputs: ConnectionListDynamicInputs
+    dynamic_input_test_disabled_reason: None | str
     created_at: datetime.datetime
     updated_at: datetime.datetime
     description: str | Unset = UNSET
@@ -62,6 +68,7 @@ class ConnectionList:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.connection_list_dynamic_inputs import ConnectionListDynamicInputs
         id = str(self.id)
 
         user: int | None
@@ -74,6 +81,11 @@ class ConnectionList:
         connector_display_name = self.connector_display_name
 
         name = self.name
+
+        dynamic_inputs = self.dynamic_inputs.to_dict()
+
+        dynamic_input_test_disabled_reason: None | str
+        dynamic_input_test_disabled_reason = self.dynamic_input_test_disabled_reason
 
         created_at = self.created_at.isoformat()
 
@@ -98,6 +110,8 @@ class ConnectionList:
             "connector_type": connector_type,
             "connector_display_name": connector_display_name,
             "name": name,
+            "dynamic_inputs": dynamic_inputs,
+            "dynamic_input_test_disabled_reason": dynamic_input_test_disabled_reason,
             "created_at": created_at,
             "updated_at": updated_at,
         })
@@ -114,6 +128,7 @@ class ConnectionList:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.connection_list_dynamic_inputs import ConnectionListDynamicInputs
         d = dict(src_dict)
         id = UUID(d.pop("id"))
 
@@ -138,6 +153,19 @@ class ConnectionList:
         connector_display_name = d.pop("connector_display_name")
 
         name = d.pop("name")
+
+        dynamic_inputs = ConnectionListDynamicInputs.from_dict(d.pop("dynamic_inputs"))
+
+
+
+
+        def _parse_dynamic_input_test_disabled_reason(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        dynamic_input_test_disabled_reason = _parse_dynamic_input_test_disabled_reason(d.pop("dynamic_input_test_disabled_reason"))
+
 
         created_at = isoparse(d.pop("created_at"))
 
@@ -170,6 +198,8 @@ class ConnectionList:
             connector_type=connector_type,
             connector_display_name=connector_display_name,
             name=name,
+            dynamic_inputs=dynamic_inputs,
+            dynamic_input_test_disabled_reason=dynamic_input_test_disabled_reason,
             created_at=created_at,
             updated_at=updated_at,
             description=description,

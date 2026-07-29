@@ -170,6 +170,7 @@ result = client.agents.run_sync(
     agent_id="agent_id",
     text="text",
     metadata={},
+    skip_cache=False,  # optional: True bypasses the job-result cache
 )
 ```
 
@@ -187,6 +188,7 @@ job = client.agents.run(
     timeout_seconds=300,
     text="text",
     metadata={},
+    skip_cache=False,  # optional: True bypasses the job-result cache
 )
 ```
 
@@ -204,6 +206,7 @@ batch = client.agents.run_many(
     batch_inputs=[{"text": "text"}],
     timeout_seconds=300,
     metadata={},
+    skip_cache=False,  # optional: True bypasses the job-result cache
 )
 ```
 
@@ -221,6 +224,7 @@ result = client.agents.run_version_sync(
     version_id="version_id",
     text="text",
     metadata={},
+    skip_cache=False,  # optional: True bypasses the job-result cache
 )
 ```
 
@@ -239,6 +243,7 @@ job = client.agents.run_version(
     timeout_seconds=300,
     text="text",
     metadata={},
+    skip_cache=False,  # optional: True bypasses the job-result cache
 )
 ```
 
@@ -500,6 +505,7 @@ result = client.connections.create(
     config={},  # required
     description="description",  # optional
     auth_config={},  # optional
+    dynamic_inputs={},  # optional
 )
 ```
 
@@ -516,6 +522,7 @@ result = client.connections.test_credentials(
     connector_type="connector_type",  # required
     config={},  # required
     auth_config={},  # optional
+    dynamic_inputs={},  # optional
 )
 ```
 
@@ -562,6 +569,7 @@ result = client.connections.update(
     description="description",  # optional
     config={},  # optional
     auth_config={},  # optional
+    dynamic_inputs={},  # optional
 )
 ```
 
@@ -580,6 +588,7 @@ result = client.connections.replace(
     description="description",  # optional
     config={},  # optional
     auth_config={},  # optional
+    dynamic_inputs={},  # optional
 )
 ```
 

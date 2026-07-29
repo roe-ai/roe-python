@@ -17,6 +17,7 @@ import datetime
 
 if TYPE_CHECKING:
   from ..models.connection_auth_config import ConnectionAuthConfig
+  from ..models.connection_dynamic_inputs import ConnectionDynamicInputs
 
 
 
@@ -40,6 +41,8 @@ class Connection:
             connector_type (str):
             connector_display_name (str): Get the display name for the connector type.
             name (str):
+            dynamic_inputs (ConnectionDynamicInputs):
+            dynamic_input_test_disabled_reason (None | str):
             auth_config (ConnectionAuthConfig):
             created_at (datetime.datetime):
             updated_at (datetime.datetime):
@@ -55,6 +58,8 @@ class Connection:
     connector_type: str
     connector_display_name: str
     name: str
+    dynamic_inputs: ConnectionDynamicInputs
+    dynamic_input_test_disabled_reason: None | str
     auth_config: ConnectionAuthConfig
     created_at: datetime.datetime
     updated_at: datetime.datetime
@@ -69,6 +74,7 @@ class Connection:
 
     def to_dict(self) -> dict[str, Any]:
         from ..models.connection_auth_config import ConnectionAuthConfig
+        from ..models.connection_dynamic_inputs import ConnectionDynamicInputs
         id = str(self.id)
 
         user: int | None
@@ -81,6 +87,11 @@ class Connection:
         connector_display_name = self.connector_display_name
 
         name = self.name
+
+        dynamic_inputs = self.dynamic_inputs.to_dict()
+
+        dynamic_input_test_disabled_reason: None | str
+        dynamic_input_test_disabled_reason = self.dynamic_input_test_disabled_reason
 
         auth_config = self.auth_config.to_dict()
 
@@ -107,6 +118,8 @@ class Connection:
             "connector_type": connector_type,
             "connector_display_name": connector_display_name,
             "name": name,
+            "dynamic_inputs": dynamic_inputs,
+            "dynamic_input_test_disabled_reason": dynamic_input_test_disabled_reason,
             "auth_config": auth_config,
             "created_at": created_at,
             "updated_at": updated_at,
@@ -125,6 +138,7 @@ class Connection:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.connection_auth_config import ConnectionAuthConfig
+        from ..models.connection_dynamic_inputs import ConnectionDynamicInputs
         d = dict(src_dict)
         id = UUID(d.pop("id"))
 
@@ -149,6 +163,19 @@ class Connection:
         connector_display_name = d.pop("connector_display_name")
 
         name = d.pop("name")
+
+        dynamic_inputs = ConnectionDynamicInputs.from_dict(d.pop("dynamic_inputs"))
+
+
+
+
+        def _parse_dynamic_input_test_disabled_reason(data: object) -> None | str:
+            if data is None:
+                return data
+            return cast(None | str, data)
+
+        dynamic_input_test_disabled_reason = _parse_dynamic_input_test_disabled_reason(d.pop("dynamic_input_test_disabled_reason"))
+
 
         auth_config = ConnectionAuthConfig.from_dict(d.pop("auth_config"))
 
@@ -186,6 +213,8 @@ class Connection:
             connector_type=connector_type,
             connector_display_name=connector_display_name,
             name=name,
+            dynamic_inputs=dynamic_inputs,
+            dynamic_input_test_disabled_reason=dynamic_input_test_disabled_reason,
             auth_config=auth_config,
             created_at=created_at,
             updated_at=updated_at,
