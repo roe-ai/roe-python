@@ -27,6 +27,9 @@ def _connection_json() -> dict[str, object]:
         "updated_at": "2025-01-01T00:00:00Z",
         "description": "desc",
         "config": {"region": "us"},
+        "credentials_configured": True,
+        "dynamic_inputs": {},
+        "dynamic_input_test_disabled_reason": None,
         "status": "active",
     }
 

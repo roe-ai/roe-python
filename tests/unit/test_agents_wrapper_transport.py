@@ -22,6 +22,7 @@ def _base_agent_json() -> dict[str, object]:
     return {
         "id": AGENT_ID,
         "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z",
         "name": "Agent",
         "disable_cache": False,
         "cache_failed_jobs": False,
