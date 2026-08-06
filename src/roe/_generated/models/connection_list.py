@@ -38,6 +38,7 @@ class ConnectionList:
             connector_type (str):
             connector_display_name (str): Get the display name for the connector type.
             name (str):
+            credentials_configured (bool):
             dynamic_inputs (ConnectionListDynamicInputs):
             dynamic_input_test_disabled_reason (None | str):
             created_at (datetime.datetime):
@@ -54,6 +55,7 @@ class ConnectionList:
     connector_type: str
     connector_display_name: str
     name: str
+    credentials_configured: bool
     dynamic_inputs: ConnectionListDynamicInputs
     dynamic_input_test_disabled_reason: None | str
     created_at: datetime.datetime
@@ -81,6 +83,8 @@ class ConnectionList:
         connector_display_name = self.connector_display_name
 
         name = self.name
+
+        credentials_configured = self.credentials_configured
 
         dynamic_inputs = self.dynamic_inputs.to_dict()
 
@@ -110,6 +114,7 @@ class ConnectionList:
             "connector_type": connector_type,
             "connector_display_name": connector_display_name,
             "name": name,
+            "credentials_configured": credentials_configured,
             "dynamic_inputs": dynamic_inputs,
             "dynamic_input_test_disabled_reason": dynamic_input_test_disabled_reason,
             "created_at": created_at,
@@ -153,6 +158,8 @@ class ConnectionList:
         connector_display_name = d.pop("connector_display_name")
 
         name = d.pop("name")
+
+        credentials_configured = d.pop("credentials_configured")
 
         dynamic_inputs = ConnectionListDynamicInputs.from_dict(d.pop("dynamic_inputs"))
 
@@ -198,6 +205,7 @@ class ConnectionList:
             connector_type=connector_type,
             connector_display_name=connector_display_name,
             name=name,
+            credentials_configured=credentials_configured,
             dynamic_inputs=dynamic_inputs,
             dynamic_input_test_disabled_reason=dynamic_input_test_disabled_reason,
             created_at=created_at,
