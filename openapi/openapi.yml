@@ -2314,6 +2314,12 @@ paths:
         schema:
           type: string
         description: Filter by connector type (e.g., 'snowflake', 'postgres')
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
       - in: query
         name: organization_id
         schema:
@@ -4809,6 +4815,9 @@ components:
         description:
           type: string
         config: {}
+        credentials_configured:
+          type: boolean
+          readOnly: true
         dynamic_inputs:
           type: object
           additionalProperties:
@@ -4838,6 +4847,7 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - credentials_configured
       - dynamic_input_test_disabled_reason
       - dynamic_inputs
       - id
@@ -4883,6 +4893,9 @@ components:
         description:
           type: string
         config: {}
+        credentials_configured:
+          type: boolean
+          readOnly: true
         dynamic_inputs:
           type: object
           additionalProperties:
@@ -4907,6 +4920,7 @@ components:
       - connector_display_name
       - connector_type
       - created_at
+      - credentials_configured
       - dynamic_input_test_disabled_reason
       - dynamic_inputs
       - id
