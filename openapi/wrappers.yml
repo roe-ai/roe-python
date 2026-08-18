@@ -605,6 +605,11 @@ apis:
             location: path
             annotation: str
             coerce: uuid
+          - name: webhook_id
+            location: body
+            annotation: str | None
+            default: null
+            pass_unset_when_none: true
         - kind: body
           method_name: cancel_all
           docstring: ''

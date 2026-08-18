@@ -154,6 +154,7 @@ client = RoeClient()
 
 result = client.agents.jobs.resend_webhook(
     job_id="job_id",  # required
+    webhook_id="webhook_id",  # optional
 )
 ```
 
