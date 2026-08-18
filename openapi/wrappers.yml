@@ -595,6 +595,17 @@ apis:
             annotation: str
             coerce: uuid
         - kind: body
+          method_name: resend_webhook
+          docstring: ''
+          method: POST
+          path: /v1/agents/jobs/{job_id}/webhook/resend/
+          endpoint_module: roe._generated.api.agents.agents_jobs_webhook_resend_create
+          parameters:
+          - name: job_id
+            location: path
+            annotation: str
+            coerce: uuid
+        - kind: body
           method_name: cancel_all
           docstring: ''
           method: POST

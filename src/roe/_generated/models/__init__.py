@@ -17,6 +17,7 @@ from .agent_job_result_response import AgentJobResultResponse
 from .agent_job_single_status import AgentJobSingleStatus
 from .agent_job_status import AgentJobStatus
 from .agent_job_status_many_request import AgentJobStatusManyRequest
+from .agent_job_webhook_resend_response import AgentJobWebhookResendResponse
 from .agent_run_async_many_request import AgentRunAsyncManyRequest
 from .agent_tag import AgentTag
 from .agent_version import AgentVersion
@@ -122,6 +123,7 @@ from .public_agent_job_status_event_error_details import PublicAgentJobStatusEve
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
 from .regenerate_request import RegenerateRequest
 from .relevance_enum import RelevanceEnum
+from .resend_agent_job_webhook_request import ResendAgentJobWebhookRequest
 from .resolve_request import ResolveRequest
 from .resolve_request_refs_item import ResolveRequestRefsItem
 from .review_status_enum import ReviewStatusEnum
@@ -179,6 +181,7 @@ __all__ = (
     "AgentJobSingleStatus",
     "AgentJobStatus",
     "AgentJobStatusManyRequest",
+    "AgentJobWebhookResendResponse",
     "AgentRunAsyncManyRequest",
     "AgentsCreateResponse400",
     "AgentsJobsListOrderingItem",
@@ -284,6 +287,7 @@ __all__ = (
     "QdrantCleanupErrorResponse",
     "RegenerateRequest",
     "RelevanceEnum",
+    "ResendAgentJobWebhookRequest",
     "ResolveRequest",
     "ResolveRequestRefsItem",
     "ReviewStatusEnum",

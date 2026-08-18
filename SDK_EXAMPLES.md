@@ -143,6 +143,20 @@ result = client.agents.jobs.delete_data(
 )
 ```
 
+#### `agents_jobs_webhook_resend_create`
+
+Resend agent job webhook
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.agents.jobs.resend_webhook(
+    job_id="job_id",  # required
+)
+```
+
 #### `agents_jobs_status_retrieve`
 
 Get agent job status.
