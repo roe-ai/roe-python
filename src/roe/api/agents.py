@@ -25,6 +25,7 @@ from roe._generated.api.agents import (
     agents_jobs_artifacts_result_retrieve,
     agents_jobs_cancel_all_create,
     agents_jobs_cancel_create,
+    agents_jobs_webhook_resend_create,
     agents_jobs_delete_data_create,
     agents_jobs_list,
     agents_jobs_references_retrieve,
@@ -57,6 +58,7 @@ from roe._generated.models.agent_execution_request import (
 from roe._generated.models.agent_job_artifact_result import AgentJobArtifactResult
 from roe._generated.models.agent_job_cancel_all_response import (
     AgentJobCancelAllResponse,
+    AgentJobWebhookResendResponse,
 )
 from roe._generated.models.agent_job_delete_data_response import (
     AgentJobDeleteDataResponse,
@@ -423,6 +425,21 @@ class AgentJobsAPI:
             UUID(str(job_id)),
             organization_id=self._org_id,
         )
+
+    def resend_webhook(self, job_id: str) -> AgentJobWebhookResendResponse:
+        """Re-send a finished job's completion webhook.
+
+        The job is not re-run and its status is unchanged. ``queued`` reports
+        how many deliveries were queued; zero means the agent has no active
+        webhook.
+        """
+        response = request_raw(
+            self._raw,
+            agents_jobs_webhook_resend_create,
+            UUID(str(job_id)),
+            organization_id=self._org_id,
+        )
+        return AgentJobWebhookResendResponse.from_dict(response.json())
 
     def cancel_all(self, agent_id: str) -> AgentJobCancelAllResponse:
         response = request_raw(
