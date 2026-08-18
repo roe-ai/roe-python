@@ -1551,6 +1551,58 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetailResponse'
           description: Agent job not found
+  /v1/agents/jobs/{job_id}/webhook/resend/:
+    post:
+      operationId: agents_jobs_webhook_resend_create
+      description: Re-send the completion webhook for a job. Useful for replaying
+        a callback during integration work. Sends to every active webhook on the agent,
+        or to one of them when `webhook_id` is given. The job is not re-run and its
+        status is unchanged.
+      summary: Resend agent job webhook
+      parameters:
+      - in: path
+        name: job_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - agents
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResendAgentJobWebhookRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AgentJobWebhookResendResponse'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ApiErrorResponse'
+          description: Job has not reached a terminal status
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: Job not found
   /v1/agents/jobs/results/:
     post:
       operationId: agents_jobs_results_create
@@ -4489,6 +4541,18 @@ components:
           minItems: 1
       required:
       - job_ids
+    AgentJobWebhookResendResponse:
+      type: object
+      properties:
+        status:
+          type: string
+        queued:
+          type: integer
+          description: How many deliveries were queued. 0 means the agent has no active
+            webhook subscription, which is the usual reason a callback never arrives.
+      required:
+      - queued
+      - status
     AgentRunAsyncManyRequest:
       type: object
       description: Serializer for agent async many execution requests.
@@ -5957,6 +6021,17 @@ components:
         * `core` - core
         * `watch` - watch
         * `edge` - edge
+    ResendAgentJobWebhookRequest:
+      type: object
+      description: Serializer for re-sending a job's completion webhook.
+      properties:
+        webhook_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Send to only this webhook. Omit to send to every active webhook
+            on the agent.
     ResolveRequest:
       type: object
       description: |-
