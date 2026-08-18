@@ -275,6 +275,18 @@ def test_cancel_all_returns_structured_response_body():
     assert result.note == "cancelling"
 
 
+def test_resend_webhook_posts_to_the_job_and_returns_queued_count():
+    api, request = _api(httpx.Response(200, json={"status": "queued", "queued": 2}))
+
+    result = api.jobs.resend_webhook(JOB_ID)
+
+    kwargs = request.call_args.kwargs
+    assert kwargs["method"] == "post"
+    assert kwargs["url"].endswith(f"/v1/agents/jobs/{JOB_ID}/webhook/resend/")
+    assert kwargs["params"] == {"organization_id": ORG_ID}
+    assert result.queued == 2
+
+
 def test_retrieve_status_parses_single_status_shape_without_id():
     # GET /v1/agents/jobs/{job_id}/status/ returns AgentJobSingleStatus
     # ({status, timestamp, error_message?}) with no "id" field — parsing it

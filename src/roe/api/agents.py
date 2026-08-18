@@ -25,6 +25,7 @@ from roe._generated.api.agents import (
     agents_jobs_artifacts_result_retrieve,
     agents_jobs_cancel_all_create,
     agents_jobs_cancel_create,
+    agents_jobs_webhook_resend_create,
     agents_jobs_delete_data_create,
     agents_jobs_list,
     agents_jobs_references_retrieve,
@@ -58,8 +59,14 @@ from roe._generated.models.agent_job_artifact_result import AgentJobArtifactResu
 from roe._generated.models.agent_job_cancel_all_response import (
     AgentJobCancelAllResponse,
 )
+from roe._generated.models.resend_agent_job_webhook_request import (
+    ResendAgentJobWebhookRequest,
+)
 from roe._generated.models.agent_job_delete_data_response import (
     AgentJobDeleteDataResponse,
+)
+from roe._generated.models.agent_job_webhook_resend_response import (
+    AgentJobWebhookResendResponse,
 )
 from roe._generated.models.agent_job_result_many_request import (
     AgentJobResultManyRequest,
@@ -423,6 +430,28 @@ class AgentJobsAPI:
             UUID(str(job_id)),
             organization_id=self._org_id,
         )
+
+    def resend_webhook(
+        self, job_id: str, webhook_id: str | None = None
+    ) -> AgentJobWebhookResendResponse:
+        """Re-send a finished job's completion webhook.
+
+        Sends to every webhook attached to the job's agent, or only to
+        ``webhook_id`` when given. The job is not re-run and its status is
+        unchanged. ``queued`` reports how many deliveries were queued; zero
+        means nothing was eligible.
+        """
+        body = ResendAgentJobWebhookRequest(
+            webhook_id=UUID(str(webhook_id)) if webhook_id is not None else UNSET,
+        )
+        response = request_raw(
+            self._raw,
+            agents_jobs_webhook_resend_create,
+            UUID(str(job_id)),
+            body=body,
+            organization_id=self._org_id,
+        )
+        return AgentJobWebhookResendResponse.from_dict(response.json())
 
     def cancel_all(self, agent_id: str) -> AgentJobCancelAllResponse:
         response = request_raw(
