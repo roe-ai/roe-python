@@ -58,10 +58,12 @@ from roe._generated.models.agent_execution_request import (
 from roe._generated.models.agent_job_artifact_result import AgentJobArtifactResult
 from roe._generated.models.agent_job_cancel_all_response import (
     AgentJobCancelAllResponse,
-    AgentJobWebhookResendResponse,
 )
 from roe._generated.models.agent_job_delete_data_response import (
     AgentJobDeleteDataResponse,
+)
+from roe._generated.models.agent_job_webhook_resend_response import (
+    AgentJobWebhookResendResponse,
 )
 from roe._generated.models.agent_job_result_many_request import (
     AgentJobResultManyRequest,
