@@ -38,6 +38,8 @@ class AgentVersion:
             created_at (datetime.datetime):
             engine_class_id (str): Get engine_class_id from base_agent.
             engine_name (str): Engine Display Name
+            supports_memory (bool): True when this engine has a built-in memory profile, so memory profiles can be
+                configured on it. Independent of whether memory is currently switched on.
             input_definitions (list[AgentInputDefinition]): List of input definitions for this agent version.
             engine_config (Any): Engine configuration.
             organization_id (UUID): Organization ID from base_agent.
@@ -53,6 +55,7 @@ class AgentVersion:
     created_at: datetime.datetime
     engine_class_id: str
     engine_name: str
+    supports_memory: bool
     input_definitions: list[AgentInputDefinition]
     engine_config: Any
     organization_id: UUID
@@ -81,6 +84,8 @@ class AgentVersion:
         engine_class_id = self.engine_class_id
 
         engine_name = self.engine_name
+
+        supports_memory = self.supports_memory
 
         input_definitions = []
         for input_definitions_item_data in self.input_definitions:
@@ -117,6 +122,7 @@ class AgentVersion:
             "created_at": created_at,
             "engine_class_id": engine_class_id,
             "engine_name": engine_name,
+            "supports_memory": supports_memory,
             "input_definitions": input_definitions,
             "engine_config": engine_config,
             "organization_id": organization_id,
@@ -155,6 +161,8 @@ class AgentVersion:
         engine_class_id = d.pop("engine_class_id")
 
         engine_name = d.pop("engine_name")
+
+        supports_memory = d.pop("supports_memory")
 
         input_definitions = []
         _input_definitions = d.pop("input_definitions")
@@ -209,6 +217,7 @@ class AgentVersion:
             created_at=created_at,
             engine_class_id=engine_class_id,
             engine_name=engine_name,
+            supports_memory=supports_memory,
             input_definitions=input_definitions,
             engine_config=engine_config,
             organization_id=organization_id,
