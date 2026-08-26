@@ -4631,6 +4631,12 @@ components:
           type: string
           description: Engine Display Name
           readOnly: true
+        supports_memory:
+          type: boolean
+          readOnly: true
+          description: True when this engine has a built-in memory profile, so memory
+            profiles can be configured on it. Independent of whether memory is currently
+            switched on.
         input_definitions:
           type: array
           items:
@@ -4661,6 +4667,7 @@ components:
       - name
       - organization_id
       - readonly
+      - supports_memory
       - version_name
     AgentVersionCreateRequest:
       type: object
