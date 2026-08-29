@@ -1042,7 +1042,9 @@ paths:
           description: Agent version not found.
     delete:
       operationId: agents_versions_destroy
-      description: Delete a specific agent version.
+      description: Delete a specific agent version. Deleting the agent's current version
+        promotes the next-newest remaining version to current. Deleting an agent's
+        only version is refused — delete the agent instead.
       summary: Delete an agent version.
       parameters:
       - in: path
@@ -1075,6 +1077,12 @@ paths:
       responses:
         '204':
           description: Agent version deleted successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: This is the agent's only version; delete the agent instead.
         '403':
           content:
             application/json:
@@ -4207,7 +4215,10 @@ components:
           description: The unique identifier for this input definition
         data_type:
           type: string
-          description: The data type of the input (e.g., text, file, etc.)
+          description: MIME type of the input, from the closed DataType set. Use 'text/plain'
+            for ordinary strings such as URLs, names and free text; other values include
+            'application/pdf', 'application/json', 'image/png', 'audio/mpeg', 'video/mp4'
+            and the wildcards 'text/*', 'image/*', 'audio/*', 'video/*', '*/*'.
         description:
           type: string
           description: Description of what this input is for
@@ -5063,6 +5074,7 @@ components:
       - google_sheets
       - salesforce
       - web_application
+      - shield
       - custom_api
       - lexis_nexis
       - sardine
@@ -5083,6 +5095,7 @@ components:
         * `google_sheets` - GOOGLE_SHEETS
         * `salesforce` - SALESFORCE
         * `web_application` - WEB_APPLICATION
+        * `shield` - SHIELD
         * `custom_api` - CUSTOM_API
         * `lexis_nexis` - LEXIS_NEXIS
         * `sardine` - SARDINE
@@ -6108,6 +6121,8 @@ components:
           type: boolean
         supports_reasoning_effort:
           type: boolean
+        supports_thinking:
+          type: boolean
         supports_json_output:
           type: boolean
         supports_json_schema:
@@ -6123,6 +6138,7 @@ components:
       - supports_reasoning_effort
       - supports_system_message
       - supports_temperature
+      - supports_thinking
     SupportedLLMModelList:
       type: object
       description: Serializer for non-deprecated LLM discovery.

@@ -32,6 +32,7 @@ class SupportedLLMModel:
             supports_system_message (bool):
             supports_temperature (bool):
             supports_reasoning_effort (bool):
+            supports_thinking (bool):
             supports_json_output (bool):
             supports_json_schema (bool):
      """
@@ -44,6 +45,7 @@ class SupportedLLMModel:
     supports_system_message: bool
     supports_temperature: bool
     supports_reasoning_effort: bool
+    supports_thinking: bool
     supports_json_output: bool
     supports_json_schema: bool
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
@@ -73,6 +75,8 @@ class SupportedLLMModel:
 
         supports_reasoning_effort = self.supports_reasoning_effort
 
+        supports_thinking = self.supports_thinking
+
         supports_json_output = self.supports_json_output
 
         supports_json_schema = self.supports_json_schema
@@ -89,6 +93,7 @@ class SupportedLLMModel:
             "supports_system_message": supports_system_message,
             "supports_temperature": supports_temperature,
             "supports_reasoning_effort": supports_reasoning_effort,
+            "supports_thinking": supports_thinking,
             "supports_json_output": supports_json_output,
             "supports_json_schema": supports_json_schema,
         })
@@ -118,6 +123,8 @@ class SupportedLLMModel:
 
         supports_reasoning_effort = d.pop("supports_reasoning_effort")
 
+        supports_thinking = d.pop("supports_thinking")
+
         supports_json_output = d.pop("supports_json_output")
 
         supports_json_schema = d.pop("supports_json_schema")
@@ -131,6 +138,7 @@ class SupportedLLMModel:
             supports_system_message=supports_system_message,
             supports_temperature=supports_temperature,
             supports_reasoning_effort=supports_reasoning_effort,
+            supports_thinking=supports_thinking,
             supports_json_output=supports_json_output,
             supports_json_schema=supports_json_schema,
         )
