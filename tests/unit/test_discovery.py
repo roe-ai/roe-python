@@ -152,6 +152,7 @@ def test_supported_llm_model_list_deserializes_public_model_payload():
                 "supports_system_message": True,
                 "supports_temperature": True,
                 "supports_reasoning_effort": False,
+                "supports_thinking": False,
                 "supports_json_output": True,
                 "supports_json_schema": True,
             }

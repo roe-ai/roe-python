@@ -24,7 +24,9 @@ class AgentInputDefinition:
     """ 
         Attributes:
             key (str): The unique identifier for this input definition
-            data_type (str): The data type of the input (e.g., text, file, etc.)
+            data_type (str): MIME type of the input, from the closed DataType set. Use 'text/plain' for ordinary strings
+                such as URLs, names and free text; other values include 'application/pdf', 'application/json', 'image/png',
+                'audio/mpeg', 'video/mp4' and the wildcards 'text/*', 'image/*', 'audio/*', 'video/*', '*/*'.
             description (str): Description of what this input is for
             example (str | Unset): An example value for this input
             accepts_multiple_files (bool | Unset): Whether this input accepts multiple files

@@ -54,6 +54,13 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         response_204 = cast(Any, None)
         return response_204
 
+    if response.status_code == 400:
+        response_400 = ErrorDetailResponse.from_dict(response.json())
+
+
+
+        return response_400
+
     if response.status_code == 403:
         response_403 = ErrorDetailResponse.from_dict(response.json())
 
@@ -100,7 +107,9 @@ def sync_detailed(
 ) -> Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]:
     """ Delete an agent version.
 
-     Delete a specific agent version.
+     Delete a specific agent version. Deleting the agent's current version promotes the next-newest
+    remaining version to current. Deleting an agent's only version is refused — delete the agent
+    instead.
 
     Args:
         agent_id (UUID):
@@ -139,7 +148,9 @@ def sync(
 ) -> Any | ErrorDetailResponse | QdrantCleanupErrorResponse | None:
     """ Delete an agent version.
 
-     Delete a specific agent version.
+     Delete a specific agent version. Deleting the agent's current version promotes the next-newest
+    remaining version to current. Deleting an agent's only version is refused — delete the agent
+    instead.
 
     Args:
         agent_id (UUID):
@@ -173,7 +184,9 @@ async def asyncio_detailed(
 ) -> Response[Any | ErrorDetailResponse | QdrantCleanupErrorResponse]:
     """ Delete an agent version.
 
-     Delete a specific agent version.
+     Delete a specific agent version. Deleting the agent's current version promotes the next-newest
+    remaining version to current. Deleting an agent's only version is refused — delete the agent
+    instead.
 
     Args:
         agent_id (UUID):
@@ -212,7 +225,9 @@ async def asyncio(
 ) -> Any | ErrorDetailResponse | QdrantCleanupErrorResponse | None:
     """ Delete an agent version.
 
-     Delete a specific agent version.
+     Delete a specific agent version. Deleting the agent's current version promotes the next-newest
+    remaining version to current. Deleting an agent's only version is refused — delete the agent
+    instead.
 
     Args:
         agent_id (UUID):
