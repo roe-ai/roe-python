@@ -118,6 +118,10 @@ from .policy import Policy
 from .policy_delete_conflict import PolicyDeleteConflict
 from .policy_version import PolicyVersion
 from .policy_version_created_by import PolicyVersionCreatedBy
+from .post_action_spec import PostActionSpec
+from .post_action_spec_param_mappings import PostActionSpecParamMappings
+from .post_action_spec_request import PostActionSpecRequest
+from .post_action_spec_request_param_mappings import PostActionSpecRequestParamMappings
 from .public_agent_job_status_event import PublicAgentJobStatusEvent
 from .public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
@@ -127,6 +131,7 @@ from .resend_agent_job_webhook_request import ResendAgentJobWebhookRequest
 from .resolve_request import ResolveRequest
 from .resolve_request_refs_item import ResolveRequestRefsItem
 from .review_status_enum import ReviewStatusEnum
+from .skill_generation_state_enum import SkillGenerationStateEnum
 from .status_enum import StatusEnum
 from .supported_llm_model import SupportedLLMModel
 from .supported_llm_model_list import SupportedLLMModelList
@@ -282,6 +287,10 @@ __all__ = (
     "PolicyDeleteConflict",
     "PolicyVersion",
     "PolicyVersionCreatedBy",
+    "PostActionSpec",
+    "PostActionSpecParamMappings",
+    "PostActionSpecRequest",
+    "PostActionSpecRequestParamMappings",
     "PublicAgentJobStatusEvent",
     "PublicAgentJobStatusEventErrorDetails",
     "QdrantCleanupErrorResponse",
@@ -291,6 +300,7 @@ __all__ = (
     "ResolveRequest",
     "ResolveRequestRefsItem",
     "ReviewStatusEnum",
+    "SkillGenerationStateEnum",
     "StatusEnum",
     "SupportedLLMModel",
     "SupportedLLMModelList",

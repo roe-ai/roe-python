@@ -42,6 +42,7 @@ class CreateConnectionRequest:
                 * `salesforce` - SALESFORCE
                 * `web_application` - WEB_APPLICATION
                 * `shield` - SHIELD
+                * `sift` - SIFT
                 * `custom_api` - CUSTOM_API
                 * `lexis_nexis` - LEXIS_NEXIS
                 * `sardine` - SARDINE

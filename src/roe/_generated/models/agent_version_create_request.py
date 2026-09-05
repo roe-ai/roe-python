@@ -11,6 +11,8 @@ from ..types import UNSET, Unset
 from ..types import UNSET, Unset
 from typing import cast
 
+if TYPE_CHECKING:
+  from ..models.post_action_spec_request import PostActionSpecRequest
 
 
 
@@ -29,12 +31,16 @@ class AgentVersionCreateRequest:
             description (None | str | Unset): Description for the agent version.
             input_definitions (Any | Unset): List of input definitions for this agent version.
             engine_config (Any | Unset): Engine configuration as a dictionary of string key-value pairs.
+            post_actions (list[PostActionSpecRequest] | Unset): Connector write actions for this version. Omitted: the new
+                version keeps the current version's actions. A list: those become the new version's actions. []: the new version
+                has none.
      """
 
     version_name: str | Unset = UNSET
     description: None | str | Unset = UNSET
     input_definitions: Any | Unset = UNSET
     engine_config: Any | Unset = UNSET
+    post_actions: list[PostActionSpecRequest] | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -42,6 +48,7 @@ class AgentVersionCreateRequest:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.post_action_spec_request import PostActionSpecRequest
         version_name = self.version_name
 
         description: None | str | Unset
@@ -53,6 +60,15 @@ class AgentVersionCreateRequest:
         input_definitions = self.input_definitions
 
         engine_config = self.engine_config
+
+        post_actions: list[dict[str, Any]] | Unset = UNSET
+        if not isinstance(self.post_actions, Unset):
+            post_actions = []
+            for post_actions_item_data in self.post_actions:
+                post_actions_item = post_actions_item_data.to_dict()
+                post_actions.append(post_actions_item)
+
+
 
 
         field_dict: dict[str, Any] = {}
@@ -67,6 +83,8 @@ class AgentVersionCreateRequest:
             field_dict["input_definitions"] = input_definitions
         if engine_config is not UNSET:
             field_dict["engine_config"] = engine_config
+        if post_actions is not UNSET:
+            field_dict["post_actions"] = post_actions
 
         return field_dict
 
@@ -74,6 +92,7 @@ class AgentVersionCreateRequest:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.post_action_spec_request import PostActionSpecRequest
         d = dict(src_dict)
         version_name = d.pop("version_name", UNSET)
 
@@ -91,11 +110,24 @@ class AgentVersionCreateRequest:
 
         engine_config = d.pop("engine_config", UNSET)
 
+        _post_actions = d.pop("post_actions", UNSET)
+        post_actions: list[PostActionSpecRequest] | Unset = UNSET
+        if _post_actions is not UNSET:
+            post_actions = []
+            for post_actions_item_data in _post_actions:
+                post_actions_item = PostActionSpecRequest.from_dict(post_actions_item_data)
+
+
+
+                post_actions.append(post_actions_item)
+
+
         agent_version_create_request = cls(
             version_name=version_name,
             description=description,
             input_definitions=input_definitions,
             engine_config=engine_config,
+            post_actions=post_actions,
         )
 
 
