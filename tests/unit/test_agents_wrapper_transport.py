@@ -33,6 +33,7 @@ def _base_agent_json() -> dict[str, object]:
         "most_recent_job": None,
         "engine_name": "Engine",
         "tags": [],
+        "skill_generation_state": None,
     }
 
 

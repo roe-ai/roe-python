@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.skill_generation_state_enum import SkillGenerationStateEnum
 from ..types import UNSET, Unset
 from dateutil.parser import isoparse
 from typing import cast
@@ -46,6 +47,7 @@ class BaseAgent:
             most_recent_job (datetime.datetime | None):
             engine_name (str): Engine Display Name
             tags (list[AgentTag]):
+            skill_generation_state (None | SkillGenerationStateEnum):
             creator (None | Unset | UserInfo):
      """
 
@@ -62,6 +64,7 @@ class BaseAgent:
     most_recent_job: datetime.datetime | None
     engine_name: str
     tags: list[AgentTag]
+    skill_generation_state: None | SkillGenerationStateEnum
     creator: None | Unset | UserInfo = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
@@ -108,6 +111,12 @@ class BaseAgent:
 
 
 
+        skill_generation_state: None | str
+        if isinstance(self.skill_generation_state, SkillGenerationStateEnum):
+            skill_generation_state = self.skill_generation_state.value
+        else:
+            skill_generation_state = self.skill_generation_state
+
         creator: dict[str, Any] | None | Unset
         if isinstance(self.creator, Unset):
             creator = UNSET
@@ -133,6 +142,7 @@ class BaseAgent:
             "most_recent_job": most_recent_job,
             "engine_name": engine_name,
             "tags": tags,
+            "skill_generation_state": skill_generation_state,
         })
         if creator is not UNSET:
             field_dict["creator"] = creator
@@ -217,6 +227,24 @@ class BaseAgent:
             tags.append(tags_item)
 
 
+        def _parse_skill_generation_state(data: object) -> None | SkillGenerationStateEnum:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                skill_generation_state_type_0 = SkillGenerationStateEnum(data)
+
+
+
+                return skill_generation_state_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | SkillGenerationStateEnum, data)
+
+        skill_generation_state = _parse_skill_generation_state(d.pop("skill_generation_state"))
+
+
         def _parse_creator(data: object) -> None | Unset | UserInfo:
             if data is None:
                 return data
@@ -251,6 +279,7 @@ class BaseAgent:
             most_recent_job=most_recent_job,
             engine_name=engine_name,
             tags=tags,
+            skill_generation_state=skill_generation_state,
             creator=creator,
         )
 

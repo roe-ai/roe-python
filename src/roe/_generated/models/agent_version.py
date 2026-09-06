@@ -17,6 +17,7 @@ import datetime
 if TYPE_CHECKING:
   from ..models.agent_input_definition import AgentInputDefinition
   from ..models.base_agent import BaseAgent
+  from ..models.post_action_spec import PostActionSpec
   from ..models.user_info import UserInfo
 
 
@@ -42,6 +43,7 @@ class AgentVersion:
                 configured on it. Independent of whether memory is currently switched on.
             input_definitions (list[AgentInputDefinition]): List of input definitions for this agent version.
             engine_config (Any): Engine configuration.
+            post_actions (list[PostActionSpec]): Connector write actions configured on this version.
             organization_id (UUID): Organization ID from base_agent.
             readonly (bool):
             base_agent (BaseAgent): Serializer for BaseAgent (agent config)
@@ -58,6 +60,7 @@ class AgentVersion:
     supports_memory: bool
     input_definitions: list[AgentInputDefinition]
     engine_config: Any
+    post_actions: list[PostActionSpec]
     organization_id: UUID
     readonly: bool
     base_agent: BaseAgent
@@ -72,6 +75,7 @@ class AgentVersion:
     def to_dict(self) -> dict[str, Any]:
         from ..models.agent_input_definition import AgentInputDefinition
         from ..models.base_agent import BaseAgent
+        from ..models.post_action_spec import PostActionSpec
         from ..models.user_info import UserInfo
         id = str(self.id)
 
@@ -95,6 +99,13 @@ class AgentVersion:
 
 
         engine_config = self.engine_config
+
+        post_actions = []
+        for post_actions_item_data in self.post_actions:
+            post_actions_item = post_actions_item_data.to_dict()
+            post_actions.append(post_actions_item)
+
+
 
         organization_id = str(self.organization_id)
 
@@ -125,6 +136,7 @@ class AgentVersion:
             "supports_memory": supports_memory,
             "input_definitions": input_definitions,
             "engine_config": engine_config,
+            "post_actions": post_actions,
             "organization_id": organization_id,
             "readonly": readonly,
             "base_agent": base_agent,
@@ -142,6 +154,7 @@ class AgentVersion:
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         from ..models.agent_input_definition import AgentInputDefinition
         from ..models.base_agent import BaseAgent
+        from ..models.post_action_spec import PostActionSpec
         from ..models.user_info import UserInfo
         d = dict(src_dict)
         id = UUID(d.pop("id"))
@@ -175,6 +188,16 @@ class AgentVersion:
 
 
         engine_config = d.pop("engine_config")
+
+        post_actions = []
+        _post_actions = d.pop("post_actions")
+        for post_actions_item_data in (_post_actions):
+            post_actions_item = PostActionSpec.from_dict(post_actions_item_data)
+
+
+
+            post_actions.append(post_actions_item)
+
 
         organization_id = UUID(d.pop("organization_id"))
 
@@ -220,6 +243,7 @@ class AgentVersion:
             supports_memory=supports_memory,
             input_definitions=input_definitions,
             engine_config=engine_config,
+            post_actions=post_actions,
             organization_id=organization_id,
             readonly=readonly,
             base_agent=base_agent,

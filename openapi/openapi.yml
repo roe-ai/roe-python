@@ -2631,7 +2631,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/DuplicateConnectionResponse'
           description: A strict-identity duplicate of this connection already exists
-            in this organization.
+            in this organization, or post actions still call a write operation this
+            update removes or renames ({error}).
     patch:
       operationId: connections_partial_update
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -2712,7 +2713,8 @@ paths:
               schema:
                 $ref: '#/components/schemas/DuplicateConnectionResponse'
           description: A strict-identity duplicate of this connection already exists
-            in this organization.
+            in this organization, or post actions still call a write operation this
+            update removes or renames ({error}).
     delete:
       operationId: connections_destroy
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -2752,6 +2754,12 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetailResponse'
           description: Connection not found.
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConnectionDeleteErrorResponse'
+          description: Post actions still reference this connection.
         '500':
           content:
             application/json:
@@ -4655,6 +4663,12 @@ components:
           description: List of input definitions for this agent version.
         engine_config:
           description: Engine configuration.
+        post_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostActionSpec'
+          readOnly: true
+          description: Connector write actions configured on this version.
         organization_id:
           type: string
           format: uuid
@@ -4677,6 +4691,7 @@ components:
       - input_definitions
       - name
       - organization_id
+      - post_actions
       - readonly
       - supports_memory
       - version_name
@@ -4698,6 +4713,14 @@ components:
           description: List of input definitions for this agent version.
         engine_config:
           description: Engine configuration as a dictionary of string key-value pairs.
+        post_actions:
+          type: array
+          items:
+            $ref: '#/components/schemas/PostActionSpecRequest'
+          writeOnly: true
+          description: 'Connector write actions for this version. Omitted: the new
+            version keeps the current version''s actions. A list: those become the
+            new version''s actions. []: the new version has none.'
     AgentVersionUpdateRequest:
       type: object
       properties:
@@ -4784,6 +4807,11 @@ components:
           items:
             $ref: '#/components/schemas/AgentTag'
           readOnly: true
+        skill_generation_state:
+          readOnly: true
+          oneOf:
+          - $ref: '#/components/schemas/SkillGenerationStateEnum'
+          - $ref: '#/components/schemas/NullEnum'
       required:
       - cache_failed_jobs
       - created_at
@@ -4796,6 +4824,7 @@ components:
       - most_recent_job
       - name
       - organization_id
+      - skill_generation_state
       - tags
       - updated_at
     BaseAgentCreateRequest:
@@ -5075,6 +5104,7 @@ components:
       - salesforce
       - web_application
       - shield
+      - sift
       - custom_api
       - lexis_nexis
       - sardine
@@ -5096,6 +5126,7 @@ components:
         * `salesforce` - SALESFORCE
         * `web_application` - WEB_APPLICATION
         * `shield` - SHIELD
+        * `sift` - SIFT
         * `custom_api` - CUSTOM_API
         * `lexis_nexis` - LEXIS_NEXIS
         * `sardine` - SARDINE
@@ -5621,6 +5652,8 @@ components:
           type: string
       required:
       - message
+    NullEnum:
+      type: 'null'
     PaginatedBaseAgentList:
       type: object
       required:
@@ -5983,6 +6016,63 @@ components:
       - display_name
       - email
       - id
+    PostActionSpec:
+      type: object
+      description: |-
+        Schema mirror of PostActionSpec (agents/services/post_actions.py);
+        generated clients import this component instead of hand-writing it.
+      properties:
+        name:
+          type: string
+        connection_id:
+          type: string
+          format: uuid
+        operation:
+          type: string
+        trigger_on:
+          type: array
+          items:
+            type: integer
+        param_mappings:
+          type: object
+          additionalProperties:
+            type: string
+      required:
+      - connection_id
+      - name
+      - operation
+      - param_mappings
+      - trigger_on
+    PostActionSpecRequest:
+      type: object
+      description: |-
+        Schema mirror of PostActionSpec (agents/services/post_actions.py);
+        generated clients import this component instead of hand-writing it.
+      properties:
+        name:
+          type: string
+          minLength: 1
+        connection_id:
+          type: string
+          format: uuid
+        operation:
+          type: string
+          minLength: 1
+        trigger_on:
+          type: array
+          items:
+            type: integer
+        param_mappings:
+          type: object
+          additionalProperties:
+            type: string
+            minLength: 1
+      required:
+      - connection_id
+      - name
+      - operation
+      - param_mappings
+      - trigger_on
     PublicAgentJobStatusEvent:
       type: object
       description: |-
@@ -6084,6 +6174,14 @@ components:
         * `pending` - Pending Review
         * `approved` - Approved
         * `rejected` - Rejected
+    SkillGenerationStateEnum:
+      enum:
+      - generating
+      - failed
+      type: string
+      description: |-
+        * `generating` - generating
+        * `failed` - failed
     StatusEnum:
       enum:
       - active
