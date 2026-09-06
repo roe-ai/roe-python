@@ -4811,7 +4811,7 @@ components:
           readOnly: true
           oneOf:
           - $ref: '#/components/schemas/SkillGenerationStateEnum'
-          - $ref: '#/components/schemas/NullEnum'
+          - type: 'null'
       required:
       - cache_failed_jobs
       - created_at
@@ -5652,8 +5652,6 @@ components:
           type: string
       required:
       - message
-    NullEnum:
-      type: 'null'
     PaginatedBaseAgentList:
       type: object
       required:
