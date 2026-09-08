@@ -9,6 +9,7 @@ class ConnectorTypeEnum(str, Enum):
     GOOGLE_SHEETS = "google_sheets"
     INTERCOM = "intercom"
     LEXIS_NEXIS = "lexis_nexis"
+    METABASE = "metabase"
     PLAID = "plaid"
     S3 = "s3"
     SALESFORCE = "salesforce"

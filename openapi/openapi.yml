@@ -5114,6 +5114,7 @@ components:
       - checkout_com
       - socure
       - custom_mcp
+      - metabase
       type: string
       description: |-
         * `snowflake` - SNOWFLAKE
@@ -5136,6 +5137,7 @@ components:
         * `checkout_com` - CHECKOUT_COM
         * `socure` - SOCURE
         * `custom_mcp` - CUSTOM_MCP
+        * `metabase` - METABASE
     CreateConnectionRequest:
       type: object
       description: |-

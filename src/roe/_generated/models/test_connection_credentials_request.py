@@ -50,6 +50,7 @@ class TestConnectionCredentialsRequest:
                 * `checkout_com` - CHECKOUT_COM
                 * `socure` - SOCURE
                 * `custom_mcp` - CUSTOM_MCP
+                * `metabase` - METABASE
             config (TestConnectionCredentialsRequestConfig):
             auth_config (TestConnectionCredentialsRequestAuthConfig | Unset):
             dynamic_inputs (TestConnectionCredentialsRequestDynamicInputs | Unset):
