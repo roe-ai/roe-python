@@ -52,6 +52,7 @@ class CreateConnectionRequest:
                 * `checkout_com` - CHECKOUT_COM
                 * `socure` - SOCURE
                 * `custom_mcp` - CUSTOM_MCP
+                * `metabase` - METABASE
             name (str):
             config (CreateConnectionRequestConfig):
             description (str | Unset):
