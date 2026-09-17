@@ -72,44 +72,31 @@ from .create_connection_request import CreateConnectionRequest
 from .create_connection_request_auth_config import CreateConnectionRequestAuthConfig
 from .create_connection_request_config import CreateConnectionRequestConfig
 from .create_connection_request_dynamic_inputs import CreateConnectionRequestDynamicInputs
-from .create_knowledge_base import CreateKnowledgeBase
-from .create_knowledge_base_request import CreateKnowledgeBaseRequest
 from .create_policy import CreatePolicy
 from .create_policy_request import CreatePolicyRequest
 from .create_policy_version import CreatePolicyVersion
 from .create_policy_version_request import CreatePolicyVersionRequest
 from .dependent_agent_info import DependentAgentInfo
 from .discovery_supported_models_list_response_400 import DiscoverySupportedModelsListResponse400
-from .draft import Draft
-from .draft_ref import DraftRef
-from .draft_status_enum import DraftStatusEnum
 from .duplicate_connection_existing import DuplicateConnectionExisting
 from .duplicate_connection_response import DuplicateConnectionResponse
 from .error_detail_response import ErrorDetailResponse
-from .finalize_request import FinalizeRequest
 from .job_input import JobInput
-from .knowledge_base import KnowledgeBase
-from .knowledge_base_import_lens_create_body import KnowledgeBaseImportLensCreateBody
-from .knowledge_base_status_enum import KnowledgeBaseStatusEnum
 from .list_agent_job import ListAgentJob
 from .list_agent_job_metadata import ListAgentJobMetadata
 from .message_response import MessageResponse
 from .paginated_base_agent_list import PaginatedBaseAgentList
 from .paginated_connection_list_list import PaginatedConnectionListList
-from .paginated_knowledge_base_list import PaginatedKnowledgeBaseList
 from .paginated_list_agent_job_list import PaginatedListAgentJobList
 from .paginated_policy_list import PaginatedPolicyList
 from .paginated_policy_version_list import PaginatedPolicyVersionList
 from .patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
 from .patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
-from .patched_patch_selection_request import PatchedPatchSelectionRequest
-from .patched_patch_selection_request_refs_item import PatchedPatchSelectionRequestRefsItem
 from .patched_update_connection_request import PatchedUpdateConnectionRequest
 from .patched_update_connection_request_auth_config import PatchedUpdateConnectionRequestAuthConfig
 from .patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
 from .patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
 from .patched_update_policy_request import PatchedUpdatePolicyRequest
-from .pending_proposal import PendingProposal
 from .policies_create_response_400 import PoliciesCreateResponse400
 from .policies_partial_update_response_400 import PoliciesPartialUpdateResponse400
 from .policies_update_response_400 import PoliciesUpdateResponse400
@@ -125,11 +112,7 @@ from .post_action_spec_request_param_mappings import PostActionSpecRequestParamM
 from .public_agent_job_status_event import PublicAgentJobStatusEvent
 from .public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
-from .regenerate_request import RegenerateRequest
-from .relevance_enum import RelevanceEnum
 from .resend_agent_job_webhook_request import ResendAgentJobWebhookRequest
-from .resolve_request import ResolveRequest
-from .resolve_request_refs_item import ResolveRequestRefsItem
 from .review_status_enum import ReviewStatusEnum
 from .skill_generation_state_enum import SkillGenerationStateEnum
 from .status_enum import StatusEnum
@@ -241,44 +224,31 @@ __all__ = (
     "CreateConnectionRequestAuthConfig",
     "CreateConnectionRequestConfig",
     "CreateConnectionRequestDynamicInputs",
-    "CreateKnowledgeBase",
-    "CreateKnowledgeBaseRequest",
     "CreatePolicy",
     "CreatePolicyRequest",
     "CreatePolicyVersion",
     "CreatePolicyVersionRequest",
     "DependentAgentInfo",
     "DiscoverySupportedModelsListResponse400",
-    "Draft",
-    "DraftRef",
-    "DraftStatusEnum",
     "DuplicateConnectionExisting",
     "DuplicateConnectionResponse",
     "ErrorDetailResponse",
-    "FinalizeRequest",
     "JobInput",
-    "KnowledgeBase",
-    "KnowledgeBaseImportLensCreateBody",
-    "KnowledgeBaseStatusEnum",
     "ListAgentJob",
     "ListAgentJobMetadata",
     "MessageResponse",
     "PaginatedBaseAgentList",
     "PaginatedConnectionListList",
-    "PaginatedKnowledgeBaseList",
     "PaginatedListAgentJobList",
     "PaginatedPolicyList",
     "PaginatedPolicyVersionList",
     "PatchedAgentVersionUpdateRequest",
     "PatchedBaseAgentUpdateRequest",
-    "PatchedPatchSelectionRequest",
-    "PatchedPatchSelectionRequestRefsItem",
     "PatchedUpdateConnectionRequest",
     "PatchedUpdateConnectionRequestAuthConfig",
     "PatchedUpdateConnectionRequestConfig",
     "PatchedUpdateConnectionRequestDynamicInputs",
     "PatchedUpdatePolicyRequest",
-    "PendingProposal",
     "PoliciesCreateResponse400",
     "PoliciesPartialUpdateResponse400",
     "PoliciesUpdateResponse400",
@@ -294,11 +264,7 @@ __all__ = (
     "PublicAgentJobStatusEvent",
     "PublicAgentJobStatusEventErrorDetails",
     "QdrantCleanupErrorResponse",
-    "RegenerateRequest",
-    "RelevanceEnum",
     "ResendAgentJobWebhookRequest",
-    "ResolveRequest",
-    "ResolveRequestRefsItem",
     "ReviewStatusEnum",
     "SkillGenerationStateEnum",
     "StatusEnum",

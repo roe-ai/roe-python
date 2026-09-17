@@ -34,12 +34,12 @@ class AgentJobResultItem:
             result (list[AgentDatum] | None): List of job outputs, or error code if job failed
             agent_id (None | UUID): Base agent ID
             agent_version_id (None | UUID): Agent version ID
-            cost (float | None): Cost of the agent job execution
             inputs (list[Any] | None): The input data provided to the agent (full version from blob if available, truncated
                 from DB otherwise)
-            input_tokens (int | None): Number of input tokens used
-            output_tokens (int | None): Number of output tokens generated
             corrected_outputs (list[AgentDatum] | None | Unset): List of corrected outputs if any corrections were made
+            cost (float | None | Unset): Cost of the agent job execution
+            input_tokens (int | None | Unset): Number of input tokens used
+            output_tokens (int | None | Unset): Number of output tokens generated
      """
 
     id: str
@@ -47,11 +47,11 @@ class AgentJobResultItem:
     result: list[AgentDatum] | None
     agent_id: None | UUID
     agent_version_id: None | UUID
-    cost: float | None
     inputs: list[Any] | None
-    input_tokens: int | None
-    output_tokens: int | None
     corrected_outputs: list[AgentDatum] | None | Unset = UNSET
+    cost: float | None | Unset = UNSET
+    input_tokens: int | None | Unset = UNSET
+    output_tokens: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -88,9 +88,6 @@ class AgentJobResultItem:
         else:
             agent_version_id = self.agent_version_id
 
-        cost: float | None
-        cost = self.cost
-
         inputs: list[Any] | None
         if isinstance(self.inputs, list):
             inputs = self.inputs
@@ -98,12 +95,6 @@ class AgentJobResultItem:
 
         else:
             inputs = self.inputs
-
-        input_tokens: int | None
-        input_tokens = self.input_tokens
-
-        output_tokens: int | None
-        output_tokens = self.output_tokens
 
         corrected_outputs: list[dict[str, Any]] | None | Unset
         if isinstance(self.corrected_outputs, Unset):
@@ -118,6 +109,24 @@ class AgentJobResultItem:
         else:
             corrected_outputs = self.corrected_outputs
 
+        cost: float | None | Unset
+        if isinstance(self.cost, Unset):
+            cost = UNSET
+        else:
+            cost = self.cost
+
+        input_tokens: int | None | Unset
+        if isinstance(self.input_tokens, Unset):
+            input_tokens = UNSET
+        else:
+            input_tokens = self.input_tokens
+
+        output_tokens: int | None | Unset
+        if isinstance(self.output_tokens, Unset):
+            output_tokens = UNSET
+        else:
+            output_tokens = self.output_tokens
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -127,13 +136,16 @@ class AgentJobResultItem:
             "result": result,
             "agent_id": agent_id,
             "agent_version_id": agent_version_id,
-            "cost": cost,
             "inputs": inputs,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
         })
         if corrected_outputs is not UNSET:
             field_dict["corrected_outputs"] = corrected_outputs
+        if cost is not UNSET:
+            field_dict["cost"] = cost
+        if input_tokens is not UNSET:
+            field_dict["input_tokens"] = input_tokens
+        if output_tokens is not UNSET:
+            field_dict["output_tokens"] = output_tokens
 
         return field_dict
 
@@ -212,14 +224,6 @@ class AgentJobResultItem:
         agent_version_id = _parse_agent_version_id(d.pop("agent_version_id"))
 
 
-        def _parse_cost(data: object) -> float | None:
-            if data is None:
-                return data
-            return cast(float | None, data)
-
-        cost = _parse_cost(d.pop("cost"))
-
-
         def _parse_inputs(data: object) -> list[Any] | None:
             if data is None:
                 return data
@@ -234,22 +238,6 @@ class AgentJobResultItem:
             return cast(list[Any] | None, data)
 
         inputs = _parse_inputs(d.pop("inputs"))
-
-
-        def _parse_input_tokens(data: object) -> int | None:
-            if data is None:
-                return data
-            return cast(int | None, data)
-
-        input_tokens = _parse_input_tokens(d.pop("input_tokens"))
-
-
-        def _parse_output_tokens(data: object) -> int | None:
-            if data is None:
-                return data
-            return cast(int | None, data)
-
-        output_tokens = _parse_output_tokens(d.pop("output_tokens"))
 
 
         def _parse_corrected_outputs(data: object) -> list[AgentDatum] | None | Unset:
@@ -277,17 +265,47 @@ class AgentJobResultItem:
         corrected_outputs = _parse_corrected_outputs(d.pop("corrected_outputs", UNSET))
 
 
+        def _parse_cost(data: object) -> float | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(float | None | Unset, data)
+
+        cost = _parse_cost(d.pop("cost", UNSET))
+
+
+        def _parse_input_tokens(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        input_tokens = _parse_input_tokens(d.pop("input_tokens", UNSET))
+
+
+        def _parse_output_tokens(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        output_tokens = _parse_output_tokens(d.pop("output_tokens", UNSET))
+
+
         agent_job_result_item = cls(
             id=id,
             status=status,
             result=result,
             agent_id=agent_id,
             agent_version_id=agent_version_id,
-            cost=cost,
             inputs=inputs,
+            corrected_outputs=corrected_outputs,
+            cost=cost,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            corrected_outputs=corrected_outputs,
         )
 
 

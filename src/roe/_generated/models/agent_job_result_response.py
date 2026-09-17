@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 from typing import cast
 from uuid import UUID
 
@@ -29,17 +30,17 @@ class AgentJobResultResponse:
             agent_id (UUID): The ID of the base agent
             agent_version_id (UUID): The ID of the agent version
             inputs (list[Any]): The input data provided to the agent
-            input_tokens (int | None): Number of input tokens used
-            output_tokens (int | None): Number of output tokens generated
             outputs (list[AgentDatum]): The output data from the agent
+            input_tokens (int | None | Unset): Number of input tokens used
+            output_tokens (int | None | Unset): Number of output tokens generated
      """
 
     agent_id: UUID
     agent_version_id: UUID
     inputs: list[Any]
-    input_tokens: int | None
-    output_tokens: int | None
     outputs: list[AgentDatum]
+    input_tokens: int | None | Unset = UNSET
+    output_tokens: int | None | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -56,18 +57,24 @@ class AgentJobResultResponse:
 
 
 
-        input_tokens: int | None
-        input_tokens = self.input_tokens
-
-        output_tokens: int | None
-        output_tokens = self.output_tokens
-
         outputs = []
         for outputs_item_data in self.outputs:
             outputs_item = outputs_item_data.to_dict()
             outputs.append(outputs_item)
 
 
+
+        input_tokens: int | None | Unset
+        if isinstance(self.input_tokens, Unset):
+            input_tokens = UNSET
+        else:
+            input_tokens = self.input_tokens
+
+        output_tokens: int | None | Unset
+        if isinstance(self.output_tokens, Unset):
+            output_tokens = UNSET
+        else:
+            output_tokens = self.output_tokens
 
 
         field_dict: dict[str, Any] = {}
@@ -76,10 +83,12 @@ class AgentJobResultResponse:
             "agent_id": agent_id,
             "agent_version_id": agent_version_id,
             "inputs": inputs,
-            "input_tokens": input_tokens,
-            "output_tokens": output_tokens,
             "outputs": outputs,
         })
+        if input_tokens is not UNSET:
+            field_dict["input_tokens"] = input_tokens
+        if output_tokens is not UNSET:
+            field_dict["output_tokens"] = output_tokens
 
         return field_dict
 
@@ -102,22 +111,6 @@ class AgentJobResultResponse:
         inputs = cast(list[Any], d.pop("inputs"))
 
 
-        def _parse_input_tokens(data: object) -> int | None:
-            if data is None:
-                return data
-            return cast(int | None, data)
-
-        input_tokens = _parse_input_tokens(d.pop("input_tokens"))
-
-
-        def _parse_output_tokens(data: object) -> int | None:
-            if data is None:
-                return data
-            return cast(int | None, data)
-
-        output_tokens = _parse_output_tokens(d.pop("output_tokens"))
-
-
         outputs = []
         _outputs = d.pop("outputs")
         for outputs_item_data in (_outputs):
@@ -128,13 +121,33 @@ class AgentJobResultResponse:
             outputs.append(outputs_item)
 
 
+        def _parse_input_tokens(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        input_tokens = _parse_input_tokens(d.pop("input_tokens", UNSET))
+
+
+        def _parse_output_tokens(data: object) -> int | None | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(int | None | Unset, data)
+
+        output_tokens = _parse_output_tokens(d.pop("output_tokens", UNSET))
+
+
         agent_job_result_response = cls(
             agent_id=agent_id,
             agent_version_id=agent_version_id,
             inputs=inputs,
+            outputs=outputs,
             input_tokens=input_tokens,
             output_tokens=output_tokens,
-            outputs=outputs,
         )
 
 
