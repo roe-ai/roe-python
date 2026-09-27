@@ -29,7 +29,9 @@ class AgentVersionCreateRequest:
         Attributes:
             version_name (str | Unset): Version name for the agent version. Defaults to 'unnamed version' if not provided.
             description (None | str | Unset): Description for the agent version.
-            input_definitions (Any | Unset): List of input definitions for this agent version.
+            input_definitions (Any | Unset): List of input definitions for this agent version. Engines with fixed job inputs
+                (the policy-aware investigation engines) accept only the keys they declare; any additional key is rejected. Per-
+                case detail belongs inside the value of an accepted field, which is free text.
             engine_config (Any | Unset): Engine configuration as a dictionary of string key-value pairs.
             post_actions (list[PostActionSpecRequest] | Unset): Connector write actions for this version. Omitted: the new
                 version keeps the current version's actions. A list: those become the new version's actions. []: the new version

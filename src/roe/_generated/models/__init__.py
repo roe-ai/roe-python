@@ -51,6 +51,9 @@ from .base_agent_update_request import BaseAgentUpdateRequest
 from .color_enum import ColorEnum
 from .connection import Connection
 from .connection_auth_config import ConnectionAuthConfig
+from .connection_authentication_check import ConnectionAuthenticationCheck
+from .connection_authentication_check_status_enum import ConnectionAuthenticationCheckStatusEnum
+from .connection_authentication_checks import ConnectionAuthenticationChecks
 from .connection_delete_error_response import ConnectionDeleteErrorResponse
 from .connection_dynamic_inputs import ConnectionDynamicInputs
 from .connection_list import ConnectionList
@@ -64,6 +67,8 @@ from .connections_test_credentials_create_response_400_type_0 import Connections
 from .connections_test_credentials_create_response_400_type_1 import ConnectionsTestCredentialsCreateResponse400Type1
 from .connections_update_response_400_type_1 import ConnectionsUpdateResponse400Type1
 from .connections_update_response_400_type_2 import ConnectionsUpdateResponse400Type2
+from .connector_browser_session import ConnectorBrowserSession
+from .connector_browser_session_required_config import ConnectorBrowserSessionRequiredConfig
 from .connector_list_response import ConnectorListResponse
 from .connector_metadata import ConnectorMetadata
 from .connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
@@ -76,11 +81,19 @@ from .create_policy import CreatePolicy
 from .create_policy_request import CreatePolicyRequest
 from .create_policy_version import CreatePolicyVersion
 from .create_policy_version_request import CreatePolicyVersionRequest
+from .create_skill_set import CreateSkillSet
+from .create_skill_set_request import CreateSkillSetRequest
+from .create_skill_set_version import CreateSkillSetVersion
+from .create_skill_set_version_file_changes_item import CreateSkillSetVersionFileChangesItem
+from .create_skill_set_version_request import CreateSkillSetVersionRequest
+from .create_skill_set_version_request_file_changes_item import CreateSkillSetVersionRequestFileChangesItem
 from .dependent_agent_info import DependentAgentInfo
 from .discovery_supported_models_list_response_400 import DiscoverySupportedModelsListResponse400
 from .duplicate_connection_existing import DuplicateConnectionExisting
 from .duplicate_connection_response import DuplicateConnectionResponse
 from .error_detail_response import ErrorDetailResponse
+from .generate_skill_set_version_request import GenerateSkillSetVersionRequest
+from .generate_skill_set_version_response import GenerateSkillSetVersionResponse
 from .job_input import JobInput
 from .list_agent_job import ListAgentJob
 from .list_agent_job_metadata import ListAgentJobMetadata
@@ -90,6 +103,8 @@ from .paginated_connection_list_list import PaginatedConnectionListList
 from .paginated_list_agent_job_list import PaginatedListAgentJobList
 from .paginated_policy_list import PaginatedPolicyList
 from .paginated_policy_version_list import PaginatedPolicyVersionList
+from .paginated_skill_set_list import PaginatedSkillSetList
+from .paginated_skill_set_version_list import PaginatedSkillSetVersionList
 from .patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
 from .patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
 from .patched_update_connection_request import PatchedUpdateConnectionRequest
@@ -97,6 +112,7 @@ from .patched_update_connection_request_auth_config import PatchedUpdateConnecti
 from .patched_update_connection_request_config import PatchedUpdateConnectionRequestConfig
 from .patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
 from .patched_update_policy_request import PatchedUpdatePolicyRequest
+from .patched_update_skill_set_request import PatchedUpdateSkillSetRequest
 from .policies_create_response_400 import PoliciesCreateResponse400
 from .policies_partial_update_response_400 import PoliciesPartialUpdateResponse400
 from .policies_update_response_400 import PoliciesUpdateResponse400
@@ -111,10 +127,22 @@ from .post_action_spec_request import PostActionSpecRequest
 from .post_action_spec_request_param_mappings import PostActionSpecRequestParamMappings
 from .public_agent_job_status_event import PublicAgentJobStatusEvent
 from .public_agent_job_status_event_error_details import PublicAgentJobStatusEventErrorDetails
+from .public_skill_set_generation import PublicSkillSetGeneration
 from .qdrant_cleanup_error_response import QdrantCleanupErrorResponse
 from .resend_agent_job_webhook_request import ResendAgentJobWebhookRequest
 from .review_status_enum import ReviewStatusEnum
+from .skill_file import SkillFile
+from .skill_file_request import SkillFileRequest
 from .skill_generation_state_enum import SkillGenerationStateEnum
+from .skill_set import SkillSet
+from .skill_set_delete_conflict import SkillSetDeleteConflict
+from .skill_set_dependent_agent_info import SkillSetDependentAgentInfo
+from .skill_set_generation_run import SkillSetGenerationRun
+from .skill_set_version import SkillSetVersion
+from .skill_set_version_created_by import SkillSetVersionCreatedBy
+from .skill_sets_create_response_400 import SkillSetsCreateResponse400
+from .skill_sets_generate_version_response_400 import SkillSetsGenerateVersionResponse400
+from .skill_sets_versions_create_response_400 import SkillSetsVersionsCreateResponse400
 from .status_enum import StatusEnum
 from .supported_llm_model import SupportedLLMModel
 from .supported_llm_model_list import SupportedLLMModelList
@@ -146,6 +174,7 @@ from .update_connection_request_config import UpdateConnectionRequestConfig
 from .update_connection_request_dynamic_inputs import UpdateConnectionRequestDynamicInputs
 from .update_policy import UpdatePolicy
 from .update_policy_request import UpdatePolicyRequest
+from .update_skill_set import UpdateSkillSet
 from .upload_table_response_400_type_1 import UploadTableResponse400Type1
 from .upload_table_response_400_type_2 import UploadTableResponse400Type2
 from .user import User
@@ -203,6 +232,9 @@ __all__ = (
     "ColorEnum",
     "Connection",
     "ConnectionAuthConfig",
+    "ConnectionAuthenticationCheck",
+    "ConnectionAuthenticationChecks",
+    "ConnectionAuthenticationCheckStatusEnum",
     "ConnectionDeleteErrorResponse",
     "ConnectionDynamicInputs",
     "ConnectionList",
@@ -216,6 +248,8 @@ __all__ = (
     "ConnectionsTestCredentialsCreateResponse400Type1",
     "ConnectionsUpdateResponse400Type1",
     "ConnectionsUpdateResponse400Type2",
+    "ConnectorBrowserSession",
+    "ConnectorBrowserSessionRequiredConfig",
     "ConnectorListResponse",
     "ConnectorMetadata",
     "ConnectorMetadataDynamicInputFields",
@@ -228,11 +262,19 @@ __all__ = (
     "CreatePolicyRequest",
     "CreatePolicyVersion",
     "CreatePolicyVersionRequest",
+    "CreateSkillSet",
+    "CreateSkillSetRequest",
+    "CreateSkillSetVersion",
+    "CreateSkillSetVersionFileChangesItem",
+    "CreateSkillSetVersionRequest",
+    "CreateSkillSetVersionRequestFileChangesItem",
     "DependentAgentInfo",
     "DiscoverySupportedModelsListResponse400",
     "DuplicateConnectionExisting",
     "DuplicateConnectionResponse",
     "ErrorDetailResponse",
+    "GenerateSkillSetVersionRequest",
+    "GenerateSkillSetVersionResponse",
     "JobInput",
     "ListAgentJob",
     "ListAgentJobMetadata",
@@ -242,6 +284,8 @@ __all__ = (
     "PaginatedListAgentJobList",
     "PaginatedPolicyList",
     "PaginatedPolicyVersionList",
+    "PaginatedSkillSetList",
+    "PaginatedSkillSetVersionList",
     "PatchedAgentVersionUpdateRequest",
     "PatchedBaseAgentUpdateRequest",
     "PatchedUpdateConnectionRequest",
@@ -249,6 +293,7 @@ __all__ = (
     "PatchedUpdateConnectionRequestConfig",
     "PatchedUpdateConnectionRequestDynamicInputs",
     "PatchedUpdatePolicyRequest",
+    "PatchedUpdateSkillSetRequest",
     "PoliciesCreateResponse400",
     "PoliciesPartialUpdateResponse400",
     "PoliciesUpdateResponse400",
@@ -263,10 +308,22 @@ __all__ = (
     "PostActionSpecRequestParamMappings",
     "PublicAgentJobStatusEvent",
     "PublicAgentJobStatusEventErrorDetails",
+    "PublicSkillSetGeneration",
     "QdrantCleanupErrorResponse",
     "ResendAgentJobWebhookRequest",
     "ReviewStatusEnum",
+    "SkillFile",
+    "SkillFileRequest",
     "SkillGenerationStateEnum",
+    "SkillSet",
+    "SkillSetDeleteConflict",
+    "SkillSetDependentAgentInfo",
+    "SkillSetGenerationRun",
+    "SkillSetsCreateResponse400",
+    "SkillSetsGenerateVersionResponse400",
+    "SkillSetsVersionsCreateResponse400",
+    "SkillSetVersion",
+    "SkillSetVersionCreatedBy",
     "StatusEnum",
     "SupportedLLMModel",
     "SupportedLLMModelList",
@@ -298,6 +355,7 @@ __all__ = (
     "UpdateConnectionRequestDynamicInputs",
     "UpdatePolicy",
     "UpdatePolicyRequest",
+    "UpdateSkillSet",
     "UploadTableResponse400Type1",
     "UploadTableResponse400Type2",
     "User",

@@ -41,7 +41,9 @@ class AgentVersion:
             engine_name (str): Engine Display Name
             supports_memory (bool): True when this engine has a built-in memory profile, so memory profiles can be
                 configured on it. Independent of whether memory is currently switched on.
-            input_definitions (list[AgentInputDefinition]): List of input definitions for this agent version.
+            input_definitions (list[AgentInputDefinition]): List of input definitions for this agent version. Engines with
+                fixed job inputs (the policy-aware investigation engines) accept only the keys they declare; any additional key
+                is rejected. Per-case detail belongs inside the value of an accepted field, which is free text.
             engine_config (Any): Engine configuration.
             post_actions (list[PostActionSpec]): Connector write actions configured on this version.
             organization_id (UUID): Organization ID from base_agent.

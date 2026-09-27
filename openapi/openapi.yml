@@ -3348,6 +3348,502 @@ paths:
               schema:
                 $ref: '#/components/schemas/ErrorDetailResponse'
           description: Policy or policy version not found.
+  /v1/skills/:
+    get:
+      operationId: skill_sets_list
+      description: List the org's skill sets and create a new one.
+      parameters:
+      - name: ordering
+        required: false
+        in: query
+        description: Which field to use when ordering the results.
+        schema:
+          type: string
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSkillSetList'
+          description: ''
+    post:
+      operationId: skill_sets_create
+      description: List the org's skill sets and create a new one.
+      tags:
+      - sdk
+      - skill_sets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSkillSetRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSkillSet'
+          description: Skill set created successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: Invalid request data.
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/skills/{id}/:
+    get:
+      operationId: skill_sets_retrieve
+      description: Retrieve, update, or delete a single skill set.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillSet'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+    patch:
+      operationId: skill_sets_partial_update
+      description: Retrieve, update, or delete a single skill set.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedUpdateSkillSetRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UpdateSkillSet'
+          description: ''
+    delete:
+      operationId: skill_sets_destroy
+      description: Retrieve, update, or delete a single skill set.
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: Skill set deleted successfully.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+        '409':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillSetDeleteConflict'
+          description: Skill set is in use by agents and cannot be deleted.
+  /v1/skills/{skill_set_id}/generate-version/:
+    post:
+      operationId: skill_sets_generate_version
+      description: |-
+        Author the next version of a skill set with an agent.
+
+        Starts the generation workflow and returns where to stream it. The agent
+        reads the customer's use case, profiles the linked tables, reads the
+        attached CSVs and documents, and rewrites the customer layer of the skill.
+
+        Nothing is written here: the generated file set comes back for review and is
+        saved through the normal version-create path, so a generated skill only ever
+        becomes live because a person accepted it.
+      parameters:
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/GenerateSkillSetVersionRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/GenerateSkillSetVersionResponse'
+          description: Generation started; stream it at sse_endpoint.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/skills/{skill_set_id}/generation/:
+    get:
+      operationId: skill_sets_generation_retrieve
+      description: 'Returns the last generation and its status, or generation: null
+        when no run exists.'
+      parameters:
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PublicSkillSetGeneration'
+          description: ''
+  /v1/skills/{skill_set_id}/generation/{run_id}/:
+    delete:
+      operationId: skill_sets_generation_cancel
+      description: Used when the operator cancels, when a finished draft has been
+        loaded into the editor, and when a run turns out to be unrecoverable. Cancelling
+        a run that already finished is harmless.
+      summary: Stop tracking a generation, cancelling it if it is still running
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: Run stopped and no longer tracked.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+        '502':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/skills/{skill_set_id}/set-current-version/{version_id}/:
+    patch:
+      operationId: skill_sets_set_current_version
+      description: Point a skill set at a specific version (set-current / rollback).
+      parameters:
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillSet'
+          description: ''
+  /v1/skills/{skill_set_id}/versions/:
+    get:
+      operationId: skill_sets_versions_list
+      description: List a skill set's versions, or create a new version.
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedSkillSetVersionList'
+          description: ''
+    post:
+      operationId: skill_sets_versions_create
+      description: List a skill set's versions, or create a new version.
+      parameters:
+      - in: path
+        name: skill_set_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CreateSkillSetVersionRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CreateSkillSetVersion'
+          description: Skill set version created successfully.
+        '400':
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties: {}
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/skills/versions/{id}/:
+    get:
+      operationId: skill_sets_versions_retrieve
+      description: Retrieve a version by its id, or by a set id (-> that set's current
+        version).
+      parameters:
+      - in: path
+        name: id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - sdk
+      - skill_sets
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SkillSetVersion'
+          description: ''
   /v1/tables/:
     get:
       operationId: tables_list
@@ -4167,7 +4663,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/AgentInputDefinition'
-          description: List of input definitions for this agent version.
+          description: List of input definitions for this agent version. Engines with
+            fixed job inputs (the policy-aware investigation engines) accept only
+            the keys they declare; any additional key is rejected. Per-case detail
+            belongs inside the value of an accepted field, which is free text.
         engine_config:
           description: Engine configuration.
         post_actions:
@@ -4217,7 +4716,10 @@ components:
           - 'null'
           description: Description for the agent version.
         input_definitions:
-          description: List of input definitions for this agent version.
+          description: List of input definitions for this agent version. Engines with
+            fixed job inputs (the policy-aware investigation engines) accept only
+            the keys they declare; any additional key is rejected. Per-case detail
+            belongs inside the value of an accepted field, which is free text.
         engine_config:
           description: Engine configuration as a dictionary of string key-value pairs.
         post_actions:
@@ -4360,7 +4862,10 @@ components:
           minLength: 1
           description: Description of the first version.
         input_definitions:
-          description: Input definitions for the first version.
+          description: Input definitions for the first version. Engines with fixed
+            job inputs (the policy-aware investigation engines) accept only the keys
+            they declare; any additional key is rejected. Per-case detail belongs
+            inside the value of an accepted field, which is free text.
         engine_config:
           description: Engine configuration for the first version.
       required:
@@ -4450,6 +4955,12 @@ components:
           type: object
           additionalProperties: {}
           readOnly: true
+        browser_session_expires_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
         created_at:
@@ -4462,6 +4973,7 @@ components:
           readOnly: true
       required:
       - auth_config
+      - browser_session_expires_at
       - connector_display_name
       - connector_type
       - created_at
@@ -4473,6 +4985,38 @@ components:
       - organization
       - updated_at
       - user
+    ConnectionAuthenticationCheck:
+      type: object
+      properties:
+        status:
+          $ref: '#/components/schemas/ConnectionAuthenticationCheckStatusEnum'
+        message:
+          type: string
+      required:
+      - message
+      - status
+    ConnectionAuthenticationCheckStatusEnum:
+      enum:
+      - passed
+      - failed
+      - not_configured
+      - unsupported
+      type: string
+      description: |-
+        * `passed` - passed
+        * `failed` - failed
+        * `not_configured` - not_configured
+        * `unsupported` - unsupported
+    ConnectionAuthenticationChecks:
+      type: object
+      properties:
+        api:
+          $ref: '#/components/schemas/ConnectionAuthenticationCheck'
+        dashboard:
+          $ref: '#/components/schemas/ConnectionAuthenticationCheck'
+      required:
+      - api
+      - dashboard
     ConnectionDeleteErrorResponse:
       type: object
       properties:
@@ -4546,6 +5090,19 @@ components:
       - organization
       - updated_at
       - user
+    ConnectorBrowserSession:
+      type: object
+      properties:
+        field:
+          type: string
+          description: Auth field the capture button sits beside.
+        required_config:
+          type: object
+          additionalProperties: {}
+          description: Config values required before signing in.
+      required:
+      - field
+      - required_config
     ConnectorListResponse:
       type: object
       properties:
@@ -4587,8 +5144,13 @@ components:
           type: array
           items:
             type: string
+        browser_session:
+          oneOf:
+          - $ref: '#/components/schemas/ConnectorBrowserSession'
+          - type: 'null'
       required:
       - auth_schema
+      - browser_session
       - category
       - config_schema
       - delivery_config_schema
@@ -4773,6 +5335,129 @@ components:
           description: ID of the version this was derived from
       required:
       - content
+    CreateSkillSet:
+      type: object
+      description: |-
+        Create a new skill set. Its version 0 is always the base skill.
+
+        Every set starts from the same built-in base content; customization happens
+        by creating a new version on top of it (``POST .../versions/``), which is
+        also what makes the edit downloadable and rollback-able.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - id
+      - name
+      - organization_id
+      - updated_at
+    CreateSkillSetRequest:
+      type: object
+      description: |-
+        Create a new skill set. Its version 0 is always the base skill.
+
+        Every set starts from the same built-in base content; customization happens
+        by creating a new version on top of it (``POST .../versions/``), which is
+        also what makes the edit downloadable and rollback-able.
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+      required:
+      - name
+    CreateSkillSetVersion:
+      type: object
+      description: Create a new (full) version of an existing skill set.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type: string
+          description: Version name (auto-generated if not provided).
+          maxLength: 255
+        summary:
+          type: string
+          default: ''
+          description: What this version changed and why, in plain language.
+        file_changes:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: 'Per-file walkthrough: [{path, status, note, added_lines, removed_lines}].
+            status is created, edited, or untouched.'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillFile'
+          description: The complete file set for this new version.
+      required:
+      - files
+      - id
+    CreateSkillSetVersionRequest:
+      type: object
+      description: Create a new (full) version of an existing skill set.
+      properties:
+        version_name:
+          type: string
+          minLength: 1
+          description: Version name (auto-generated if not provided).
+          maxLength: 255
+        base_version_id:
+          type: string
+          format: uuid
+          writeOnly: true
+          description: ID of the version this was derived from.
+        summary:
+          type: string
+          default: ''
+          description: What this version changed and why, in plain language.
+        file_changes:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: 'Per-file walkthrough: [{path, status, note, added_lines, removed_lines}].
+            status is created, edited, or untouched.'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillFileRequest'
+          description: The complete file set for this new version.
+      required:
+      - files
     DependentAgentInfo:
       type: object
       description: An agent version that references a policy (see get_agents_using_policy).
@@ -4826,6 +5511,78 @@ components:
           description: Human-readable error detail
       required:
       - detail
+    GenerateSkillSetVersionRequest:
+      type: object
+      description: |-
+        Request to author the next version of a skill set with an agent.
+
+        ``base_version_id`` is the version the draft is derived from; omit it to
+        start from the set's current version. By default nothing here writes a
+        version — the generated file set comes back for review and is saved
+        through the normal version-create path. With ``auto_commit`` the workflow
+        saves it itself on success, through that same path. At least one table name
+        or attachment is required; a use case or policy alone is not a data source.
+      properties:
+        use_case:
+          type: string
+          minLength: 1
+          description: 'What the company does and what this agent decides: the decision
+            scope, the labels it may apply, and anything it must always do.'
+        base_version_id:
+          type: string
+          format: uuid
+          description: Version to start from. Defaults to the set's current version.
+        auto_commit:
+          type: boolean
+          default: false
+          description: Save the generated draft as the set's next version automatically
+            when the run succeeds, skipping draft review. Agents following the set
+            pick the new version up the moment it lands.
+        table_names:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: Roe table names the agent may profile to learn the data shape.
+        attachments:
+          type: array
+          items:
+            type: string
+            minLength: 1
+          description: File IDs (file_<uuid>) of CSVs or documents to read.
+        policy_id:
+          type: string
+          format: uuid
+          description: Policy whose dispositions the generated skill must use as its
+            label list. Omit to let the agent choose labels from the use case.
+        policy_version_id:
+          type: string
+          format: uuid
+          description: Requires policy_id. Which version of that policy to read. Defaults
+            to the policy's current version. An agent may be pinned to an older one.
+      required:
+      - use_case
+    GenerateSkillSetVersionResponse:
+      type: object
+      description: Where to stream the generation run's progress and result.
+      properties:
+        workflow_id:
+          type: string
+          readOnly: true
+          description: Temporal workflow ID for tracking the process
+        sse_endpoint:
+          type: string
+          readOnly: true
+          description: SSE endpoint URL for real-time status updates
+        run_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: Identifies this run for reattaching to it or cancelling it.
+      required:
+      - run_id
+      - sse_endpoint
+      - workflow_id
     JobInput:
       type: object
       description: Serializer for individual job input data
@@ -5051,6 +5808,52 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/PolicyVersion'
+    PaginatedSkillSetList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillSet'
+    PaginatedSkillSetVersionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillSetVersion'
     PatchedAgentVersionUpdateRequest:
       type: object
       properties:
@@ -5113,6 +5916,16 @@ components:
     PatchedUpdatePolicyRequest:
       type: object
       description: Serializer for updating policy metadata (name, description)
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+        description:
+          type: string
+    PatchedUpdateSkillSetRequest:
+      type: object
+      description: Update skill set metadata (name, description) only.
       properties:
         name:
           type: string
@@ -5320,6 +6133,15 @@ components:
       required:
       - status_code
       - timestamp
+    PublicSkillSetGeneration:
+      type: object
+      properties:
+        generation:
+          oneOf:
+          - $ref: '#/components/schemas/SkillSetGenerationRun'
+          - type: 'null'
+      required:
+      - generation
     QdrantCleanupErrorResponse:
       type: object
       description: 500 body when deleting an agent/version fails Qdrant collection
@@ -5357,6 +6179,34 @@ components:
         * `pending` - Pending Review
         * `approved` - Approved
         * `rejected` - Rejected
+    SkillFile:
+      type: object
+      description: One markdown file (relative_path + content) inside a skill set
+        version.
+      properties:
+        relative_path:
+          type: string
+          maxLength: 1024
+        content:
+          type: string
+      required:
+      - content
+      - relative_path
+    SkillFileRequest:
+      type: object
+      description: One markdown file (relative_path + content) inside a skill set
+        version.
+      properties:
+        relative_path:
+          type: string
+          minLength: 1
+          maxLength: 1024
+        content:
+          type: string
+          minLength: 1
+      required:
+      - content
+      - relative_path
     SkillGenerationStateEnum:
       enum:
       - generating
@@ -5365,6 +6215,179 @@ components:
       description: |-
         * `generating` - generating
         * `failed` - failed
+    SkillSet:
+      type: object
+      description: Skill set metadata (read).
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          readOnly: true
+        description:
+          type: string
+          readOnly: true
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - description
+      - id
+      - name
+      - organization_id
+      - updated_at
+    SkillSetDeleteConflict:
+      type: object
+      description: 409 body when a skill set cannot be deleted because agents reference
+        it.
+      properties:
+        error:
+          type: string
+        dependent_agents:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillSetDependentAgentInfo'
+      required:
+      - dependent_agents
+      - error
+    SkillSetDependentAgentInfo:
+      type: object
+      description: An agent version that references a skill set (see get_agents_using_skill_set).
+      properties:
+        base_agent_id:
+          type: string
+          format: uuid
+        agent_name:
+          type: string
+        version_id:
+          type: string
+          format: uuid
+        version_name:
+          type: string
+      required:
+      - agent_name
+      - base_agent_id
+      - version_id
+      - version_name
+    SkillSetGenerationRun:
+      type: object
+      description: A generation already in flight, so a page can reattach to it.
+      properties:
+        workflow_id:
+          type: string
+          readOnly: true
+          description: Temporal workflow ID for tracking the process
+        sse_endpoint:
+          type: string
+          readOnly: true
+          description: SSE endpoint URL for real-time status updates
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        status:
+          type: string
+          readOnly: true
+          description: building, succeeded, or failed.
+        started_at:
+          type: string
+          format: date-time
+          readOnly: true
+          description: When the run started — the UI shows elapsed time from this.
+      required:
+      - id
+      - sse_endpoint
+      - started_at
+      - status
+      - workflow_id
+    SkillSetVersion:
+      type: object
+      description: Full skill set version (nested set + files) for read responses.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type: string
+          maxLength: 255
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        skill_set:
+          allOf:
+          - $ref: '#/components/schemas/SkillSet'
+          readOnly: true
+        created_by:
+          allOf:
+          - $ref: '#/components/schemas/SkillSetVersionCreatedBy'
+          readOnly: true
+        base_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        summary:
+          type: string
+        file_changes: {}
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/SkillFile'
+          readOnly: true
+      required:
+      - base_version_id
+      - created_at
+      - created_by
+      - files
+      - id
+      - skill_set
+      - updated_at
+      - version_name
+    SkillSetVersionCreatedBy:
+      type: object
+      description: Minimal user serializer for audit metadata on skill set versions.
+      properties:
+        id:
+          type: integer
+          readOnly: true
+        email:
+          type: string
+          format: email
+          readOnly: true
+          title: Email address
+        display_name:
+          type: string
+          readOnly: true
+      required:
+      - display_name
+      - email
+      - id
     StatusEnum:
       enum:
       - active
@@ -5681,6 +6704,8 @@ components:
         tested_at:
           type: string
           format: date-time
+        checks:
+          $ref: '#/components/schemas/ConnectionAuthenticationChecks'
       required:
       - message
       - success
@@ -5789,6 +6814,44 @@ components:
           type: string
       required:
       - name
+    UpdateSkillSet:
+      type: object
+      description: Update skill set metadata (name, description) only.
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 255
+        description:
+          type: string
+        organization_id:
+          type: string
+          format: uuid
+          readOnly: true
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+          readOnly: true
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - created_at
+      - current_version_id
+      - id
+      - name
+      - organization_id
+      - updated_at
     User:
       type: object
       properties:

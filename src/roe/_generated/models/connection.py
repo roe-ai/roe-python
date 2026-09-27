@@ -45,6 +45,7 @@ class Connection:
             dynamic_inputs (ConnectionDynamicInputs):
             dynamic_input_test_disabled_reason (None | str):
             auth_config (ConnectionAuthConfig):
+            browser_session_expires_at (datetime.datetime | None):
             created_at (datetime.datetime):
             updated_at (datetime.datetime):
             description (str | Unset):
@@ -63,6 +64,7 @@ class Connection:
     dynamic_inputs: ConnectionDynamicInputs
     dynamic_input_test_disabled_reason: None | str
     auth_config: ConnectionAuthConfig
+    browser_session_expires_at: datetime.datetime | None
     created_at: datetime.datetime
     updated_at: datetime.datetime
     description: str | Unset = UNSET
@@ -99,6 +101,12 @@ class Connection:
 
         auth_config = self.auth_config.to_dict()
 
+        browser_session_expires_at: None | str
+        if isinstance(self.browser_session_expires_at, datetime.datetime):
+            browser_session_expires_at = self.browser_session_expires_at.isoformat()
+        else:
+            browser_session_expires_at = self.browser_session_expires_at
+
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
@@ -126,6 +134,7 @@ class Connection:
             "dynamic_inputs": dynamic_inputs,
             "dynamic_input_test_disabled_reason": dynamic_input_test_disabled_reason,
             "auth_config": auth_config,
+            "browser_session_expires_at": browser_session_expires_at,
             "created_at": created_at,
             "updated_at": updated_at,
         })
@@ -189,6 +198,24 @@ class Connection:
 
 
 
+        def _parse_browser_session_expires_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                browser_session_expires_at_type_0 = isoparse(data)
+
+
+
+                return browser_session_expires_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        browser_session_expires_at = _parse_browser_session_expires_at(d.pop("browser_session_expires_at"))
+
+
         created_at = isoparse(d.pop("created_at"))
 
 
@@ -224,6 +251,7 @@ class Connection:
             dynamic_inputs=dynamic_inputs,
             dynamic_input_test_disabled_reason=dynamic_input_test_disabled_reason,
             auth_config=auth_config,
+            browser_session_expires_at=browser_session_expires_at,
             created_at=created_at,
             updated_at=updated_at,
             description=description,

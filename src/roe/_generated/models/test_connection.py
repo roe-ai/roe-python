@@ -8,10 +8,13 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 from dateutil.parser import isoparse
 from typing import cast
 import datetime
 
+if TYPE_CHECKING:
+  from ..models.connection_authentication_checks import ConnectionAuthenticationChecks
 
 
 
@@ -29,11 +32,13 @@ class TestConnection:
             success (bool):
             message (str):
             tested_at (datetime.datetime):
+            checks (ConnectionAuthenticationChecks | Unset):
      """
 
     success: bool
     message: str
     tested_at: datetime.datetime
+    checks: ConnectionAuthenticationChecks | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -41,11 +46,16 @@ class TestConnection:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.connection_authentication_checks import ConnectionAuthenticationChecks
         success = self.success
 
         message = self.message
 
         tested_at = self.tested_at.isoformat()
+
+        checks: dict[str, Any] | Unset = UNSET
+        if not isinstance(self.checks, Unset):
+            checks = self.checks.to_dict()
 
 
         field_dict: dict[str, Any] = {}
@@ -55,6 +65,8 @@ class TestConnection:
             "message": message,
             "tested_at": tested_at,
         })
+        if checks is not UNSET:
+            field_dict["checks"] = checks
 
         return field_dict
 
@@ -62,6 +74,7 @@ class TestConnection:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.connection_authentication_checks import ConnectionAuthenticationChecks
         d = dict(src_dict)
         success = d.pop("success")
 
@@ -72,10 +85,21 @@ class TestConnection:
 
 
 
+        _checks = d.pop("checks", UNSET)
+        checks: ConnectionAuthenticationChecks | Unset
+        if isinstance(_checks,  Unset):
+            checks = UNSET
+        else:
+            checks = ConnectionAuthenticationChecks.from_dict(_checks)
+
+
+
+
         test_connection = cls(
             success=success,
             message=message,
             tested_at=tested_at,
+            checks=checks,
         )
 
 

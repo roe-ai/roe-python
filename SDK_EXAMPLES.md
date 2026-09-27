@@ -819,6 +819,210 @@ result = client.policies.versions.retrieve(
 )
 ```
 
+### Skill Sets
+
+#### `skill_sets_list`
+
+List the org's skill sets and create a new one.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.list(
+    ordering="ordering",  # optional
+    page=1,  # optional
+    page_size=1,  # optional
+    search="search",  # optional
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_create`
+
+List the org's skill sets and create a new one.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.create(
+    name="name",  # required
+    organization_id="organization_id",  # optional
+    description="description",  # optional
+)
+```
+
+#### `skill_sets_retrieve`
+
+Retrieve, update, or delete a single skill set.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.retrieve(
+    id="id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_partial_update`
+
+Retrieve, update, or delete a single skill set.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.update(
+    id="id",  # required
+    organization_id="organization_id",  # optional
+    name="name",  # optional
+    description="description",  # optional
+)
+```
+
+#### `skill_sets_destroy`
+
+Retrieve, update, or delete a single skill set.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.delete(
+    id="id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_versions_list`
+
+List a skill set's versions, or create a new version.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.list_versions(
+    skill_set_id="skill_set_id",  # required
+    page=1,  # optional
+    page_size=1,  # optional
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_versions_create`
+
+List a skill set's versions, or create a new version.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.create_version(
+    skill_set_id="skill_set_id",  # required
+    files=["value"],  # required
+    organization_id="organization_id",  # optional
+    version_name="version_name",  # optional
+    base_version_id="base_version_id",  # optional
+    summary="summary",  # optional
+    file_changes=["value"],  # optional
+)
+```
+
+#### `skill_sets_versions_retrieve`
+
+Retrieve a version by its id, or by a set id (-> that set's current version).
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.retrieve_version(
+    id="id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_set_current_version`
+
+Point a skill set at a specific version (set-current / rollback).
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.set_current_version(
+    skill_set_id="skill_set_id",  # required
+    version_id="version_id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_generate_version`
+
+Author the next version of a skill set with an agent.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.generate_version(
+    skill_set_id="skill_set_id",  # required
+    use_case="use_case",  # required
+    organization_id="organization_id",  # optional
+    base_version_id="base_version_id",  # optional
+    auto_commit=True,  # optional
+    table_names=["value"],  # optional
+    attachments=["value"],  # optional
+    policy_id="policy_id",  # optional
+    policy_version_id="policy_version_id",  # optional
+)
+```
+
+#### `skill_sets_generation_retrieve`
+
+Returns the last generation and its status, or generation: null when no run exists.
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.get_generation(
+    skill_set_id="skill_set_id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
+#### `skill_sets_generation_cancel`
+
+Stop tracking a generation, cancelling it if it is still running
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.skill_sets.cancel_generation(
+    run_id="run_id",  # required
+    skill_set_id="skill_set_id",  # required
+    organization_id="organization_id",  # optional
+)
+```
+
 ### Tables
 
 #### `tables_list`

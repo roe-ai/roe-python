@@ -11,6 +11,7 @@ from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
+  from ..models.connector_browser_session import ConnectorBrowserSession
   from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
 
 
@@ -37,6 +38,7 @@ class ConnectorMetadata:
             delivery_config_schema (Any | None):
             dynamic_input_fields (ConnectorMetadataDynamicInputFields):
             dynamic_input_test_fields (list[str]):
+            browser_session (ConnectorBrowserSession | None):
      """
 
     id: str
@@ -50,6 +52,7 @@ class ConnectorMetadata:
     delivery_config_schema: Any | None
     dynamic_input_fields: ConnectorMetadataDynamicInputFields
     dynamic_input_test_fields: list[str]
+    browser_session: ConnectorBrowserSession | None
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -57,6 +60,7 @@ class ConnectorMetadata:
 
 
     def to_dict(self) -> dict[str, Any]:
+        from ..models.connector_browser_session import ConnectorBrowserSession
         from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
         id = self.id
 
@@ -83,6 +87,12 @@ class ConnectorMetadata:
 
 
 
+        browser_session: dict[str, Any] | None
+        if isinstance(self.browser_session, ConnectorBrowserSession):
+            browser_session = self.browser_session.to_dict()
+        else:
+            browser_session = self.browser_session
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -98,6 +108,7 @@ class ConnectorMetadata:
             "delivery_config_schema": delivery_config_schema,
             "dynamic_input_fields": dynamic_input_fields,
             "dynamic_input_test_fields": dynamic_input_test_fields,
+            "browser_session": browser_session,
         })
 
         return field_dict
@@ -106,6 +117,7 @@ class ConnectorMetadata:
 
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
+        from ..models.connector_browser_session import ConnectorBrowserSession
         from ..models.connector_metadata_dynamic_input_fields import ConnectorMetadataDynamicInputFields
         d = dict(src_dict)
         id = d.pop("id")
@@ -140,6 +152,24 @@ class ConnectorMetadata:
         dynamic_input_test_fields = cast(list[str], d.pop("dynamic_input_test_fields"))
 
 
+        def _parse_browser_session(data: object) -> ConnectorBrowserSession | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, dict):
+                    raise TypeError()
+                browser_session_type_0 = ConnectorBrowserSession.from_dict(data)
+
+
+
+                return browser_session_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(ConnectorBrowserSession | None, data)
+
+        browser_session = _parse_browser_session(d.pop("browser_session"))
+
+
         connector_metadata = cls(
             id=id,
             display_name=display_name,
@@ -152,6 +182,7 @@ class ConnectorMetadata:
             delivery_config_schema=delivery_config_schema,
             dynamic_input_fields=dynamic_input_fields,
             dynamic_input_test_fields=dynamic_input_test_fields,
+            browser_session=browser_session,
         )
 
 

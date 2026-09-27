@@ -1064,3 +1064,361 @@ apis:
       docstring: Return the currently-authenticated user.
       method: GET
       path: /v1/users/current_user/
+  skill_sets:
+    class_name: SkillSetsAPI
+    docstring: Manage skill sets, immutable versions, and generation.
+    operations:
+    - kind: body
+      method_name: list
+      docstring: List skill sets.
+      method: GET
+      path: /v1/skills/
+      endpoint_module: roe._generated.api.sdk.skill_sets_list
+      return_type: PaginatedSkillSetList
+      return_import: roe._generated.models.paginated_skill_set_list.PaginatedSkillSetList
+      parameters:
+      - name: ordering
+        location: query
+        wire_name: ordering
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: page
+        location: query
+        wire_name: page
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        wire_name: page_size
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: search
+        location: query
+        wire_name: search
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: create
+      docstring: Create a skill set with its initial base version.
+      method: POST
+      path: /v1/skills/
+      endpoint_module: roe._generated.api.sdk.skill_sets_create
+      return_type: CreateSkillSet
+      return_import: roe._generated.models.create_skill_set.CreateSkillSet
+      body_format: dict
+      parameters:
+      - name: name
+        location: body
+        wire_name: name
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        wire_name: description
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve
+      docstring: Retrieve skill-set metadata.
+      method: GET
+      path: /v1/skills/{id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_retrieve
+      return_type: SkillSet
+      return_import: roe._generated.models.skill_set.SkillSet
+      parameters:
+      - name: id
+        location: path
+        wire_name: id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: update
+      docstring: Update skill-set metadata.
+      method: PATCH
+      path: /v1/skills/{id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_partial_update
+      return_type: UpdateSkillSet
+      return_import: roe._generated.models.update_skill_set.UpdateSkillSet
+      body_format: dict
+      parameters:
+      - name: id
+        location: path
+        wire_name: id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: name
+        location: body
+        wire_name: name
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        wire_name: description
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: delete
+      docstring: Delete a skill set and its versions unless referenced by agents.
+      method: DELETE
+      path: /v1/skills/{id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_destroy
+      parameters:
+      - name: id
+        location: path
+        wire_name: id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: generate_version
+      docstring: Start asynchronous generation. Pass empty slices for unused tables and attachments.
+      method: POST
+      path: /v1/skills/{skill_set_id}/generate-version/
+      endpoint_module: roe._generated.api.sdk.skill_sets_generate_version
+      return_type: GenerateSkillSetVersionResponse
+      return_import: roe._generated.models.generate_skill_set_version_response.GenerateSkillSetVersionResponse
+      body_format: dict
+      parameters:
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: use_case
+        location: body
+        wire_name: use_case
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: base_version_id
+        location: body
+        wire_name: base_version_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: auto_commit
+        location: body
+        wire_name: auto_commit
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
+      - name: table_names
+        location: body
+        wire_name: table_names
+        annotation: list[str] | None
+        default: null
+        pass_unset_when_none: true
+      - name: attachments
+        location: body
+        wire_name: attachments
+        annotation: list[str] | None
+        default: null
+        pass_unset_when_none: true
+      - name: policy_id
+        location: body
+        wire_name: policy_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: policy_version_id
+        location: body
+        wire_name: policy_version_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: get_generation
+      docstring: Read the tracked generation, or null when none exists.
+      method: GET
+      path: /v1/skills/{skill_set_id}/generation/
+      endpoint_module: roe._generated.api.sdk.skill_sets_generation_retrieve
+      return_type: PublicSkillSetGeneration
+      return_import: roe._generated.models.public_skill_set_generation.PublicSkillSetGeneration
+      parameters:
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: cancel_generation
+      docstring: Cancel and stop tracking a generation.
+      method: DELETE
+      path: /v1/skills/{skill_set_id}/generation/{run_id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_generation_cancel
+      parameters:
+      - name: run_id
+        location: path
+        wire_name: run_id
+        annotation: str
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: set_current_version
+      docstring: Select the current version of a skill set.
+      method: PATCH
+      path: /v1/skills/{skill_set_id}/set-current-version/{version_id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_set_current_version
+      return_type: SkillSet
+      return_import: roe._generated.models.skill_set.SkillSet
+      parameters:
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: version_id
+        location: path
+        wire_name: version_id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: list_versions
+      docstring: List versions of a skill set.
+      method: GET
+      path: /v1/skills/{skill_set_id}/versions/
+      endpoint_module: roe._generated.api.sdk.skill_sets_versions_list
+      return_type: PaginatedSkillSetVersionList
+      return_import: roe._generated.models.paginated_skill_set_version_list.PaginatedSkillSetVersionList
+      parameters:
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: page
+        location: query
+        wire_name: page
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        wire_name: page_size
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: create_version
+      docstring: Create a complete version and make it current.
+      method: POST
+      path: /v1/skills/{skill_set_id}/versions/
+      endpoint_module: roe._generated.api.sdk.skill_sets_versions_create
+      return_type: CreateSkillSetVersion
+      return_import: roe._generated.models.create_skill_set_version.CreateSkillSetVersion
+      body_format: dict
+      parameters:
+      - name: skill_set_id
+        location: path
+        wire_name: skill_set_id
+        annotation: str
+      - name: files
+        location: body
+        wire_name: files
+        annotation: list[dict[str, Any]]
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: version_name
+        location: body
+        wire_name: version_name
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: base_version_id
+        location: body
+        wire_name: base_version_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: summary
+        location: body
+        wire_name: summary
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: file_changes
+        location: body
+        wire_name: file_changes
+        annotation: list[dict[str, Any]] | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve_version
+      docstring: Read a version and its complete file collection.
+      method: GET
+      path: /v1/skills/versions/{id}/
+      endpoint_module: roe._generated.api.sdk.skill_sets_versions_retrieve
+      return_type: SkillSetVersion
+      return_import: roe._generated.models.skill_set_version.SkillSetVersion
+      parameters:
+      - name: id
+        location: path
+        wire_name: id
+        annotation: str
+      - name: organization_id
+        location: query
+        wire_name: organization_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true

@@ -31,7 +31,9 @@ class BaseAgentCreateRequest:
                 authenticated API key/token. Accepted for backwards compatibility.
             version_name (str | Unset): Name of the first version.
             description (str | Unset): Description of the first version.
-            input_definitions (Any | Unset): Input definitions for the first version.
+            input_definitions (Any | Unset): Input definitions for the first version. Engines with fixed job inputs (the
+                policy-aware investigation engines) accept only the keys they declare; any additional key is rejected. Per-case
+                detail belongs inside the value of an accepted field, which is free text.
             engine_config (Any | Unset): Engine configuration for the first version.
      """
 
