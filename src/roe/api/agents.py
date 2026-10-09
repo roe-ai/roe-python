@@ -109,6 +109,14 @@ from roe.utils._dynamic_call import call_dynamic
 from roe.utils.generated_request import request_json, request_raw
 
 
+_MAX_BATCH_SIZE = 1000
+
+
+def _iter_chunks(items, chunk_size: int):
+    for i in range(0, len(items), chunk_size):
+        yield items[i : i + chunk_size]
+
+
 def _build_run_headers(
     idempotency_key: str | None = None,
     skip_cache: bool = False,
@@ -273,8 +281,6 @@ class AgentVersionsAPI:
 class AgentJobsAPI:
     """Nested API for agent job operations."""
 
-    _MAX_BATCH_SIZE = 1000
-
     def __init__(self, agents_api: "AgentsAPI"):
         self._agents_api = agents_api
 
@@ -285,11 +291,6 @@ class AgentJobsAPI:
     @property
     def _org_id(self) -> UUID:
         return UUID(str(self._agents_api.config.organization_id))
-
-    @staticmethod
-    def _iter_chunks(items, chunk_size: int):
-        for i in range(0, len(items), chunk_size):
-            yield items[i : i + chunk_size]
 
     def list(
         self,
@@ -349,9 +350,7 @@ class AgentJobsAPI:
     def retrieve_status_many(self, job_ids: list[str]) -> list[AgentJobStatus]:
         results: list[AgentJobStatus] = []
         is_first_chunk = True
-        for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
-            if not chunk:
-                continue
+        for chunk in _iter_chunks(job_ids, _MAX_BATCH_SIZE):
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
@@ -374,9 +373,7 @@ class AgentJobsAPI:
     ) -> list[Any]:  # AgentJobResultItem
         results: list[Any] = []
         is_first_chunk = True
-        for chunk in self._iter_chunks(job_ids, self._MAX_BATCH_SIZE):
-            if not chunk:
-                continue
+        for chunk in _iter_chunks(job_ids, _MAX_BATCH_SIZE):
             if not is_first_chunk:
                 time.sleep(self._agents_api.config.batch_chunk_delay)
             is_first_chunk = False
@@ -475,8 +472,6 @@ class AgentJobsAPI:
 class AgentsAPI:
     """API for managing and running agents."""
 
-    _MAX_BATCH_SIZE = 1000
-
     def __init__(self, config: RoeConfig, raw_client: AuthenticatedClient):
         self.config = config
         self._raw = raw_client
@@ -494,11 +489,6 @@ class AgentsAPI:
     @property
     def jobs(self) -> AgentJobsAPI:
         return self._jobs
-
-    @staticmethod
-    def _iter_chunks(items, chunk_size: int):
-        for i in range(0, len(items), chunk_size):
-            yield items[i : i + chunk_size]
 
     def list(
         self,
@@ -666,9 +656,7 @@ class AgentsAPI:
         """
         all_job_ids: list[str] = []
         is_first_chunk = True
-        for chunk in self._iter_chunks(batch_inputs, self._MAX_BATCH_SIZE):
-            if not chunk:
-                continue
+        for chunk in _iter_chunks(batch_inputs, _MAX_BATCH_SIZE):
             if not is_first_chunk:
                 time.sleep(self.config.batch_chunk_delay)
             is_first_chunk = False
