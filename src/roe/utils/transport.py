@@ -8,7 +8,7 @@ Retries failed requests with exponential backoff (capped at ~10 seconds):
   rewindable buffers for JSON-encoded bodies).
 
 Multipart agent-run helpers opt out via the ``x-roe-skip-retry`` header so
-those POSTs are not retried (non-idempotent streamed bodies).
+those POSTs are not retried (non-idempotent); ``run_many`` opts out too.
 
 See TS ``retryMiddleware`` / ``dynamicInputs.postDynamicInputs`` and Go
 ``doRetried`` for the analogous contract across SDKs.
