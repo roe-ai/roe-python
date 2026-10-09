@@ -44,3 +44,21 @@ def test_policy_replace_uses_put_with_org_query_and_model_body():
     assert kwargs["params"] == {"organization_id": ORG_ID}
     assert kwargs["json"] == {"name": "Policy", "description": "desc"}
     assert result.id == UUID(POLICY_ID)
+
+
+def test_policy_version_without_base_version_keeps_none():
+    version = {
+        "id": "00000000-0000-0000-0000-000000000555",
+        "version_name": "v1",
+        "content": {},
+        "created_at": "2025-01-01T00:00:00Z",
+        "updated_at": "2025-01-01T00:00:00Z",
+        "policy": _update_policy_json(),
+        "created_by": {"id": 1, "email": "a@b.c", "display_name": "A"},
+        "base_version_id": None,
+    }
+    api, _ = _api(httpx.Response(200, json=version))
+
+    result = api.versions.retrieve(POLICY_ID, version["id"])
+
+    assert result.base_version_id is None
