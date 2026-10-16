@@ -16,6 +16,7 @@ from roe._generated.models.agent_job_result_item import AgentJobResultItem
 from roe._generated.models.agent_job_result_response import AgentJobResultResponse
 from roe._generated.models.agent_job_single_status import AgentJobSingleStatus
 from roe._generated.models.agent_job_status import AgentJobStatus
+from roe._generated.types import UNSET
 from roe.exceptions import NotFoundError, RoeAPIException
 
 if TYPE_CHECKING:
@@ -277,7 +278,7 @@ class JobBatch:
                     timestamp=cached.get("timestamp", 0),
                     error_message=cached["error_message"]
                     if cached["error_message"] is not None
-                    else _UNSET_SENTINEL(),
+                    else UNSET,
                 )
             else:
                 jobs_to_query.append(job_id)
@@ -298,7 +299,7 @@ class JobBatch:
                     created_at=None,
                     last_updated_at=None,
                     timestamp=self._extract_timestamp(status_item),
-                    error_message=err if err is not None else _UNSET_SENTINEL(),
+                    error_message=err if err is not None else UNSET,
                 )
                 self._job_statuses[job_id] = {
                     "status": stat_code,
@@ -348,10 +349,3 @@ class JobBatch:
         if isinstance(value, Unset) or value is None:
             return 0
         return int(value)
-
-
-def _UNSET_SENTINEL():  # noqa: N802 — match generated naming style
-    """Return the ``Unset`` sentinel from the generated types module."""
-    from roe._generated.types import UNSET
-
-    return UNSET
