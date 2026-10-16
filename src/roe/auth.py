@@ -20,7 +20,9 @@ class RoeAuth:
         Returns:
             Dictionary of headers including Authorization.
         """
+        from roe import __version__
+
         return {
             "Authorization": f"Bearer {self.config.api_key}",
-            "User-Agent": "roe-python/0.1.0",
+            "User-Agent": f"roe-python/{__version__}",
         }

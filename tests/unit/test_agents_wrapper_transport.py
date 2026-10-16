@@ -10,7 +10,7 @@ import httpx
 import pytest
 
 from roe.api.agents import AgentsAPI
-from roe.exceptions import NotFoundError
+from roe.exceptions import NotFoundError, RoeAPIException
 
 ORG_ID = "00000000-0000-0000-0000-000000000123"
 AGENT_ID = "00000000-0000-0000-0000-000000000111"
@@ -157,6 +157,17 @@ def test_run_many_sends_skip_cache_header_on_every_chunk():
     assert request.call_count == 2
     for call in request.call_args_list:
         assert call.kwargs["headers"]["X-Skip-Cache"] == "true"
+        assert call.kwargs["headers"]["x-roe-skip-retry"] == "1"
+
+
+def test_run_many_failure_keeps_job_ids_from_earlier_chunks():
+    api, request = _api(httpx.Response(200, json=[JOB_ID] * 1000))
+    request.side_effect = [request.return_value, httpx.Response(500, json={})]
+
+    with pytest.raises(RoeAPIException) as exc_info:
+        api.run_many(AGENT_ID, [{"prompt": "hello"}] * 1001)
+
+    assert exc_info.value.submitted_job_ids == [JOB_ID] * 1000
 
 
 def test_sync_and_version_runs_omit_skip_cache_header_by_default():
