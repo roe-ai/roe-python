@@ -663,6 +663,9 @@ class AgentsAPI:
 
         Set ``skip_cache=True`` to bypass the job-result cache and force
         fresh runs (the fresh results still refresh the cache).
+
+        If a chunk fails, the raised exception's ``submitted_job_ids`` lists
+        the jobs already started by earlier chunks.
         """
         all_job_ids: list[str] = []
         is_first_chunk = True
@@ -675,14 +678,21 @@ class AgentsAPI:
             body = AgentRunAsyncManyRequest(inputs=[_build_aer(item) for item in chunk])
             if metadata is not None:
                 body.additional_properties["metadata"] = metadata
-            response = request_raw(
-                self._raw,
-                agents_run_async_many,
-                UUID(str(agent_id)),
-                body=body,
-                organization_id=self._org_id,
-                extra_headers=_build_run_headers(skip_cache=skip_cache),
-            )
+            try:
+                response = request_raw(
+                    self._raw,
+                    agents_run_async_many,
+                    UUID(str(agent_id)),
+                    body=body,
+                    organization_id=self._org_id,
+                    extra_headers={
+                        **(_build_run_headers(skip_cache=skip_cache) or {}),
+                        "x-roe-skip-retry": "1",
+                    },
+                )
+            except Exception as exc:
+                exc.submitted_job_ids = all_job_ids
+                raise
             chunk_ids = response.json()
             if not isinstance(chunk_ids, list):
                 raise RoeAPIException(
