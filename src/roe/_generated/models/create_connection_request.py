@@ -42,6 +42,7 @@ class CreateConnectionRequest:
                 * `salesforce` - SALESFORCE
                 * `web_application` - WEB_APPLICATION
                 * `shield` - SHIELD
+                * `shield_api` - SHIELD_API
                 * `sift` - SIFT
                 * `sift_api` - SIFT_API
                 * `custom_api` - CUSTOM_API
