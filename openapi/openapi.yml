@@ -4171,6 +4171,753 @@ paths:
               schema:
                 $ref: '#/components/schemas/User'
           description: ''
+  /v1/workflows/:
+    get:
+      operationId: workflows_list
+      description: List the organization's workflows, most recently updated first.
+      summary: List workflows
+      parameters:
+      - in: query
+        name: agent_id
+        schema:
+          type: string
+          format: uuid
+        description: Only the workflow with this agent id.
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - name: search
+        required: false
+        in: query
+        description: A search term.
+        schema:
+          type: string
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkflowList'
+          description: ''
+    post:
+      operationId: workflows_create
+      description: Create a workflow from a block-format definition; its first version
+        becomes current. A definition that fails its checks returns each error with
+        the step it belongs to.
+      summary: Create a workflow
+      tags:
+      - workflows
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowCreateRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    detail:
+                      type: string
+                    errors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          step_id:
+                            type:
+                            - string
+                            - 'null'
+                          message:
+                            type: string
+                        required:
+                        - step_id
+                        - message
+                  required:
+                  - detail
+                  - errors
+                  description: The definition failed its save checks; each error names
+                    its step.
+          description: Invalid request, or a definition that fails its save checks.
+      parameters:
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+  /v1/workflows/{workflow_id}/:
+    get:
+      operationId: workflows_retrieve
+      description: Get a workflow with its current version.
+      summary: Get a workflow
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+    patch:
+      operationId: workflows_partial_update
+      description: Rename a workflow. Its versions are unchanged.
+      summary: Rename a workflow
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PatchedWorkflowUpdateRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    detail:
+                      type: string
+                    errors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          step_id:
+                            type:
+                            - string
+                            - 'null'
+                          message:
+                            type: string
+                        required:
+                        - step_id
+                        - message
+                  required:
+                  - detail
+                  - errors
+                  description: The definition failed its save checks; each error names
+                    its step.
+          description: Invalid request, or a definition that fails its save checks.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+    delete:
+      operationId: workflows_destroy
+      description: Delete a workflow and all its versions.
+      summary: Delete a workflow
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '204':
+          description: Deleted.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/{workflow_id}/runs/:
+    get:
+      operationId: workflows_runs_list
+      description: List a workflow's runs, newest first.
+      summary: List workflow runs
+      parameters:
+      - name: limit
+        required: false
+        in: query
+        description: Maximum number of most-recent jobs to consider and count. Caps
+          the reported total so pagination stays fast for agents with large job histories.
+          Defaults to 100000; pass 0 for no cap (full count, slower).
+        schema:
+          type: integer
+          default: 100000
+          minimum: 0
+          maximum: 1000000
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkflowRunList'
+          description: ''
+    post:
+      operationId: workflows_runs_create
+      description: Start a run of the current version, or of version_id. With wait,
+        the response comes when the run finishes or after 60 seconds, whichever is
+        first.
+      summary: Run a workflow
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRunCreateRequest'
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRunDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/{workflow_id}/runs/batch/:
+    post:
+      operationId: workflows_runs_batch_create
+      description: Start one run per item of inputs.
+      summary: Run a workflow in batch
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowRunBatchCreateRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRunBatch'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: array
+                  items:
+                    type: string
+                  description: 'DRF ValidationError raised with a message string:
+                    the body is a bare JSON array of error messages.'
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    error:
+                      type: string
+                  required:
+                  - error
+                  description: Hand-built application error body.
+                description: Bad request. The body is a bare array of messages, a
+                  field-error map, or an {error} object depending on which validation
+                  failed.
+          description: ''
+        '403':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/{workflow_id}/versions/:
+    get:
+      operationId: workflows_versions_list
+      description: List a workflow's versions, newest first.
+      summary: List workflow versions
+      parameters:
+      - name: page
+        required: false
+        in: query
+        description: A page number within the paginated result set.
+        schema:
+          type: integer
+      - name: page_size
+        required: false
+        in: query
+        description: Number of results to return per page.
+        schema:
+          type: integer
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/PaginatedWorkflowVersionList'
+          description: ''
+    post:
+      operationId: workflows_versions_create
+      description: Save a new version from a complete block-format definition and
+        make it current. Agent versions stay pinned as given, and the current version's
+        post actions carry over.
+      summary: Save a workflow version
+      parameters:
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowVersionCreateRequest'
+        required: true
+      security:
+      - apiKeyAuth: []
+      responses:
+        '201':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowVersionDetail'
+          description: ''
+        '400':
+          content:
+            application/json:
+              schema:
+                oneOf:
+                - type: object
+                  additionalProperties:
+                    oneOf:
+                    - type: array
+                      items:
+                        type: string
+                    - type: string
+                  description: 'Validation failure: a map of field name to a list
+                    of error messages (DRF serializers) or a single message (e.g.
+                    organization_id validation).'
+                - type: object
+                  properties:
+                    detail:
+                      type: string
+                    errors:
+                      type: array
+                      items:
+                        type: object
+                        properties:
+                          step_id:
+                            type:
+                            - string
+                            - 'null'
+                          message:
+                            type: string
+                        required:
+                        - step_id
+                        - message
+                  required:
+                  - detail
+                  - errors
+                  description: The definition failed its save checks; each error names
+                    its step.
+          description: Invalid request, or a definition that fails its save checks.
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/{workflow_id}/versions/{version_id}/:
+    get:
+      operationId: workflows_versions_retrieve
+      description: 'Get one version with its definition. A version saved in the old
+        format is read-only: its definition is null and conversion_reasons says why.'
+      summary: Get a workflow version
+      parameters:
+      - in: path
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowVersionDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/{workflow_id}/versions/{version_id}/set-current/:
+    post:
+      operationId: workflows_versions_set_current_create
+      description: Make a version the one that runs by default.
+      summary: Set the current workflow version
+      parameters:
+      - in: path
+        name: version_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - in: path
+        name: workflow_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowVersionDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
+  /v1/workflows/runs/{run_id}/:
+    get:
+      operationId: workflows_runs_retrieve
+      description: Get a run with its outputs once it has finished, and what each
+        step received and returned.
+      summary: Get a workflow run
+      parameters:
+      - in: path
+        name: run_id
+        schema:
+          type: string
+          format: uuid
+        required: true
+      - name: organization_id
+        in: query
+        required: false
+        schema:
+          type: string
+          format: uuid
+        description: Organization ID. This is required for access control. It can
+          be provided via query or request body depending on the endpoint.
+      tags:
+      - workflows
+      - sdk
+      security:
+      - apiKeyAuth: []
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRunDetail'
+          description: ''
+        '404':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorDetailResponse'
+          description: ''
 components:
   schemas:
     AgentDatum:
@@ -4600,6 +5347,31 @@ components:
           description: List of agent execution requests to process
       required:
       - inputs
+    AgentStep:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: agent
+          default: agent
+          type: string
+        base_agent_id:
+          type: string
+        agent_version_id:
+          type: string
+        input_mapping:
+          additionalProperties:
+            type: string
+          type: object
+      required:
+      - kind
+      - id
+      - base_agent_id
+      - agent_version_id
+      type: object
     AgentTag:
       type: object
       description: Serializer for AgentTag model
@@ -4769,6 +5541,50 @@ components:
           description: Application error message
       required:
       - error
+    ApprovalBlock:
+      additionalProperties: false
+      description: Steps that run once someone approves the agent step just before.
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: approval
+          default: approval
+          type: string
+        approval:
+          $ref: '#/components/schemas/GateKind'
+          default: manual
+        steps:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          minItems: 1
+          type: array
+      required:
+      - kind
+      - id
+      - steps
+      type: object
     BaseAgent:
       type: object
       description: Serializer for BaseAgent (agent config)
@@ -4924,6 +5740,25 @@ components:
         * `yellow` - Yellow
         * `gray` - Gray
         * `pink` - Pink
+    CombineEnum:
+      enum:
+      - all
+      - any
+      type: string
+    Condition:
+      additionalProperties: false
+      properties:
+        field:
+          type: string
+        operator:
+          allOf:
+          - $ref: '#/components/schemas/OperatorEnum'
+          default: equals
+        value:
+          default: null
+      required:
+      - field
+      type: object
     Connection:
       type: object
       description: |-
@@ -5109,6 +5944,39 @@ components:
       - organization
       - updated_at
       - user
+    ConnectionStep:
+      additionalProperties: false
+      description: |-
+        Calls one operation of a saved connection, such as an API lookup or a
+        Slack message. Credentials stay with the connection.
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: connection
+          default: connection
+          type: string
+        connection_id:
+          type: string
+        setup_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
+        operation:
+          type: string
+        input_mapping:
+          additionalProperties:
+            type: string
+          type: object
+      required:
+      - kind
+      - id
+      - connection_id
+      - operation
+      type: object
     ConnectorBrowserSession:
       type: object
       properties:
@@ -5539,6 +6407,26 @@ components:
       required:
       - error
       - existing_connection
+    EditFieldsStep:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: edit_fields
+          default: edit_fields
+          type: string
+        fields:
+          additionalProperties:
+            type: string
+          type: object
+      required:
+      - kind
+      - id
+      - fields
+      type: object
     ErrorDetailResponse:
       type: object
       description: 'DRF default error body: NotFound, PermissionDenied, Http404, etc.'
@@ -5548,6 +6436,65 @@ components:
           description: Human-readable error detail
       required:
       - detail
+    ForEachBlock:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: for_each
+          default: for_each
+          type: string
+        items:
+          type: string
+        item_name:
+          default: item
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        parallel:
+          default: true
+          type: boolean
+        steps:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          minItems: 1
+          type: array
+      required:
+      - kind
+      - id
+      - items
+      - steps
+      type: object
+    GateKind:
+      description: |-
+        What opens a gate: an org admin's explicit approval (manual) or the
+        reviewer's verdict decision on the source agent's result (feedback).
+      enum:
+      - manual
+      - feedback
+      type: string
     GenerateSkillSetVersionRequest:
       type: object
       description: |-
@@ -5620,6 +6567,97 @@ components:
       - run_id
       - sse_endpoint
       - workflow_id
+    IfBlock:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: if
+          default: if
+          type: string
+        conditions:
+          items:
+            $ref: '#/components/schemas/Condition'
+          minItems: 1
+          type: array
+        combine:
+          allOf:
+          - $ref: '#/components/schemas/CombineEnum'
+          default: all
+        then:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          type: array
+        otherwise:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          type: array
+      required:
+      - kind
+      - id
+      - conditions
+      type: object
+    InputField:
+      description: One input a step needs or a workflow declares.
+      properties:
+        key:
+          type: string
+        data_type:
+          default: text/plain
+          type: string
+        description:
+          default: ''
+          type: string
+        required:
+          default: true
+          type: boolean
+        accepts_multiple_files:
+          default: false
+          type: boolean
+      required:
+      - key
+      type: object
     JobInput:
       type: object
       description: Serializer for individual job input data
@@ -5727,6 +6765,34 @@ components:
       - status_code
       - status_events
       - ui_fields
+    MergeStep:
+      additionalProperties: false
+      description: |-
+        One value from several steps' outputs, leaving out any that didn't run,
+        such as the side of an If that wasn't taken.
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: merge
+          default: merge
+          type: string
+        mode:
+          allOf:
+          - $ref: '#/components/schemas/ModeEnum'
+          default: append
+        sources:
+          items:
+            type: string
+          minItems: 1
+          type: array
+      required:
+      - kind
+      - id
+      - sources
+      type: object
     MessageResponse:
       type: object
       description: 'Simple success acknowledgement body: `{"message": ...}`.'
@@ -5735,6 +6801,23 @@ components:
           type: string
       required:
       - message
+    ModeEnum:
+      enum:
+      - append
+      - combine
+      type: string
+    OperatorEnum:
+      enum:
+      - equals
+      - not_equals
+      - contains
+      - greater_than
+      - less_than
+      - is_empty
+      - is_not_empty
+      - is_true
+      - is_false
+      type: string
     PaginatedBaseAgentList:
       type: object
       required:
@@ -5896,6 +6979,118 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/SkillSetVersion'
+    PaginatedWorkflowList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/Workflow'
+    PaginatedWorkflowRunList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowRun'
+    PaginatedWorkflowVersionList:
+      type: object
+      required:
+      - count
+      - results
+      properties:
+        count:
+          type: integer
+          example: 123
+        next:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=4
+        previous:
+          type: string
+          nullable: true
+          format: uri
+          example: http://api.example.org/accounts/?page=2
+        results:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowVersion'
+    ParallelBlock:
+      additionalProperties: false
+      properties:
+        id:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+        kind:
+          const: parallel
+          default: parallel
+          type: string
+        lanes:
+          items:
+            items:
+              discriminator:
+                mapping:
+                  agent: '#/components/schemas/AgentStep'
+                  approval: '#/components/schemas/ApprovalBlock'
+                  connection: '#/components/schemas/ConnectionStep'
+                  edit_fields: '#/components/schemas/EditFieldsStep'
+                  for_each: '#/components/schemas/ForEachBlock'
+                  if: '#/components/schemas/IfBlock'
+                  merge: '#/components/schemas/MergeStep'
+                  parallel: '#/components/schemas/ParallelBlock'
+                propertyName: kind
+              oneOf:
+              - $ref: '#/components/schemas/AgentStep'
+              - $ref: '#/components/schemas/ConnectionStep'
+              - $ref: '#/components/schemas/EditFieldsStep'
+              - $ref: '#/components/schemas/MergeStep'
+              - $ref: '#/components/schemas/IfBlock'
+              - $ref: '#/components/schemas/ForEachBlock'
+              - $ref: '#/components/schemas/ApprovalBlock'
+              - $ref: '#/components/schemas/ParallelBlock'
+            minItems: 1
+            type: array
+          minItems: 2
+          type: array
+      required:
+      - kind
+      - id
+      - lanes
+      type: object
     PatchedAgentVersionUpdateRequest:
       type: object
       properties:
@@ -5979,6 +7174,13 @@ components:
           - string
           - 'null'
           format: uuid
+    PatchedWorkflowUpdateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
     Policy:
       type: object
       description: Policy serializer
@@ -6464,6 +7666,82 @@ components:
       description: |-
         * `active` - Active
         * `error` - Error
+    StepRun:
+      type: object
+      properties:
+        step_id:
+          type: string
+          maxLength: 200
+        execution_path: {}
+        status:
+          $ref: '#/components/schemas/StepRunStatusEnum'
+        cached:
+          type: boolean
+        input:
+          oneOf:
+          - {}
+          - type: 'null'
+        output:
+          oneOf:
+          - {}
+          - type: 'null'
+        error:
+          type:
+          - string
+          - 'null'
+        child_job_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        delivery:
+          description: |-
+            For a step that sends: sending, sent, or unknown when Roe couldn't tell whether the send went through.
+
+            * `sending` - Sending
+            * `sent` - Sent
+            * `unknown` - Unknown
+          oneOf:
+          - $ref: '#/components/schemas/StepRunDeliveryEnum'
+          - type: 'null'
+        started_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+        finished_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+      required:
+      - child_job_id
+      - execution_path
+      - status
+      - step_id
+    StepRunDeliveryEnum:
+      enum:
+      - sending
+      - sent
+      - unknown
+      type: string
+      description: |-
+        * `sending` - Sending
+        * `sent` - Sent
+        * `unknown` - Unknown
+    StepRunStatusEnum:
+      enum:
+      - succeeded
+      - failed
+      - skipped
+      - cancelled
+      type: string
+      description: |-
+        * `succeeded` - succeeded
+        * `failed` - failed
+        * `skipped` - skipped
+        * `cancelled` - cancelled
     SupportedLLMModel:
       type: object
       description: Serializer for tenant-agnostic supported LLM metadata.
@@ -6993,6 +8271,441 @@ components:
       - display_name
       - email
       - id
+    Workflow:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        agent_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The workflow's id as an agent. Calling a workflow by it is
+            deprecated; the agent_id filter finds the workflow it belongs to.
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        creator:
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+      required:
+      - agent_id
+      - creator
+      - current_version_id
+      - id
+      - name
+      - updated_at
+    WorkflowCreateRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        definition:
+          $ref: '#/components/schemas/WorkflowDefinitionRequest'
+        version_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1024
+      required:
+      - definition
+      - name
+    WorkflowDefinition:
+      additionalProperties: false
+      properties:
+        format_version:
+          const: 2
+          default: 2
+          type: integer
+        inputs:
+          items:
+            $ref: '#/components/schemas/InputField'
+          type: array
+        steps:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          minItems: 1
+          type: array
+        result:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+      required:
+      - steps
+      - result
+      type: object
+    WorkflowDefinitionRequest:
+      additionalProperties: false
+      properties:
+        format_version:
+          const: 2
+          default: 2
+          type: integer
+        inputs:
+          items:
+            $ref: '#/components/schemas/InputField'
+          type: array
+        steps:
+          items:
+            discriminator:
+              mapping:
+                agent: '#/components/schemas/AgentStep'
+                approval: '#/components/schemas/ApprovalBlock'
+                connection: '#/components/schemas/ConnectionStep'
+                edit_fields: '#/components/schemas/EditFieldsStep'
+                for_each: '#/components/schemas/ForEachBlock'
+                if: '#/components/schemas/IfBlock'
+                merge: '#/components/schemas/MergeStep'
+                parallel: '#/components/schemas/ParallelBlock'
+              propertyName: kind
+            oneOf:
+            - $ref: '#/components/schemas/AgentStep'
+            - $ref: '#/components/schemas/ConnectionStep'
+            - $ref: '#/components/schemas/EditFieldsStep'
+            - $ref: '#/components/schemas/MergeStep'
+            - $ref: '#/components/schemas/IfBlock'
+            - $ref: '#/components/schemas/ForEachBlock'
+            - $ref: '#/components/schemas/ApprovalBlock'
+            - $ref: '#/components/schemas/ParallelBlock'
+          minItems: 1
+          type: array
+        result:
+          maxLength: 200
+          pattern: ^[A-Za-z_]\w*$
+          type: string
+      required:
+      - steps
+      - result
+      type: object
+    WorkflowDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        name:
+          type: string
+          maxLength: 200
+        agent_id:
+          type: string
+          format: uuid
+          readOnly: true
+          description: The workflow's id as an agent. Calling a workflow by it is
+            deprecated; the agent_id filter finds the workflow it belongs to.
+        current_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+        creator:
+          oneOf:
+          - $ref: '#/components/schemas/UserInfo'
+          - type: 'null'
+          readOnly: true
+        created_at:
+          type: string
+          format: date-time
+        updated_at:
+          type: string
+          format: date-time
+          readOnly: true
+        current_version:
+          oneOf:
+          - $ref: '#/components/schemas/WorkflowVersionDetail'
+          - type: 'null'
+          readOnly: true
+      required:
+      - agent_id
+      - creator
+      - current_version
+      - current_version_id
+      - id
+      - name
+      - updated_at
+    WorkflowRun:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflow_id:
+          type: string
+          format: uuid
+        version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        status:
+          $ref: '#/components/schemas/WorkflowRunStatusEnum'
+        error_message:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - created_at
+      - error_message
+      - id
+      - status
+      - version_id
+      - workflow_id
+    WorkflowRunBatch:
+      type: object
+      properties:
+        runs:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowRun'
+      required:
+      - runs
+    WorkflowRunBatchCreateRequest:
+      type: object
+      properties:
+        inputs:
+          type: array
+          items:
+            type: object
+            additionalProperties: {}
+          description: One object of input values per run.
+          maxItems: 100000
+          minItems: 1
+        version_id:
+          type: string
+          format: uuid
+          description: The version to run. Defaults to the current one.
+      required:
+      - inputs
+    WorkflowRunCreateRequest:
+      type: object
+      properties:
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Values for the workflow's inputs, keyed by input. A file input
+            takes a file id or URL, or the file itself in a multipart request.
+        version_id:
+          type: string
+          format: uuid
+          description: The version to run. Defaults to the current one.
+        metadata:
+          type: object
+          additionalProperties: true
+        wait:
+          type: boolean
+          default: false
+          description: Wait up to 60 seconds for the run to finish, then return it
+            as it stands.
+    WorkflowRunDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        workflow_id:
+          type: string
+          format: uuid
+        version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+        status:
+          $ref: '#/components/schemas/WorkflowRunStatusEnum'
+        error_message:
+          type:
+          - string
+          - 'null'
+        created_at:
+          type: string
+          format: date-time
+        inputs: {}
+        outputs:
+          type:
+          - array
+          - 'null'
+          items: {}
+          description: The result step's output, once the run has finished.
+        steps:
+          type: array
+          items:
+            $ref: '#/components/schemas/StepRun'
+      required:
+      - created_at
+      - error_message
+      - id
+      - inputs
+      - outputs
+      - status
+      - steps
+      - version_id
+      - workflow_id
+    WorkflowRunStatusEnum:
+      enum:
+      - pending
+      - running
+      - succeeded
+      - failed
+      - cancelled
+      type: string
+      description: |-
+        * `pending` - pending
+        * `running` - running
+        * `succeeded` - succeeded
+        * `failed` - failed
+        * `cancelled` - cancelled
+    WorkflowVersion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        workflow_id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        format_version:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_current:
+          type: boolean
+          readOnly: true
+        read_only:
+          type: boolean
+          readOnly: true
+          description: 'Saved in the old graph format: it still runs, but can only
+            be edited by saving a new version.'
+        created_at:
+          type: string
+          format: date-time
+      required:
+      - id
+      - is_current
+      - read_only
+      - workflow_id
+    WorkflowVersionCreateRequest:
+      type: object
+      properties:
+        definition:
+          $ref: '#/components/schemas/WorkflowDefinitionRequest'
+        version_name:
+          type: string
+          minLength: 1
+          maxLength: 200
+        description:
+          type: string
+          maxLength: 1024
+      required:
+      - definition
+    WorkflowVersionDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
+        workflow_id:
+          type: string
+          format: uuid
+          readOnly: true
+        version_name:
+          type:
+          - string
+          - 'null'
+        description:
+          type:
+          - string
+          - 'null'
+        format_version:
+          type: integer
+          maximum: 32767
+          minimum: 0
+        is_current:
+          type: boolean
+          readOnly: true
+        read_only:
+          type: boolean
+          readOnly: true
+          description: 'Saved in the old graph format: it still runs, but can only
+            be edited by saving a new version.'
+        created_at:
+          type: string
+          format: date-time
+        definition:
+          oneOf:
+          - $ref: '#/components/schemas/WorkflowDefinition'
+          - type: 'null'
+          readOnly: true
+          description: The steps, in the block format. Null for a read-only version.
+        input_definitions: {}
+        conversion_reasons:
+          type: array
+          items:
+            type: string
+          readOnly: true
+          description: Why a read-only version couldn't be converted to the block
+            format.
+      required:
+      - conversion_reasons
+      - definition
+      - id
+      - is_current
+      - read_only
+      - workflow_id
   securitySchemes:
     apiKeyAuth:
       type: http

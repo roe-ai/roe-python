@@ -19,6 +19,8 @@ from .agent_job_status import AgentJobStatus
 from .agent_job_status_many_request import AgentJobStatusManyRequest
 from .agent_job_webhook_resend_response import AgentJobWebhookResendResponse
 from .agent_run_async_many_request import AgentRunAsyncManyRequest
+from .agent_step import AgentStep
+from .agent_step_input_mapping import AgentStepInputMapping
 from .agent_tag import AgentTag
 from .agent_version import AgentVersion
 from .agent_version_create_request import AgentVersionCreateRequest
@@ -46,10 +48,13 @@ from .agents_run_versions_async_create_response_400_type_2 import AgentsRunVersi
 from .agents_update_response_400 import AgentsUpdateResponse400
 from .agents_versions_create_response_400 import AgentsVersionsCreateResponse400
 from .api_error_response import ApiErrorResponse
+from .approval_block import ApprovalBlock
 from .base_agent import BaseAgent
 from .base_agent_create_request import BaseAgentCreateRequest
 from .base_agent_update_request import BaseAgentUpdateRequest
 from .color_enum import ColorEnum
+from .combine_enum import CombineEnum
+from .condition import Condition
 from .connection import Connection
 from .connection_auth_config import ConnectionAuthConfig
 from .connection_authentication_check import ConnectionAuthenticationCheck
@@ -59,6 +64,8 @@ from .connection_delete_error_response import ConnectionDeleteErrorResponse
 from .connection_dynamic_inputs import ConnectionDynamicInputs
 from .connection_list import ConnectionList
 from .connection_list_dynamic_inputs import ConnectionListDynamicInputs
+from .connection_step import ConnectionStep
+from .connection_step_input_mapping import ConnectionStepInputMapping
 from .connections_create_response_400_type_1 import ConnectionsCreateResponse400Type1
 from .connections_create_response_400_type_2 import ConnectionsCreateResponse400Type2
 from .connections_list_response_400 import ConnectionsListResponse400
@@ -92,13 +99,22 @@ from .dependent_agent_info import DependentAgentInfo
 from .discovery_supported_models_list_response_400 import DiscoverySupportedModelsListResponse400
 from .duplicate_connection_existing import DuplicateConnectionExisting
 from .duplicate_connection_response import DuplicateConnectionResponse
+from .edit_fields_step import EditFieldsStep
+from .edit_fields_step_fields import EditFieldsStepFields
 from .error_detail_response import ErrorDetailResponse
+from .for_each_block import ForEachBlock
+from .gate_kind import GateKind
 from .generate_skill_set_version_request import GenerateSkillSetVersionRequest
 from .generate_skill_set_version_response import GenerateSkillSetVersionResponse
+from .if_block import IfBlock
+from .input_field import InputField
 from .job_input import JobInput
 from .list_agent_job import ListAgentJob
 from .list_agent_job_metadata import ListAgentJobMetadata
+from .merge_step import MergeStep
 from .message_response import MessageResponse
+from .mode_enum import ModeEnum
+from .operator_enum import OperatorEnum
 from .paginated_base_agent_list import PaginatedBaseAgentList
 from .paginated_connection_list_list import PaginatedConnectionListList
 from .paginated_list_agent_job_list import PaginatedListAgentJobList
@@ -106,6 +122,10 @@ from .paginated_policy_list import PaginatedPolicyList
 from .paginated_policy_version_list import PaginatedPolicyVersionList
 from .paginated_skill_set_list import PaginatedSkillSetList
 from .paginated_skill_set_version_list import PaginatedSkillSetVersionList
+from .paginated_workflow_list import PaginatedWorkflowList
+from .paginated_workflow_run_list import PaginatedWorkflowRunList
+from .paginated_workflow_version_list import PaginatedWorkflowVersionList
+from .parallel_block import ParallelBlock
 from .patched_agent_version_update_request import PatchedAgentVersionUpdateRequest
 from .patched_base_agent_update_request import PatchedBaseAgentUpdateRequest
 from .patched_update_connection_request import PatchedUpdateConnectionRequest
@@ -114,6 +134,7 @@ from .patched_update_connection_request_config import PatchedUpdateConnectionReq
 from .patched_update_connection_request_dynamic_inputs import PatchedUpdateConnectionRequestDynamicInputs
 from .patched_update_policy_request import PatchedUpdatePolicyRequest
 from .patched_update_skill_set_request import PatchedUpdateSkillSetRequest
+from .patched_workflow_update_request import PatchedWorkflowUpdateRequest
 from .policies_create_response_400 import PoliciesCreateResponse400
 from .policies_partial_update_response_400 import PoliciesPartialUpdateResponse400
 from .policies_update_response_400 import PoliciesUpdateResponse400
@@ -146,6 +167,9 @@ from .skill_sets_create_response_400 import SkillSetsCreateResponse400
 from .skill_sets_generate_version_response_400 import SkillSetsGenerateVersionResponse400
 from .skill_sets_versions_create_response_400 import SkillSetsVersionsCreateResponse400
 from .status_enum import StatusEnum
+from .step_run import StepRun
+from .step_run_delivery_enum import StepRunDeliveryEnum
+from .step_run_status_enum import StepRunStatusEnum
 from .supported_llm_model import SupportedLLMModel
 from .supported_llm_model_list import SupportedLLMModelList
 from .table import Table
@@ -181,6 +205,36 @@ from .upload_table_response_400_type_1 import UploadTableResponse400Type1
 from .upload_table_response_400_type_2 import UploadTableResponse400Type2
 from .user import User
 from .user_info import UserInfo
+from .workflow import Workflow
+from .workflow_create_request import WorkflowCreateRequest
+from .workflow_definition import WorkflowDefinition
+from .workflow_definition_request import WorkflowDefinitionRequest
+from .workflow_detail import WorkflowDetail
+from .workflow_run import WorkflowRun
+from .workflow_run_batch import WorkflowRunBatch
+from .workflow_run_batch_create_request import WorkflowRunBatchCreateRequest
+from .workflow_run_batch_create_request_inputs_item import WorkflowRunBatchCreateRequestInputsItem
+from .workflow_run_create_request import WorkflowRunCreateRequest
+from .workflow_run_create_request_inputs import WorkflowRunCreateRequestInputs
+from .workflow_run_create_request_metadata import WorkflowRunCreateRequestMetadata
+from .workflow_run_detail import WorkflowRunDetail
+from .workflow_run_status_enum import WorkflowRunStatusEnum
+from .workflow_version import WorkflowVersion
+from .workflow_version_create_request import WorkflowVersionCreateRequest
+from .workflow_version_detail import WorkflowVersionDetail
+from .workflows_create_response_400_type_0 import WorkflowsCreateResponse400Type0
+from .workflows_create_response_400_type_1 import WorkflowsCreateResponse400Type1
+from .workflows_create_response_400_type_1_errors_item import WorkflowsCreateResponse400Type1ErrorsItem
+from .workflows_partial_update_response_400_type_0 import WorkflowsPartialUpdateResponse400Type0
+from .workflows_partial_update_response_400_type_1 import WorkflowsPartialUpdateResponse400Type1
+from .workflows_partial_update_response_400_type_1_errors_item import WorkflowsPartialUpdateResponse400Type1ErrorsItem
+from .workflows_runs_batch_create_response_400_type_1 import WorkflowsRunsBatchCreateResponse400Type1
+from .workflows_runs_batch_create_response_400_type_2 import WorkflowsRunsBatchCreateResponse400Type2
+from .workflows_runs_create_response_400_type_1 import WorkflowsRunsCreateResponse400Type1
+from .workflows_runs_create_response_400_type_2 import WorkflowsRunsCreateResponse400Type2
+from .workflows_versions_create_response_400_type_0 import WorkflowsVersionsCreateResponse400Type0
+from .workflows_versions_create_response_400_type_1 import WorkflowsVersionsCreateResponse400Type1
+from .workflows_versions_create_response_400_type_1_errors_item import WorkflowsVersionsCreateResponse400Type1ErrorsItem
 
 __all__ = (
     "AgentDatum",
@@ -222,6 +276,8 @@ __all__ = (
     "AgentsRunVersionResponse400Type2",
     "AgentsRunVersionsAsyncCreateResponse400Type1",
     "AgentsRunVersionsAsyncCreateResponse400Type2",
+    "AgentStep",
+    "AgentStepInputMapping",
     "AgentsUpdateResponse400",
     "AgentsVersionsCreateResponse400",
     "AgentTag",
@@ -229,10 +285,13 @@ __all__ = (
     "AgentVersionCreateRequest",
     "AgentVersionUpdateRequest",
     "ApiErrorResponse",
+    "ApprovalBlock",
     "BaseAgent",
     "BaseAgentCreateRequest",
     "BaseAgentUpdateRequest",
     "ColorEnum",
+    "CombineEnum",
+    "Condition",
     "Connection",
     "ConnectionAuthConfig",
     "ConnectionAuthenticationCheck",
@@ -247,6 +306,8 @@ __all__ = (
     "ConnectionsListResponse400",
     "ConnectionsPartialUpdateResponse400Type1",
     "ConnectionsPartialUpdateResponse400Type2",
+    "ConnectionStep",
+    "ConnectionStepInputMapping",
     "ConnectionsTestCredentialsCreateResponse400Type0",
     "ConnectionsTestCredentialsCreateResponse400Type1",
     "ConnectionsUpdateResponse400Type1",
@@ -275,13 +336,22 @@ __all__ = (
     "DiscoverySupportedModelsListResponse400",
     "DuplicateConnectionExisting",
     "DuplicateConnectionResponse",
+    "EditFieldsStep",
+    "EditFieldsStepFields",
     "ErrorDetailResponse",
+    "ForEachBlock",
+    "GateKind",
     "GenerateSkillSetVersionRequest",
     "GenerateSkillSetVersionResponse",
+    "IfBlock",
+    "InputField",
     "JobInput",
     "ListAgentJob",
     "ListAgentJobMetadata",
+    "MergeStep",
     "MessageResponse",
+    "ModeEnum",
+    "OperatorEnum",
     "PaginatedBaseAgentList",
     "PaginatedConnectionListList",
     "PaginatedListAgentJobList",
@@ -289,6 +359,10 @@ __all__ = (
     "PaginatedPolicyVersionList",
     "PaginatedSkillSetList",
     "PaginatedSkillSetVersionList",
+    "PaginatedWorkflowList",
+    "PaginatedWorkflowRunList",
+    "PaginatedWorkflowVersionList",
+    "ParallelBlock",
     "PatchedAgentVersionUpdateRequest",
     "PatchedBaseAgentUpdateRequest",
     "PatchedUpdateConnectionRequest",
@@ -297,6 +371,7 @@ __all__ = (
     "PatchedUpdateConnectionRequestDynamicInputs",
     "PatchedUpdatePolicyRequest",
     "PatchedUpdateSkillSetRequest",
+    "PatchedWorkflowUpdateRequest",
     "PoliciesCreateResponse400",
     "PoliciesPartialUpdateResponse400",
     "PoliciesUpdateResponse400",
@@ -329,6 +404,9 @@ __all__ = (
     "SkillSetVersion",
     "SkillSetVersionCreatedBy",
     "StatusEnum",
+    "StepRun",
+    "StepRunDeliveryEnum",
+    "StepRunStatusEnum",
     "SupportedLLMModel",
     "SupportedLLMModelList",
     "Table",
@@ -364,4 +442,34 @@ __all__ = (
     "UploadTableResponse400Type2",
     "User",
     "UserInfo",
+    "Workflow",
+    "WorkflowCreateRequest",
+    "WorkflowDefinition",
+    "WorkflowDefinitionRequest",
+    "WorkflowDetail",
+    "WorkflowRun",
+    "WorkflowRunBatch",
+    "WorkflowRunBatchCreateRequest",
+    "WorkflowRunBatchCreateRequestInputsItem",
+    "WorkflowRunCreateRequest",
+    "WorkflowRunCreateRequestInputs",
+    "WorkflowRunCreateRequestMetadata",
+    "WorkflowRunDetail",
+    "WorkflowRunStatusEnum",
+    "WorkflowsCreateResponse400Type0",
+    "WorkflowsCreateResponse400Type1",
+    "WorkflowsCreateResponse400Type1ErrorsItem",
+    "WorkflowsPartialUpdateResponse400Type0",
+    "WorkflowsPartialUpdateResponse400Type1",
+    "WorkflowsPartialUpdateResponse400Type1ErrorsItem",
+    "WorkflowsRunsBatchCreateResponse400Type1",
+    "WorkflowsRunsBatchCreateResponse400Type2",
+    "WorkflowsRunsCreateResponse400Type1",
+    "WorkflowsRunsCreateResponse400Type2",
+    "WorkflowsVersionsCreateResponse400Type0",
+    "WorkflowsVersionsCreateResponse400Type1",
+    "WorkflowsVersionsCreateResponse400Type1ErrorsItem",
+    "WorkflowVersion",
+    "WorkflowVersionCreateRequest",
+    "WorkflowVersionDetail",
 )
