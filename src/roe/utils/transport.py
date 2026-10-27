@@ -3,9 +3,9 @@
 Retries failed requests with exponential backoff (capped at ~10 seconds):
 
 - Transport errors: ``httpx.TransportError`` (disconnects, timeouts, etc.).
-- HTTP statuses: ``5xx``, ``408``, ``429``.
-- Applies to **all** HTTP methods, including POST (replay is handled by httpx /
-  rewindable buffers for JSON-encoded bodies).
+  POST and PATCH retry only errors raised before the request was sent, so a
+  timed-out run is never started twice.
+- HTTP statuses: ``5xx``, ``408``, ``429``, for all HTTP methods.
 
 Multipart agent-run helpers opt out via the ``x-roe-skip-retry`` header so
 those POSTs are not retried (non-idempotent streamed bodies).
@@ -26,6 +26,9 @@ import httpx
 logger = logging.getLogger(__name__)
 
 _BYPASS_HEADER = "x-roe-skip-retry"
+_NON_IDEMPOTENT_METHODS = {"POST", "PATCH"}
+# Raised before any bytes reach the server, so resending cannot duplicate work.
+_UNSENT_ERRORS = (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)
 
 
 def _should_retry_status(status_code: int) -> bool:
@@ -47,7 +50,10 @@ class RoeRetryTransport(httpx.HTTPTransport):
             try:
                 response = super().handle_request(request)
             except httpx.TransportError as exc:
-                if attempt >= self.max_retries:
+                if attempt >= self.max_retries or (
+                    request.method in _NON_IDEMPOTENT_METHODS
+                    and not isinstance(exc, _UNSENT_ERRORS)
+                ):
                     raise
                 wait_time = min(2**attempt, 10)
                 logger.warning(
