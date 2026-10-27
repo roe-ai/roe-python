@@ -1362,3 +1362,314 @@ apis:
         location: path
         wire_name: id
         annotation: str
+  workflows:
+    class_name: WorkflowsAPI
+    docstring: Build, version and run block-format workflows.
+    operations:
+    - kind: body
+      method_name: list
+      docstring: List workflows.
+      method: GET
+      path: /v1/workflows/
+      endpoint_module: roe._generated.api.workflows.workflows_list
+      return_type: PaginatedWorkflowList
+      return_import: roe._generated.models.paginated_workflow_list.PaginatedWorkflowList
+      inject_organization_id: true
+      parameters:
+      - name: page
+        location: query
+        wire_name: page
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        wire_name: page_size
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: search
+        location: query
+        wire_name: search
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: create
+      docstring: Create a workflow from a block-format definition.
+      method: POST
+      path: /v1/workflows/
+      endpoint_module: roe._generated.api.workflows.workflows_create
+      return_type: WorkflowDetail
+      return_import: roe._generated.models.workflow_detail.WorkflowDetail
+      body_format: dict
+      inject_organization_id: true
+      parameters:
+      - name: name
+        location: body
+        wire_name: name
+        annotation: str
+      - name: definition
+        location: body
+        wire_name: definition
+        annotation: dict[str, Any]
+      - name: version_name
+        location: body
+        wire_name: version_name
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        wire_name: description
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve
+      docstring: Retrieve a workflow with its current version.
+      method: GET
+      path: /v1/workflows/{workflow_id}/
+      endpoint_module: roe._generated.api.workflows.workflows_retrieve
+      return_type: WorkflowDetail
+      return_import: roe._generated.models.workflow_detail.WorkflowDetail
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+    - kind: body
+      method_name: update
+      docstring: Rename a workflow.
+      method: PATCH
+      path: /v1/workflows/{workflow_id}/
+      endpoint_module: roe._generated.api.workflows.workflows_partial_update
+      return_type: WorkflowDetail
+      return_import: roe._generated.models.workflow_detail.WorkflowDetail
+      body_format: dict
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: name
+        location: body
+        wire_name: name
+        annotation: str
+    - kind: body
+      method_name: delete
+      docstring: Delete a workflow and its versions.
+      method: DELETE
+      path: /v1/workflows/{workflow_id}/
+      endpoint_module: roe._generated.api.workflows.workflows_destroy
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+    - kind: body
+      method_name: list_versions
+      docstring: List versions of a workflow, newest first.
+      method: GET
+      path: /v1/workflows/{workflow_id}/versions/
+      endpoint_module: roe._generated.api.workflows.workflows_versions_list
+      return_type: PaginatedWorkflowVersionList
+      return_import: roe._generated.models.paginated_workflow_version_list.PaginatedWorkflowVersionList
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: page
+        location: query
+        wire_name: page
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        wire_name: page_size
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: create_version
+      docstring: Save a new version of a workflow and make it current.
+      method: POST
+      path: /v1/workflows/{workflow_id}/versions/
+      endpoint_module: roe._generated.api.workflows.workflows_versions_create
+      return_type: WorkflowVersionDetail
+      return_import: roe._generated.models.workflow_version_detail.WorkflowVersionDetail
+      body_format: dict
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: definition
+        location: body
+        wire_name: definition
+        annotation: dict[str, Any]
+      - name: version_name
+        location: body
+        wire_name: version_name
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: description
+        location: body
+        wire_name: description
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve_version
+      docstring: Retrieve one version of a workflow.
+      method: GET
+      path: /v1/workflows/{workflow_id}/versions/{version_id}/
+      endpoint_module: roe._generated.api.workflows.workflows_versions_retrieve
+      return_type: WorkflowVersionDetail
+      return_import: roe._generated.models.workflow_version_detail.WorkflowVersionDetail
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: version_id
+        location: path
+        wire_name: version_id
+        annotation: str
+    - kind: body
+      method_name: set_current_version
+      docstring: Make a version the one that runs by default.
+      method: POST
+      path: /v1/workflows/{workflow_id}/versions/{version_id}/set-current/
+      endpoint_module: roe._generated.api.workflows.workflows_versions_set_current_create
+      return_type: WorkflowVersionDetail
+      return_import: roe._generated.models.workflow_version_detail.WorkflowVersionDetail
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: version_id
+        location: path
+        wire_name: version_id
+        annotation: str
+    - kind: body
+      method_name: list_runs
+      docstring: List runs of a workflow, newest first.
+      method: GET
+      path: /v1/workflows/{workflow_id}/runs/
+      endpoint_module: roe._generated.api.workflows.workflows_runs_list
+      return_type: PaginatedWorkflowRunList
+      return_import: roe._generated.models.paginated_workflow_run_list.PaginatedWorkflowRunList
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: page
+        location: query
+        wire_name: page
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: page_size
+        location: query
+        wire_name: page_size
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+      - name: limit
+        location: query
+        wire_name: limit
+        annotation: int | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: run
+      docstring: Start a run. Set wait to wait up to 60 seconds for it to finish.
+      method: POST
+      path: /v1/workflows/{workflow_id}/runs/
+      endpoint_module: roe._generated.api.workflows.workflows_runs_create
+      return_type: WorkflowRunDetail
+      return_import: roe._generated.models.workflow_run_detail.WorkflowRunDetail
+      body_format: dict
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: inputs
+        location: body
+        wire_name: inputs
+        annotation: dict[str, Any] | None
+        default: null
+        pass_unset_when_none: true
+      - name: version_id
+        location: body
+        wire_name: version_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: metadata
+        location: body
+        wire_name: metadata
+        annotation: dict[str, Any] | None
+        default: null
+        pass_unset_when_none: true
+      - name: wait
+        location: body
+        wire_name: wait
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: run_batch
+      docstring: Start one run per item of inputs.
+      method: POST
+      path: /v1/workflows/{workflow_id}/runs/batch/
+      endpoint_module: roe._generated.api.workflows.workflows_runs_batch_create
+      return_type: WorkflowRunBatch
+      return_import: roe._generated.models.workflow_run_batch.WorkflowRunBatch
+      body_format: dict
+      inject_organization_id: true
+      parameters:
+      - name: workflow_id
+        location: path
+        wire_name: workflow_id
+        annotation: str
+      - name: inputs
+        location: body
+        wire_name: inputs
+        annotation: list[dict[str, Any]]
+      - name: version_id
+        location: body
+        wire_name: version_id
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+    - kind: body
+      method_name: retrieve_run
+      docstring: Retrieve a run with its outputs and step results.
+      method: GET
+      path: /v1/workflows/runs/{run_id}/
+      endpoint_module: roe._generated.api.workflows.workflows_runs_retrieve
+      return_type: WorkflowRunDetail
+      return_import: roe._generated.models.workflow_run_detail.WorkflowRunDetail
+      inject_organization_id: true
+      parameters:
+      - name: run_id
+        location: path
+        wire_name: run_id
+        annotation: str

@@ -1127,6 +1127,212 @@ client = RoeClient()
 result = client.users.me()
 ```
 
+### Workflows
+
+#### `workflows_list`
+
+List workflows
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.list(
+    page=1,  # optional
+    page_size=1,  # optional
+    search="search",  # optional
+)
+```
+
+#### `workflows_create`
+
+Create a workflow
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.create(
+    name="name",  # required
+    definition={"inputs": [{"key": "customer_id"}], "steps": [{"kind": "agent", "id": "check_risk", "base_agent_id": "agent_id", "agent_version_id": "version_id", "input_mapping": {"customer": "{initial.customer_id}"}}], "result": "check_risk"},  # required
+    version_name="version_name",  # optional
+    description="description",  # optional
+)
+```
+
+#### `workflows_retrieve`
+
+Get a workflow
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.retrieve(
+    workflow_id="workflow_id",  # required
+)
+```
+
+#### `workflows_partial_update`
+
+Rename a workflow
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.update(
+    workflow_id="workflow_id",  # required
+    name="name",  # required
+)
+```
+
+#### `workflows_destroy`
+
+Delete a workflow
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.delete(
+    workflow_id="workflow_id",  # required
+)
+```
+
+#### `workflows_versions_list`
+
+List workflow versions
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.list_versions(
+    workflow_id="workflow_id",  # required
+    page=1,  # optional
+    page_size=1,  # optional
+)
+```
+
+#### `workflows_versions_create`
+
+Save a workflow version
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.create_version(
+    workflow_id="workflow_id",  # required
+    definition={"inputs": [{"key": "customer_id"}], "steps": [{"kind": "agent", "id": "check_risk", "base_agent_id": "agent_id", "agent_version_id": "version_id", "input_mapping": {"customer": "{initial.customer_id}"}}], "result": "check_risk"},  # required
+    version_name="version_name",  # optional
+    description="description",  # optional
+)
+```
+
+#### `workflows_versions_retrieve`
+
+Get a workflow version
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.retrieve_version(
+    workflow_id="workflow_id",  # required
+    version_id="version_id",  # required
+)
+```
+
+#### `workflows_versions_set_current_create`
+
+Set the current workflow version
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.set_current_version(
+    workflow_id="workflow_id",  # required
+    version_id="version_id",  # required
+)
+```
+
+#### `workflows_runs_list`
+
+List workflow runs
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.list_runs(
+    workflow_id="workflow_id",  # required
+    page=1,  # optional
+    page_size=1,  # optional
+    limit=1,  # optional
+)
+```
+
+#### `workflows_runs_create`
+
+Run a workflow
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.run(
+    workflow_id="workflow_id",  # required
+    inputs={"customer_id": "c_1"},  # optional
+    version_id="version_id",  # optional
+    metadata={},  # optional
+    wait=True,  # optional
+)
+```
+
+#### `workflows_runs_batch_create`
+
+Run a workflow in batch
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.run_batch(
+    workflow_id="workflow_id",  # required
+    inputs=[{"customer_id": "c_1"}],  # required
+    version_id="version_id",  # optional
+)
+```
+
+#### `workflows_runs_retrieve`
+
+Get a workflow run
+
+```python
+from roe import RoeClient
+
+client = RoeClient()
+
+result = client.workflows.retrieve_run(
+    run_id="run_id",  # required
+)
+```
+
 ## Use Cases
 
 These workflows assume `ROE_API_KEY` and `ROE_ORGANIZATION_ID` are set.
