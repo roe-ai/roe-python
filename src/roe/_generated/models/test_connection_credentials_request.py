@@ -55,6 +55,7 @@ class TestConnectionCredentialsRequest:
                 * `metabase` - METABASE
                 * `slack` - SLACK
                 * `smtp` - SMTP
+                * `alloy` - ALLOY
             config (TestConnectionCredentialsRequestConfig):
             auth_config (TestConnectionCredentialsRequestAuthConfig | Unset):
             dynamic_inputs (TestConnectionCredentialsRequestDynamicInputs | Unset):

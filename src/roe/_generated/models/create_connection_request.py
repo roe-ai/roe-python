@@ -57,6 +57,7 @@ class CreateConnectionRequest:
                 * `metabase` - METABASE
                 * `slack` - SLACK
                 * `smtp` - SMTP
+                * `alloy` - ALLOY
             name (str):
             config (CreateConnectionRequestConfig):
             description (str | Unset):

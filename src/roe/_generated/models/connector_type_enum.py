@@ -1,6 +1,7 @@
 from enum import Enum
 
 class ConnectorTypeEnum(str, Enum):
+    ALLOY = "alloy"
     CHECKOUT_COM = "checkout_com"
     CUSTOM_API = "custom_api"
     CUSTOM_MCP = "custom_mcp"
