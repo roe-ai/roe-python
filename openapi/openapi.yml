@@ -6075,6 +6075,7 @@ components:
       - metabase
       - slack
       - smtp
+      - alloy
       type: string
       description: |-
         * `snowflake` - SNOWFLAKE
@@ -6102,6 +6103,7 @@ components:
         * `metabase` - METABASE
         * `slack` - SLACK
         * `smtp` - SMTP
+        * `alloy` - ALLOY
     CreateConnectionRequest:
       type: object
       description: |-
