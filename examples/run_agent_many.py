@@ -41,7 +41,7 @@ def main():
     print(f"Completed {len(results)} jobs:")
     for i, result in enumerate(results, 1):
         print(f"\nJob {i}:")
-        for output in result.outputs:
+        for output in result.result or []:
             print(f"  {output.key}: {output.value}")
 
 

@@ -103,7 +103,7 @@ def example_batch_with_timeout():
         print(f"✓ All {len(results)} jobs completed successfully!")
         for i, result in enumerate(results, 1):
             print(f"\n  Job {i}:")
-            for output in result.outputs:
+            for output in result.result or []:
                 print(f"    {output.key}: {output.value}")
 
     except TimeoutError as e:
