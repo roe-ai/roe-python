@@ -62,6 +62,12 @@ class NotFoundError(RoeAPIException):
     pass
 
 
+class RateLimitError(RoeAPIException):
+    """429 Too Many Requests - Rate limit exceeded."""
+
+    pass
+
+
 class ServerError(RoeAPIException):
     """500+ Server Error - Internal server errors."""
 
@@ -76,6 +82,7 @@ def get_exception_for_status_code(status_code: int) -> type[RoeAPIException]:
         402: InsufficientCreditsError,
         403: ForbiddenError,
         404: NotFoundError,
+        429: RateLimitError,
     }
 
     if status_code in exception_map:
@@ -115,6 +122,10 @@ def translate_response(response: Any) -> None:
 
     if isinstance(body, dict):
         message = body.get("detail") or body.get("error") or body.get("message")
+        if isinstance(message, list):
+            message = "; ".join(str(e) for e in message)
+        elif message and not isinstance(message, str):
+            message = str(message)
         if not message:
             for value in body.values():
                 if isinstance(value, list) and value:

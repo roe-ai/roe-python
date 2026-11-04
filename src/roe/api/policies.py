@@ -43,13 +43,9 @@ from roe.config import RoeConfig
 from roe.utils.generated_request import request_json, request_raw
 
 
-_ZERO_UUID = "00000000-0000-0000-0000-000000000000"
-
-
 def _normalize_policy_version_wire(data: dict[str, Any]) -> dict[str, Any]:
     normalized = dict(data)
-    if normalized.get("base_version_id") is None:
-        normalized["base_version_id"] = _ZERO_UUID
+    normalized.setdefault("base_version_id", None)
     return normalized
 
 

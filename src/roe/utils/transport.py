@@ -1,6 +1,7 @@
 """Custom httpx transport with retry policy for the Roe SDK.
 
-Retries failed requests with exponential backoff (capped at ~10 seconds):
+Retries failed requests with exponential backoff (capped at ~10 seconds, or
+longer when a 429/503 sends an integer ``Retry-After``, up to 60 seconds):
 
 - Transport errors: ``httpx.TransportError`` (disconnects, timeouts, etc.).
   POST and PATCH retry only errors raised before the request was sent, so a
@@ -33,6 +34,13 @@ _UNSENT_ERRORS = (httpx.ConnectError, httpx.ConnectTimeout, httpx.PoolTimeout)
 
 def _should_retry_status(status_code: int) -> bool:
     return status_code >= 500 or status_code in (408, 429)
+
+
+def _retry_after_seconds(response: httpx.Response) -> int:
+    value = response.headers.get("retry-after", "")
+    if response.status_code in (429, 503) and value.isdecimal():
+        return min(int(value), 60)
+    return 0
 
 
 class RoeRetryTransport(httpx.HTTPTransport):
@@ -74,7 +82,7 @@ class RoeRetryTransport(httpx.HTTPTransport):
             ):
                 return response
 
-            wait_time = min(2**attempt, 10)
+            wait_time = max(min(2**attempt, 10), _retry_after_seconds(response))
             logger.warning(
                 "Roe API returned %d for %s %s, retrying in %ds (attempt %d/%d)",
                 response.status_code,
