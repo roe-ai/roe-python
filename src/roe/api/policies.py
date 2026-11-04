@@ -7,7 +7,7 @@ translated to the typed ``RoeAPIException`` family at the wrapper boundary.
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import Any
 from uuid import UUID
 
 from roe._generated.api.policies import (
@@ -55,10 +55,6 @@ def _normalize_policy_version_wire(data: dict[str, Any]) -> dict[str, Any]:
 
 def _parse_policy_version(data: dict[str, Any]) -> PolicyVersion:
     return PolicyVersion.from_dict(_normalize_policy_version_wire(data))
-
-
-if TYPE_CHECKING:
-    pass
 
 
 class PolicyVersionsAPI:
