@@ -36,6 +36,7 @@ class ListAgentJob:
     """ 
         Attributes:
             id (UUID):
+            agent_version_id (None | UUID): ID of the agent version the job ran on
             agent_version_name (None | str): Get the agent version name, handling null agent and annotation.
             status_events (list[PublicAgentJobStatusEvent]):
             status_code (int): Current status code of the job (0=PENDING, 1=STARTED, 2=RETRY, 3=SUCCESS, 4=FAILURE,
@@ -57,6 +58,7 @@ class ListAgentJob:
      """
 
     id: UUID
+    agent_version_id: None | UUID
     agent_version_name: None | str
     status_events: list[PublicAgentJobStatusEvent]
     status_code: int
@@ -84,6 +86,12 @@ class ListAgentJob:
         from ..models.public_agent_job_status_event import PublicAgentJobStatusEvent
         from ..models.user_info import UserInfo
         id = str(self.id)
+
+        agent_version_id: None | str
+        if isinstance(self.agent_version_id, UUID):
+            agent_version_id = str(self.agent_version_id)
+        else:
+            agent_version_id = self.agent_version_id
 
         agent_version_name: None | str
         agent_version_name = self.agent_version_name
@@ -144,6 +152,7 @@ class ListAgentJob:
         field_dict.update(self.additional_properties)
         field_dict.update({
             "id": id,
+            "agent_version_id": agent_version_id,
             "agent_version_name": agent_version_name,
             "status_events": status_events,
             "status_code": status_code,
@@ -177,6 +186,24 @@ class ListAgentJob:
         id = UUID(d.pop("id"))
 
 
+
+
+        def _parse_agent_version_id(data: object) -> None | UUID:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                agent_version_id_type_0 = UUID(data)
+
+
+
+                return agent_version_id_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | UUID, data)
+
+        agent_version_id = _parse_agent_version_id(d.pop("agent_version_id"))
 
 
         def _parse_agent_version_name(data: object) -> None | str:
@@ -302,6 +329,7 @@ class ListAgentJob:
 
         list_agent_job = cls(
             id=id,
+            agent_version_id=agent_version_id,
             agent_version_name=agent_version_name,
             status_events=status_events,
             status_code=status_code,

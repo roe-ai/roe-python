@@ -687,6 +687,12 @@ apis:
         annotation: int | None
         default: null
         pass_unset_when_none: true
+      - name: lifecycle
+        location: query
+        wire_name: lifecycle
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
     - kind: body
       method_name: create
       docstring: Create a connection.
@@ -774,7 +780,7 @@ apis:
         annotation: str
     - kind: body
       method_name: update
-      docstring: Update mutable connection fields.
+      docstring: Update mutable connection fields. Changing settings agents already use needs confirm_in_use.
       method: PATCH
       path: /v1/connections/{id}/
       endpoint_module: roe._generated.api.connections.connections_partial_update
@@ -817,9 +823,21 @@ apis:
         annotation: dict[str, str] | None
         default: null
         pass_unset_when_none: true
+      - name: lifecycle
+        location: body
+        wire_name: lifecycle
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: confirm_in_use
+        location: body
+        wire_name: confirm_in_use
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
     - kind: body
       method_name: replace
-      docstring: Replace a connection.
+      docstring: Replace a connection. Changing settings agents already use needs confirm_in_use.
       method: PUT
       path: /v1/connections/{id}/
       endpoint_module: roe._generated.api.connections.connections_update
@@ -862,9 +880,21 @@ apis:
         annotation: dict[str, str] | None
         default: null
         pass_unset_when_none: true
+      - name: lifecycle
+        location: body
+        wire_name: lifecycle
+        annotation: str | None
+        default: null
+        pass_unset_when_none: true
+      - name: confirm_in_use
+        location: body
+        wire_name: confirm_in_use
+        annotation: bool | None
+        default: null
+        pass_unset_when_none: true
     - kind: body
       method_name: delete
-      docstring: Delete a connection.
+      docstring: Delete a connection. Refused while agents or webhooks use it.
       method: DELETE
       path: /v1/connections/{id}/
       endpoint_module: roe._generated.api.connections.connections_destroy

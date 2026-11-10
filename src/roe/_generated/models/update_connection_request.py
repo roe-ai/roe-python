@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.lifecycle_enum import LifecycleEnum
 from ..types import UNSET, Unset
 from typing import cast
 
@@ -45,6 +46,11 @@ class UpdateConnectionRequest:
             config (UpdateConnectionRequestConfig | Unset):
             auth_config (UpdateConnectionRequestAuthConfig | Unset):
             dynamic_inputs (UpdateConnectionRequestDynamicInputs | Unset):
+            lifecycle (LifecycleEnum | Unset): * `active` - Active
+                * `archived` - Archived
+                * `disconnected` - Disconnected
+            confirm_in_use (bool | Unset): Save a config change that alters calls for agents or webhooks that already use
+                the connection.
      """
 
     name: str | Unset = UNSET
@@ -52,6 +58,8 @@ class UpdateConnectionRequest:
     config: UpdateConnectionRequestConfig | Unset = UNSET
     auth_config: UpdateConnectionRequestAuthConfig | Unset = UNSET
     dynamic_inputs: UpdateConnectionRequestDynamicInputs | Unset = UNSET
+    lifecycle: LifecycleEnum | Unset = UNSET
+    confirm_in_use: bool | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -78,6 +86,13 @@ class UpdateConnectionRequest:
         if not isinstance(self.dynamic_inputs, Unset):
             dynamic_inputs = self.dynamic_inputs.to_dict()
 
+        lifecycle: str | Unset = UNSET
+        if not isinstance(self.lifecycle, Unset):
+            lifecycle = self.lifecycle.value
+
+
+        confirm_in_use = self.confirm_in_use
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -93,6 +108,10 @@ class UpdateConnectionRequest:
             field_dict["auth_config"] = auth_config
         if dynamic_inputs is not UNSET:
             field_dict["dynamic_inputs"] = dynamic_inputs
+        if lifecycle is not UNSET:
+            field_dict["lifecycle"] = lifecycle
+        if confirm_in_use is not UNSET:
+            field_dict["confirm_in_use"] = confirm_in_use
 
         return field_dict
 
@@ -138,12 +157,26 @@ class UpdateConnectionRequest:
 
 
 
+        _lifecycle = d.pop("lifecycle", UNSET)
+        lifecycle: LifecycleEnum | Unset
+        if isinstance(_lifecycle,  Unset):
+            lifecycle = UNSET
+        else:
+            lifecycle = LifecycleEnum(_lifecycle)
+
+
+
+
+        confirm_in_use = d.pop("confirm_in_use", UNSET)
+
         update_connection_request = cls(
             name=name,
             description=description,
             config=config,
             auth_config=auth_config,
             dynamic_inputs=dynamic_inputs,
+            lifecycle=lifecycle,
+            confirm_in_use=confirm_in_use,
         )
 
 

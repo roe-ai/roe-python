@@ -66,6 +66,7 @@ from .connection_list import ConnectionList
 from .connection_list_dynamic_inputs import ConnectionListDynamicInputs
 from .connection_step import ConnectionStep
 from .connection_step_input_mapping import ConnectionStepInputMapping
+from .connection_update_conflict_response import ConnectionUpdateConflictResponse
 from .connections_create_response_400_type_1 import ConnectionsCreateResponse400Type1
 from .connections_create_response_400_type_2 import ConnectionsCreateResponse400Type2
 from .connections_list_response_400 import ConnectionsListResponse400
@@ -109,6 +110,7 @@ from .generate_skill_set_version_response import GenerateSkillSetVersionResponse
 from .if_block import IfBlock
 from .input_field import InputField
 from .job_input import JobInput
+from .lifecycle_enum import LifecycleEnum
 from .list_agent_job import ListAgentJob
 from .list_agent_job_metadata import ListAgentJobMetadata
 from .merge_step import MergeStep
@@ -312,6 +314,7 @@ __all__ = (
     "ConnectionsTestCredentialsCreateResponse400Type1",
     "ConnectionsUpdateResponse400Type1",
     "ConnectionsUpdateResponse400Type2",
+    "ConnectionUpdateConflictResponse",
     "ConnectorBrowserSession",
     "ConnectorBrowserSessionRequiredConfig",
     "ConnectorListResponse",
@@ -346,6 +349,7 @@ __all__ = (
     "IfBlock",
     "InputField",
     "JobInput",
+    "LifecycleEnum",
     "ListAgentJob",
     "ListAgentJobMetadata",
     "MergeStep",

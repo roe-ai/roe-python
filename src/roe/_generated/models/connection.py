@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.lifecycle_enum import LifecycleEnum
 from ..models.status_enum import StatusEnum
 from ..types import UNSET, Unset
 from dateutil.parser import isoparse
@@ -52,6 +53,9 @@ class Connection:
             config (Any | Unset):
             status (StatusEnum | Unset): * `active` - Active
                 * `error` - Error
+            lifecycle (LifecycleEnum | Unset): * `active` - Active
+                * `archived` - Archived
+                * `disconnected` - Disconnected
      """
 
     id: UUID
@@ -70,6 +74,7 @@ class Connection:
     description: str | Unset = UNSET
     config: Any | Unset = UNSET
     status: StatusEnum | Unset = UNSET
+    lifecycle: LifecycleEnum | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -120,6 +125,11 @@ class Connection:
             status = self.status.value
 
 
+        lifecycle: str | Unset = UNSET
+        if not isinstance(self.lifecycle, Unset):
+            lifecycle = self.lifecycle.value
+
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -144,6 +154,8 @@ class Connection:
             field_dict["config"] = config
         if status is not UNSET:
             field_dict["status"] = status
+        if lifecycle is not UNSET:
+            field_dict["lifecycle"] = lifecycle
 
         return field_dict
 
@@ -240,6 +252,16 @@ class Connection:
 
 
 
+        _lifecycle = d.pop("lifecycle", UNSET)
+        lifecycle: LifecycleEnum | Unset
+        if isinstance(_lifecycle,  Unset):
+            lifecycle = UNSET
+        else:
+            lifecycle = LifecycleEnum(_lifecycle)
+
+
+
+
         connection = cls(
             id=id,
             user=user,
@@ -257,6 +279,7 @@ class Connection:
             description=description,
             config=config,
             status=status,
+            lifecycle=lifecycle,
         )
 
 
