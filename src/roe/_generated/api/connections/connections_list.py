@@ -20,6 +20,7 @@ from uuid import UUID
 def _get_kwargs(
     *,
     connector_type: str | Unset = UNSET,
+    lifecycle: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
@@ -34,6 +35,8 @@ def _get_kwargs(
     params: dict[str, Any] = {}
 
     params["connector_type"] = connector_type
+
+    params["lifecycle"] = lifecycle
 
     params["ordering"] = ordering
 
@@ -111,6 +114,7 @@ def sync_detailed(
     *,
     client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
+    lifecycle: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
@@ -122,6 +126,7 @@ def sync_detailed(
 
     Args:
         connector_type (str | Unset):
+        lifecycle (str | Unset):
         ordering (str | Unset):
         organization_id (UUID | Unset):
         page (int | Unset):
@@ -139,6 +144,7 @@ def sync_detailed(
 
     kwargs = _get_kwargs(
         connector_type=connector_type,
+lifecycle=lifecycle,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -157,6 +163,7 @@ def sync(
     *,
     client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
+    lifecycle: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
@@ -168,6 +175,7 @@ def sync(
 
     Args:
         connector_type (str | Unset):
+        lifecycle (str | Unset):
         ordering (str | Unset):
         organization_id (UUID | Unset):
         page (int | Unset):
@@ -186,6 +194,7 @@ def sync(
     return sync_detailed(
         client=client,
 connector_type=connector_type,
+lifecycle=lifecycle,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -198,6 +207,7 @@ async def asyncio_detailed(
     *,
     client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
+    lifecycle: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
@@ -209,6 +219,7 @@ async def asyncio_detailed(
 
     Args:
         connector_type (str | Unset):
+        lifecycle (str | Unset):
         ordering (str | Unset):
         organization_id (UUID | Unset):
         page (int | Unset):
@@ -226,6 +237,7 @@ async def asyncio_detailed(
 
     kwargs = _get_kwargs(
         connector_type=connector_type,
+lifecycle=lifecycle,
 ordering=ordering,
 organization_id=organization_id,
 page=page,
@@ -244,6 +256,7 @@ async def asyncio(
     *,
     client: AuthenticatedClient,
     connector_type: str | Unset = UNSET,
+    lifecycle: str | Unset = UNSET,
     ordering: str | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
     page: int | Unset = UNSET,
@@ -255,6 +268,7 @@ async def asyncio(
 
     Args:
         connector_type (str | Unset):
+        lifecycle (str | Unset):
         ordering (str | Unset):
         organization_id (UUID | Unset):
         page (int | Unset):
@@ -273,6 +287,7 @@ async def asyncio(
     return (await asyncio_detailed(
         client=client,
 connector_type=connector_type,
+lifecycle=lifecycle,
 ordering=ordering,
 organization_id=organization_id,
 page=page,

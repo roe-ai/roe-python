@@ -9,9 +9,9 @@ from ...types import Response, UNSET
 from ... import errors
 
 from ...models.connection import Connection
+from ...models.connection_update_conflict_response import ConnectionUpdateConflictResponse
 from ...models.connections_partial_update_response_400_type_1 import ConnectionsPartialUpdateResponse400Type1
 from ...models.connections_partial_update_response_400_type_2 import ConnectionsPartialUpdateResponse400Type2
-from ...models.duplicate_connection_response import DuplicateConnectionResponse
 from ...models.error_detail_response import ErrorDetailResponse
 from ...models.patched_update_connection_request import PatchedUpdateConnectionRequest
 from ...types import UNSET, Unset
@@ -61,7 +61,7 @@ def _get_kwargs(
 
 
 
-def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse | None:
+def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse | None:
     if response.status_code == 200:
         response_200 = Connection.from_dict(response.json())
 
@@ -109,7 +109,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return response_404
 
     if response.status_code == 409:
-        response_409 = DuplicateConnectionResponse.from_dict(response.json())
+        response_409 = ConnectionUpdateConflictResponse.from_dict(response.json())
 
 
 
@@ -121,7 +121,7 @@ def _parse_response(*, client: AuthenticatedClient | Client, response: httpx.Res
         return None
 
 
-def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse]:
+def _build_response(*, client: AuthenticatedClient | Client, response: httpx.Response) -> Response[Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse]:
     return Response(
         status_code=HTTPStatus(response.status_code),
         content=response.content,
@@ -137,7 +137,7 @@ def sync_detailed(
     body: PatchedUpdateConnectionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse]:
+) -> Response[Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse]:
     """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
@@ -161,7 +161,7 @@ def sync_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse]
+        Response[Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse]
      """
 
 
@@ -185,7 +185,7 @@ def sync(
     body: PatchedUpdateConnectionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse | None:
+) -> Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse | None:
     """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
@@ -209,7 +209,7 @@ def sync(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse
+        Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse
      """
 
 
@@ -228,7 +228,7 @@ async def asyncio_detailed(
     body: PatchedUpdateConnectionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Response[Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse]:
+) -> Response[Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse]:
     """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
@@ -252,7 +252,7 @@ async def asyncio_detailed(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Response[Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse]
+        Response[Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse]
      """
 
 
@@ -276,7 +276,7 @@ async def asyncio(
     body: PatchedUpdateConnectionRequest | Unset = UNSET,
     organization_id: UUID | Unset = UNSET,
 
-) -> Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse | None:
+) -> Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse | None:
     """  Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage connection.
 
     Args:
@@ -300,7 +300,7 @@ async def asyncio(
         httpx.TimeoutException: If the request takes longer than Client.timeout.
 
     Returns:
-        Connection | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | DuplicateConnectionResponse | ErrorDetailResponse
+        Connection | ConnectionUpdateConflictResponse | ConnectionsPartialUpdateResponse400Type1 | ConnectionsPartialUpdateResponse400Type2 | list[str] | ErrorDetailResponse
      """
 
 

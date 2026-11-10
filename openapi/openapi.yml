@@ -2388,6 +2388,13 @@ paths:
         schema:
           type: string
         description: Filter by connector type (e.g., 'snowflake', 'postgres')
+      - in: query
+        name: lifecycle
+        schema:
+          type: string
+        description: 'Filter by lifecycle: active, archived or disconnected. Pickers
+          ask for ''active'' so archived and disconnected connections can''t be chosen
+          again.'
       - name: ordering
         required: false
         in: query
@@ -2643,10 +2650,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DuplicateConnectionResponse'
-          description: A strict-identity duplicate of this connection already exists
-            in this organization, or post actions still call a write operation this
-            update removes or renames ({error}).
+                $ref: '#/components/schemas/ConnectionUpdateConflictResponse'
+          description: 'A strict-identity duplicate of this connection already exists
+            in this organization, post actions still call a write operation this update
+            removes or renames ({error}), or the update changes calls for agents or
+            webhooks that use the connection ({error, in_use: true}; resend with confirm_in_use).'
     patch:
       operationId: connections_partial_update
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -2725,10 +2733,11 @@ paths:
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/DuplicateConnectionResponse'
-          description: A strict-identity duplicate of this connection already exists
-            in this organization, or post actions still call a write operation this
-            update removes or renames ({error}).
+                $ref: '#/components/schemas/ConnectionUpdateConflictResponse'
+          description: 'A strict-identity duplicate of this connection already exists
+            in this organization, post actions still call a write operation this update
+            removes or renames ({error}), or the update changes calls for agents or
+            webhooks that use the connection ({error, in_use: true}; resend with confirm_in_use).'
     delete:
       operationId: connections_destroy
       description: 'Public API: GET/PATCH/DELETE /api/v1/connections/{id}/ - Manage
@@ -2773,7 +2782,7 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/ConnectionDeleteErrorResponse'
-          description: Post actions still reference this connection.
+          description: Agents or webhooks still use this connection.
         '500':
           content:
             application/json:
@@ -5817,6 +5826,8 @@ components:
           readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
+        lifecycle:
+          $ref: '#/components/schemas/LifecycleEnum'
         created_at:
           type: string
           format: date-time
@@ -5924,6 +5935,8 @@ components:
           readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
+        lifecycle:
+          $ref: '#/components/schemas/LifecycleEnum'
         created_at:
           type: string
           format: date-time
@@ -5977,6 +5990,23 @@ components:
       - connection_id
       - operation
       type: object
+    ConnectionUpdateConflictResponse:
+      type: object
+      description: Body of a 409 from update/replace; which fields are set depends
+        on the cause.
+      properties:
+        error:
+          type: string
+        existing_connection:
+          allOf:
+          - $ref: '#/components/schemas/DuplicateConnectionExisting'
+          description: Set when an identical connection already exists.
+        in_use:
+          type: boolean
+          description: True when agents or webhooks use the settings being changed;
+            resend with confirm_in_use to save anyway.
+      required:
+      - error
     ConnectorBrowserSession:
       type: object
       properties:
@@ -6684,6 +6714,16 @@ components:
       - description
       - key
       - value
+    LifecycleEnum:
+      enum:
+      - active
+      - archived
+      - disconnected
+      type: string
+      description: |-
+        * `active` - Active
+        * `archived` - Archived
+        * `disconnected` - Disconnected
     ListAgentJob:
       type: object
       properties:
@@ -6691,6 +6731,13 @@ components:
           type: string
           format: uuid
           readOnly: true
+        agent_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          readOnly: true
+          description: ID of the agent version the job ran on
         agent_version_name:
           type:
           - string
@@ -6755,6 +6802,7 @@ components:
           - type: 'null'
           readOnly: true
       required:
+      - agent_version_id
       - agent_version_name
       - created_at
       - creator
@@ -7151,6 +7199,12 @@ components:
           additionalProperties:
             type: string
             minLength: 1
+        lifecycle:
+          $ref: '#/components/schemas/LifecycleEnum'
+        confirm_in_use:
+          type: boolean
+          description: Save a config change that alters calls for agents or webhooks
+            that already use the connection.
     PatchedUpdatePolicyRequest:
       type: object
       description: Serializer for updating policy metadata (name, description)
@@ -8111,6 +8165,12 @@ components:
           additionalProperties:
             type: string
             minLength: 1
+        lifecycle:
+          $ref: '#/components/schemas/LifecycleEnum'
+        confirm_in_use:
+          type: boolean
+          description: Save a config change that alters calls for agents or webhooks
+            that already use the connection.
     UpdatePolicy:
       type: object
       description: Serializer for updating policy metadata (name, description)

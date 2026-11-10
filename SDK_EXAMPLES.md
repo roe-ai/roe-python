@@ -502,6 +502,7 @@ result = client.connections.list(
     search="search",  # optional
     page=1,  # optional
     page_size=1,  # optional
+    lifecycle="lifecycle",  # optional
 )
 ```
 
@@ -585,6 +586,8 @@ result = client.connections.update(
     config={},  # optional
     auth_config={},  # optional
     dynamic_inputs={},  # optional
+    lifecycle="lifecycle",  # optional
+    confirm_in_use=True,  # optional
 )
 ```
 
@@ -604,6 +607,8 @@ result = client.connections.replace(
     config={},  # optional
     auth_config={},  # optional
     dynamic_inputs={},  # optional
+    lifecycle="lifecycle",  # optional
+    confirm_in_use=True,  # optional
 )
 ```
 

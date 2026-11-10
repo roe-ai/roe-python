@@ -46,6 +46,7 @@ class ConnectionsAPI:
         search: str | None = None,
         page: int | None = None,
         page_size: int | None = None,
+        lifecycle: str | None = None,
     ) -> PaginatedConnectionListList:
         """List connections."""
         response = request_raw(
@@ -55,6 +56,7 @@ class ConnectionsAPI:
             search=search if search is not None else UNSET,
             page=page if page is not None else UNSET,
             page_size=page_size if page_size is not None else UNSET,
+            lifecycle=lifecycle if lifecycle is not None else UNSET,
             organization_id=self._org_id,
         )
         return PaginatedConnectionListList.from_dict(response.json())
@@ -131,8 +133,10 @@ class ConnectionsAPI:
         config: dict[str, Any] | None = None,
         auth_config: dict[str, Any] | None = None,
         dynamic_inputs: dict[str, str] | None = None,
+        lifecycle: str | None = None,
+        confirm_in_use: bool | None = None,
     ) -> Connection:
-        """Update mutable connection fields."""
+        """Update mutable connection fields. Changing settings agents already use needs confirm_in_use."""
         body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
@@ -144,6 +148,10 @@ class ConnectionsAPI:
             body["auth_config"] = auth_config
         if dynamic_inputs is not None:
             body["dynamic_inputs"] = dynamic_inputs
+        if lifecycle is not None:
+            body["lifecycle"] = lifecycle
+        if confirm_in_use is not None:
+            body["confirm_in_use"] = confirm_in_use
         resp = request_json(
             self._raw,
             connections_partial_update,
@@ -161,8 +169,10 @@ class ConnectionsAPI:
         config: dict[str, Any] | None = None,
         auth_config: dict[str, Any] | None = None,
         dynamic_inputs: dict[str, str] | None = None,
+        lifecycle: str | None = None,
+        confirm_in_use: bool | None = None,
     ) -> Connection:
-        """Replace a connection."""
+        """Replace a connection. Changing settings agents already use needs confirm_in_use."""
         body: dict[str, Any] = {}
         if name is not None:
             body["name"] = name
@@ -174,6 +184,10 @@ class ConnectionsAPI:
             body["auth_config"] = auth_config
         if dynamic_inputs is not None:
             body["dynamic_inputs"] = dynamic_inputs
+        if lifecycle is not None:
+            body["lifecycle"] = lifecycle
+        if confirm_in_use is not None:
+            body["confirm_in_use"] = confirm_in_use
         resp = request_json(
             self._raw,
             connections_update,
@@ -187,7 +201,7 @@ class ConnectionsAPI:
         self,
         connection_id: str,
     ) -> None:
-        """Delete a connection."""
+        """Delete a connection. Refused while agents or webhooks use it."""
         request_raw(
             self._raw,
             connections_destroy,
