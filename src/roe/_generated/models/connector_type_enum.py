@@ -18,6 +18,7 @@ class ConnectorTypeEnum(str, Enum):
     SHAREPOINT = "sharepoint"
     SHIELD = "shield"
     SHIELD_API = "shield_api"
+    SHIELD_ENGAGE = "shield_engage"
     SIFT = "sift"
     SIFT_API = "sift_api"
     SLACK = "slack"
