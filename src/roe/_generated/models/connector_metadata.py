@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.auth_methods_enum import AuthMethodsEnum
 from typing import cast
 
 if TYPE_CHECKING:
@@ -39,6 +40,9 @@ class ConnectorMetadata:
             dynamic_input_fields (ConnectorMetadataDynamicInputFields):
             dynamic_input_test_fields (list[str]):
             browser_session (ConnectorBrowserSession | None):
+            auth_methods (list[AuthMethodsEnum]): How people give this connector credentials, default first.
+            test_proves_credentials (bool): Whether a passing connection test proves the credentials work, rather than only
+                that the service answered.
      """
 
     id: str
@@ -53,6 +57,8 @@ class ConnectorMetadata:
     dynamic_input_fields: ConnectorMetadataDynamicInputFields
     dynamic_input_test_fields: list[str]
     browser_session: ConnectorBrowserSession | None
+    auth_methods: list[AuthMethodsEnum]
+    test_proves_credentials: bool
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -93,6 +99,15 @@ class ConnectorMetadata:
         else:
             browser_session = self.browser_session
 
+        auth_methods = []
+        for auth_methods_item_data in self.auth_methods:
+            auth_methods_item = auth_methods_item_data.value
+            auth_methods.append(auth_methods_item)
+
+
+
+        test_proves_credentials = self.test_proves_credentials
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -109,6 +124,8 @@ class ConnectorMetadata:
             "dynamic_input_fields": dynamic_input_fields,
             "dynamic_input_test_fields": dynamic_input_test_fields,
             "browser_session": browser_session,
+            "auth_methods": auth_methods,
+            "test_proves_credentials": test_proves_credentials,
         })
 
         return field_dict
@@ -170,6 +187,18 @@ class ConnectorMetadata:
         browser_session = _parse_browser_session(d.pop("browser_session"))
 
 
+        auth_methods = []
+        _auth_methods = d.pop("auth_methods")
+        for auth_methods_item_data in (_auth_methods):
+            auth_methods_item = AuthMethodsEnum(auth_methods_item_data)
+
+
+
+            auth_methods.append(auth_methods_item)
+
+
+        test_proves_credentials = d.pop("test_proves_credentials")
+
         connector_metadata = cls(
             id=id,
             display_name=display_name,
@@ -183,6 +212,8 @@ class ConnectorMetadata:
             dynamic_input_fields=dynamic_input_fields,
             dynamic_input_test_fields=dynamic_input_test_fields,
             browser_session=browser_session,
+            auth_methods=auth_methods,
+            test_proves_credentials=test_proves_credentials,
         )
 
 

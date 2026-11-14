@@ -2008,8 +2008,9 @@ paths:
       description: 'Execute an agent with multiple inputs asynchronously and return
         job IDs for tracking results. Job `metadata` is not supported on this endpoint:
         any `metadata` key — top-level or inside an `inputs` item — is silently ignored
-        and the jobs are created with empty metadata. Use the single-run endpoints
-        to attach metadata to a job.'
+        and the jobs are created without user metadata. Use the single-run endpoints
+        to attach metadata to a job. Set `max_concurrent_jobs` to cap how many of
+        the jobs run at once.'
       summary: Run agent asynchronously with multiple inputs
       parameters:
       - in: path
@@ -5354,6 +5355,13 @@ components:
           items:
             $ref: '#/components/schemas/AgentExecutionRequest'
           description: List of agent execution requests to process
+        max_concurrent_jobs:
+          type: integer
+          minimum: 1
+          description: Optional cap on how many of these jobs run at once. The rest
+            wait as pending and start as running jobs finish. Unset = no cap beyond
+            the organization's concurrent job limit. An input that matches a job already
+            in progress reuses that job, which keeps the cap it was started with.
       required:
       - inputs
     AgentStep:
@@ -5594,6 +5602,16 @@ components:
       - id
       - steps
       type: object
+    AuthMethodsEnum:
+      enum:
+      - browser_sign_in
+      - provider_consent
+      - manual
+      type: string
+      description: |-
+        * `browser_sign_in` - browser_sign_in
+        * `provider_consent` - provider_consent
+        * `manual` - manual
     BaseAgent:
       type: object
       description: Serializer for BaseAgent (agent config)
@@ -5826,6 +5844,25 @@ components:
           readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
+        health:
+          allOf:
+          - $ref: '#/components/schemas/HealthEnum'
+          readOnly: true
+        last_verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        credentials_expire_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        account_label:
+          type: string
+          readOnly: true
         lifecycle:
           $ref: '#/components/schemas/LifecycleEnum'
         created_at:
@@ -5837,15 +5874,19 @@ components:
           format: date-time
           readOnly: true
       required:
+      - account_label
       - auth_config
       - browser_session_expires_at
       - connector_display_name
       - connector_type
       - created_at
       - credentials_configured
+      - credentials_expire_at
       - dynamic_input_test_disabled_reason
       - dynamic_inputs
+      - health
       - id
+      - last_verified_at
       - name
       - organization
       - updated_at
@@ -5935,8 +5976,31 @@ components:
           readOnly: true
         status:
           $ref: '#/components/schemas/StatusEnum'
+        health:
+          allOf:
+          - $ref: '#/components/schemas/HealthEnum'
+          readOnly: true
+        last_verified_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        credentials_expire_at:
+          type:
+          - string
+          - 'null'
+          format: date-time
+          readOnly: true
+        account_label:
+          type: string
+          readOnly: true
         lifecycle:
           $ref: '#/components/schemas/LifecycleEnum'
+        setup_count:
+          type: integer
+          readOnly: true
+          description: How many setups agents can attach from this connection.
         created_at:
           type: string
           format: date-time
@@ -5946,15 +6010,20 @@ components:
           format: date-time
           readOnly: true
       required:
+      - account_label
       - connector_display_name
       - connector_type
       - created_at
       - credentials_configured
+      - credentials_expire_at
       - dynamic_input_test_disabled_reason
       - dynamic_inputs
+      - health
       - id
+      - last_verified_at
       - name
       - organization
+      - setup_count
       - updated_at
       - user
     ConnectionStep:
@@ -6065,7 +6134,17 @@ components:
           oneOf:
           - $ref: '#/components/schemas/ConnectorBrowserSession'
           - type: 'null'
+        auth_methods:
+          type: array
+          items:
+            $ref: '#/components/schemas/AuthMethodsEnum'
+          description: How people give this connector credentials, default first.
+        test_proves_credentials:
+          type: boolean
+          description: Whether a passing connection test proves the credentials work,
+            rather than only that the service answered.
       required:
+      - auth_methods
       - auth_schema
       - browser_session
       - category
@@ -6078,6 +6157,7 @@ components:
       - icon
       - id
       - supports_delivery
+      - test_proves_credentials
     ConnectorTypeEnum:
       enum:
       - snowflake
@@ -6601,6 +6681,22 @@ components:
       - run_id
       - sse_endpoint
       - workflow_id
+    HealthEnum:
+      enum:
+      - connecting
+      - expired
+      - needs_attention
+      - failed
+      - connected
+      - unknown
+      type: string
+      description: |-
+        * `connecting` - Connecting
+        * `expired` - Expired
+        * `needs_attention` - Needs attention
+        * `failed` - Failed
+        * `connected` - Connected
+        * `unknown` - Unknown
     IfBlock:
       additionalProperties: false
       properties:
@@ -8431,12 +8527,14 @@ components:
           minItems: 1
           type: array
         result:
-          maxLength: 200
-          pattern: ^[A-Za-z_]\w*$
-          type: string
+          anyOf:
+          - maxLength: 200
+            pattern: ^[A-Za-z_]\w*$
+            type: string
+          - type: 'null'
+          default: null
       required:
       - steps
-      - result
       type: object
     WorkflowDefinitionRequest:
       additionalProperties: false
@@ -8474,12 +8572,14 @@ components:
           minItems: 1
           type: array
         result:
-          maxLength: 200
-          pattern: ^[A-Za-z_]\w*$
-          type: string
+          anyOf:
+          - maxLength: 200
+            pattern: ^[A-Za-z_]\w*$
+            type: string
+          - type: 'null'
+          default: null
       required:
       - steps
-      - result
       type: object
     WorkflowDetail:
       type: object
