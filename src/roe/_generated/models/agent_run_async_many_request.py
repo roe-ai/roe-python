@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..types import UNSET, Unset
 from typing import cast
 
 if TYPE_CHECKING:
@@ -27,9 +28,13 @@ class AgentRunAsyncManyRequest:
 
         Attributes:
             inputs (list[AgentExecutionRequest]): List of agent execution requests to process
+            max_concurrent_jobs (int | Unset): Optional cap on how many of these jobs run at once. The rest wait as pending
+                and start as running jobs finish. Unset = no cap beyond the organization's concurrent job limit. An input that
+                matches a job already in progress reuses that job, which keeps the cap it was started with.
      """
 
     inputs: list[AgentExecutionRequest]
+    max_concurrent_jobs: int | Unset = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -45,12 +50,16 @@ class AgentRunAsyncManyRequest:
 
 
 
+        max_concurrent_jobs = self.max_concurrent_jobs
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
             "inputs": inputs,
         })
+        if max_concurrent_jobs is not UNSET:
+            field_dict["max_concurrent_jobs"] = max_concurrent_jobs
 
         return field_dict
 
@@ -70,8 +79,11 @@ class AgentRunAsyncManyRequest:
             inputs.append(inputs_item)
 
 
+        max_concurrent_jobs = d.pop("max_concurrent_jobs", UNSET)
+
         agent_run_async_many_request = cls(
             inputs=inputs,
+            max_concurrent_jobs=max_concurrent_jobs,
         )
 
 

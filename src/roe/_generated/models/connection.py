@@ -8,6 +8,7 @@ from attrs import field as _attrs_field
 
 from ..types import UNSET, Unset
 
+from ..models.health_enum import HealthEnum
 from ..models.lifecycle_enum import LifecycleEnum
 from ..models.status_enum import StatusEnum
 from ..types import UNSET, Unset
@@ -47,6 +48,15 @@ class Connection:
             dynamic_input_test_disabled_reason (None | str):
             auth_config (ConnectionAuthConfig):
             browser_session_expires_at (datetime.datetime | None):
+            health (HealthEnum): * `connecting` - Connecting
+                * `expired` - Expired
+                * `needs_attention` - Needs attention
+                * `failed` - Failed
+                * `connected` - Connected
+                * `unknown` - Unknown
+            last_verified_at (datetime.datetime | None):
+            credentials_expire_at (datetime.datetime | None):
+            account_label (str):
             created_at (datetime.datetime):
             updated_at (datetime.datetime):
             description (str | Unset):
@@ -69,6 +79,10 @@ class Connection:
     dynamic_input_test_disabled_reason: None | str
     auth_config: ConnectionAuthConfig
     browser_session_expires_at: datetime.datetime | None
+    health: HealthEnum
+    last_verified_at: datetime.datetime | None
+    credentials_expire_at: datetime.datetime | None
+    account_label: str
     created_at: datetime.datetime
     updated_at: datetime.datetime
     description: str | Unset = UNSET
@@ -112,6 +126,22 @@ class Connection:
         else:
             browser_session_expires_at = self.browser_session_expires_at
 
+        health = self.health.value
+
+        last_verified_at: None | str
+        if isinstance(self.last_verified_at, datetime.datetime):
+            last_verified_at = self.last_verified_at.isoformat()
+        else:
+            last_verified_at = self.last_verified_at
+
+        credentials_expire_at: None | str
+        if isinstance(self.credentials_expire_at, datetime.datetime):
+            credentials_expire_at = self.credentials_expire_at.isoformat()
+        else:
+            credentials_expire_at = self.credentials_expire_at
+
+        account_label = self.account_label
+
         created_at = self.created_at.isoformat()
 
         updated_at = self.updated_at.isoformat()
@@ -145,6 +175,10 @@ class Connection:
             "dynamic_input_test_disabled_reason": dynamic_input_test_disabled_reason,
             "auth_config": auth_config,
             "browser_session_expires_at": browser_session_expires_at,
+            "health": health,
+            "last_verified_at": last_verified_at,
+            "credentials_expire_at": credentials_expire_at,
+            "account_label": account_label,
             "created_at": created_at,
             "updated_at": updated_at,
         })
@@ -228,6 +262,49 @@ class Connection:
         browser_session_expires_at = _parse_browser_session_expires_at(d.pop("browser_session_expires_at"))
 
 
+        health = HealthEnum(d.pop("health"))
+
+
+
+
+        def _parse_last_verified_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                last_verified_at_type_0 = isoparse(data)
+
+
+
+                return last_verified_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        last_verified_at = _parse_last_verified_at(d.pop("last_verified_at"))
+
+
+        def _parse_credentials_expire_at(data: object) -> datetime.datetime | None:
+            if data is None:
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                credentials_expire_at_type_0 = isoparse(data)
+
+
+
+                return credentials_expire_at_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(datetime.datetime | None, data)
+
+        credentials_expire_at = _parse_credentials_expire_at(d.pop("credentials_expire_at"))
+
+
+        account_label = d.pop("account_label")
+
         created_at = isoparse(d.pop("created_at"))
 
 
@@ -274,6 +351,10 @@ class Connection:
             dynamic_input_test_disabled_reason=dynamic_input_test_disabled_reason,
             auth_config=auth_config,
             browser_session_expires_at=browser_session_expires_at,
+            health=health,
+            last_verified_at=last_verified_at,
+            credentials_expire_at=credentials_expire_at,
+            account_label=account_label,
             created_at=created_at,
             updated_at=updated_at,
             description=description,

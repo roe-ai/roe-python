@@ -150,8 +150,9 @@ def sync_detailed(
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results. Job
     `metadata` is not supported on this endpoint: any `metadata` key — top-level or inside an `inputs`
-    item — is silently ignored and the jobs are created with empty metadata. Use the single-run
-    endpoints to attach metadata to a job.
+    item — is silently ignored and the jobs are created without user metadata. Use the single-run
+    endpoints to attach metadata to a job. Set `max_concurrent_jobs` to cap how many of the jobs run at
+    once.
 
     Args:
         agent_id (UUID):
@@ -192,8 +193,9 @@ def sync(
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results. Job
     `metadata` is not supported on this endpoint: any `metadata` key — top-level or inside an `inputs`
-    item — is silently ignored and the jobs are created with empty metadata. Use the single-run
-    endpoints to attach metadata to a job.
+    item — is silently ignored and the jobs are created without user metadata. Use the single-run
+    endpoints to attach metadata to a job. Set `max_concurrent_jobs` to cap how many of the jobs run at
+    once.
 
     Args:
         agent_id (UUID):
@@ -229,8 +231,9 @@ async def asyncio_detailed(
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results. Job
     `metadata` is not supported on this endpoint: any `metadata` key — top-level or inside an `inputs`
-    item — is silently ignored and the jobs are created with empty metadata. Use the single-run
-    endpoints to attach metadata to a job.
+    item — is silently ignored and the jobs are created without user metadata. Use the single-run
+    endpoints to attach metadata to a job. Set `max_concurrent_jobs` to cap how many of the jobs run at
+    once.
 
     Args:
         agent_id (UUID):
@@ -271,8 +274,9 @@ async def asyncio(
 
      Execute an agent with multiple inputs asynchronously and return job IDs for tracking results. Job
     `metadata` is not supported on this endpoint: any `metadata` key — top-level or inside an `inputs`
-    item — is silently ignored and the jobs are created with empty metadata. Use the single-run
-    endpoints to attach metadata to a job.
+    item — is silently ignored and the jobs are created without user metadata. Use the single-run
+    endpoints to attach metadata to a job. Set `max_concurrent_jobs` to cap how many of the jobs run at
+    once.
 
     Args:
         agent_id (UUID):
