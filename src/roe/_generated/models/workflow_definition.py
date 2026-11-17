@@ -37,15 +37,15 @@ class WorkflowDefinition:
         Attributes:
             steps (list[AgentStep | ApprovalBlock | ConnectionStep | EditFieldsStep | ForEachBlock | IfBlock | MergeStep |
                 ParallelBlock]):
-            result (str):
             format_version (Literal[2] | Unset):  Default: 2.
             inputs (list[InputField] | Unset):
+            result (None | str | Unset):
      """
 
     steps: list[AgentStep | ApprovalBlock | ConnectionStep | EditFieldsStep | ForEachBlock | IfBlock | MergeStep | ParallelBlock]
-    result: str
     format_version: Literal[2] | Unset = 2
     inputs: list[InputField] | Unset = UNSET
+    result: None | str | Unset = UNSET
 
 
 
@@ -85,8 +85,6 @@ class WorkflowDefinition:
 
 
 
-        result = self.result
-
         format_version = self.format_version
 
         inputs: list[dict[str, Any]] | Unset = UNSET
@@ -98,17 +96,24 @@ class WorkflowDefinition:
 
 
 
+        result: None | str | Unset
+        if isinstance(self.result, Unset):
+            result = UNSET
+        else:
+            result = self.result
+
 
         field_dict: dict[str, Any] = {}
 
         field_dict.update({
             "steps": steps,
-            "result": result,
         })
         if format_version is not UNSET:
             field_dict["format_version"] = format_version
         if inputs is not UNSET:
             field_dict["inputs"] = inputs
+        if result is not UNSET:
+            field_dict["result"] = result
 
         return field_dict
 
@@ -213,8 +218,6 @@ class WorkflowDefinition:
             steps.append(steps_item)
 
 
-        result = d.pop("result")
-
         format_version = cast(Literal[2] | Unset , d.pop("format_version", UNSET))
         if format_version != 2and not isinstance(format_version, Unset):
             raise ValueError(f"format_version must match const 2, got '{format_version}'")
@@ -231,11 +234,21 @@ class WorkflowDefinition:
                 inputs.append(inputs_item)
 
 
+        def _parse_result(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        result = _parse_result(d.pop("result", UNSET))
+
+
         workflow_definition = cls(
             steps=steps,
-            result=result,
             format_version=format_version,
             inputs=inputs,
+            result=result,
         )
 
         return workflow_definition
