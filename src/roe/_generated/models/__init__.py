@@ -49,6 +49,7 @@ from .agents_update_response_400 import AgentsUpdateResponse400
 from .agents_versions_create_response_400 import AgentsVersionsCreateResponse400
 from .api_error_response import ApiErrorResponse
 from .approval_block import ApprovalBlock
+from .auth_methods_enum import AuthMethodsEnum
 from .base_agent import BaseAgent
 from .base_agent_create_request import BaseAgentCreateRequest
 from .base_agent_update_request import BaseAgentUpdateRequest
@@ -107,6 +108,7 @@ from .for_each_block import ForEachBlock
 from .gate_kind import GateKind
 from .generate_skill_set_version_request import GenerateSkillSetVersionRequest
 from .generate_skill_set_version_response import GenerateSkillSetVersionResponse
+from .health_enum import HealthEnum
 from .if_block import IfBlock
 from .input_field import InputField
 from .job_input import JobInput
@@ -288,6 +290,7 @@ __all__ = (
     "AgentVersionUpdateRequest",
     "ApiErrorResponse",
     "ApprovalBlock",
+    "AuthMethodsEnum",
     "BaseAgent",
     "BaseAgentCreateRequest",
     "BaseAgentUpdateRequest",
@@ -346,6 +349,7 @@ __all__ = (
     "GateKind",
     "GenerateSkillSetVersionRequest",
     "GenerateSkillSetVersionResponse",
+    "HealthEnum",
     "IfBlock",
     "InputField",
     "JobInput",
