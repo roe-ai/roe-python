@@ -32,6 +32,10 @@ def _connection_json() -> dict[str, object]:
         "dynamic_input_test_disabled_reason": None,
         "browser_session_expires_at": None,
         "status": "active",
+        "health": "connected",
+        "last_verified_at": None,
+        "credentials_expire_at": None,
+        "account_label": "",
     }
 
 
