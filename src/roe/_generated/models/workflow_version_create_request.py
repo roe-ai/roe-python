@@ -10,6 +10,7 @@ from ..types import UNSET, Unset
 
 from ..types import UNSET, Unset
 from typing import cast
+from uuid import UUID
 
 if TYPE_CHECKING:
   from ..models.workflow_definition_request import WorkflowDefinitionRequest
@@ -29,11 +30,14 @@ class WorkflowVersionCreateRequest:
             definition (WorkflowDefinitionRequest):
             version_name (str | Unset):
             description (str | Unset):
+            base_version_id (None | Unset | UUID): The version this definition was made from. When given, the save is
+                refused if another version has become current since, so an older definition doesn't replace newer changes.
      """
 
     definition: WorkflowDefinitionRequest
     version_name: str | Unset = UNSET
     description: str | Unset = UNSET
+    base_version_id: None | Unset | UUID = UNSET
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -48,6 +52,14 @@ class WorkflowVersionCreateRequest:
 
         description = self.description
 
+        base_version_id: None | str | Unset
+        if isinstance(self.base_version_id, Unset):
+            base_version_id = UNSET
+        elif isinstance(self.base_version_id, UUID):
+            base_version_id = str(self.base_version_id)
+        else:
+            base_version_id = self.base_version_id
+
 
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
@@ -58,6 +70,8 @@ class WorkflowVersionCreateRequest:
             field_dict["version_name"] = version_name
         if description is not UNSET:
             field_dict["description"] = description
+        if base_version_id is not UNSET:
+            field_dict["base_version_id"] = base_version_id
 
         return field_dict
 
@@ -76,10 +90,31 @@ class WorkflowVersionCreateRequest:
 
         description = d.pop("description", UNSET)
 
+        def _parse_base_version_id(data: object) -> None | Unset | UUID:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            try:
+                if not isinstance(data, str):
+                    raise TypeError()
+                base_version_id_type_0 = UUID(data)
+
+
+
+                return base_version_id_type_0
+            except (TypeError, ValueError, AttributeError, KeyError):
+                pass
+            return cast(None | Unset | UUID, data)
+
+        base_version_id = _parse_base_version_id(d.pop("base_version_id", UNSET))
+
+
         workflow_version_create_request = cls(
             definition=definition,
             version_name=version_name,
             description=description,
+            base_version_id=base_version_id,
         )
 
 

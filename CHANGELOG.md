@@ -1,5 +1,17 @@
 # Changelog
 
+## 1.1.25
+
+Built from roe-main release `1-1-7`.
+
+### Added
+
+- `roe._generated.models.AgentStep` now includes the optional `policy_version_id` field, so agent steps can carry a policy version reference.
+- `roe._generated.models.ConnectionStep` now includes the optional `continue_on_failure` field, allowing connection steps to be configured to continue when they fail.
+- `roe._generated.models.ConnectorMetadata` now includes the required `requires_setup` and `sign_in_config_fields` fields, so connector metadata responses expose whether setup is required and which config fields are needed for sign-in configuration.
+- `roe._generated.models.StepRun` now includes the required `id` and `retryable` fields, so step run responses expose a stable identifier and whether the step run can be retried on its own.
+- `roe._generated.models.WorkflowVersionCreateRequest` now includes the optional `base_version_id` field, which you can send when creating a workflow version to include the base version reference in the request.
+
 ## 1.1.23
 
 Built from roe-main release `1-1-5`.

@@ -35,6 +35,7 @@ class ConnectionStep:
             operation (str):
             setup_id (None | str | Unset):
             input_mapping (ConnectionStepInputMapping | Unset):
+            continue_on_failure (bool | Unset):  Default: False.
      """
 
     id: str
@@ -43,6 +44,7 @@ class ConnectionStep:
     kind: Literal['connection'] = 'connection'
     setup_id: None | str | Unset = UNSET
     input_mapping: ConnectionStepInputMapping | Unset = UNSET
+    continue_on_failure: bool | Unset = False
 
 
 
@@ -68,6 +70,8 @@ class ConnectionStep:
         if not isinstance(self.input_mapping, Unset):
             input_mapping = self.input_mapping.to_dict()
 
+        continue_on_failure = self.continue_on_failure
+
 
         field_dict: dict[str, Any] = {}
 
@@ -81,6 +85,8 @@ class ConnectionStep:
             field_dict["setup_id"] = setup_id
         if input_mapping is not UNSET:
             field_dict["input_mapping"] = input_mapping
+        if continue_on_failure is not UNSET:
+            field_dict["continue_on_failure"] = continue_on_failure
 
         return field_dict
 
@@ -120,6 +126,8 @@ class ConnectionStep:
 
 
 
+        continue_on_failure = d.pop("continue_on_failure", UNSET)
+
         connection_step = cls(
             id=id,
             kind=kind,
@@ -127,6 +135,7 @@ class ConnectionStep:
             operation=operation,
             setup_id=setup_id,
             input_mapping=input_mapping,
+            continue_on_failure=continue_on_failure,
         )
 
         return connection_step
