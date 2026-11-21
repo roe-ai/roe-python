@@ -34,7 +34,8 @@ class WorkflowVersionDetail:
             is_current (bool):
             read_only (bool): Saved in the old graph format: it still runs, but can only be edited by saving a new version.
             definition (None | WorkflowDefinition): The steps, in the block format. Null for a read-only version.
-            conversion_reasons (list[str]): Why a read-only version couldn't be converted to the block format.
+            conversion_reasons (list[str]): Why a read-only version couldn't be converted to the block format; for another
+                version, why any of its post actions can't become a final step.
             version_name (None | str | Unset):
             description (None | str | Unset):
             format_version (int | Unset):

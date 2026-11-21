@@ -4719,8 +4719,10 @@ paths:
     post:
       operationId: workflows_versions_create
       description: Save a new version from a complete block-format definition and
-        make it current. Agent versions stay pinned as given, and the current version's
-        post actions carry over.
+        make it current. Agent versions stay pinned as given. With base_version_id,
+        the current version's post actions become final connection steps that keep
+        going when they fail; any that can't, and all of them without it, carry over
+        as post actions, and conversion_reasons says why.
       summary: Save a workflow version
       parameters:
       - in: path
@@ -5383,6 +5385,11 @@ components:
           additionalProperties:
             type: string
           type: object
+        policy_version_id:
+          anyOf:
+          - type: string
+          - type: 'null'
+          default: null
       required:
       - kind
       - id
@@ -6053,6 +6060,9 @@ components:
           additionalProperties:
             type: string
           type: object
+        continue_on_failure:
+          default: false
+          type: boolean
       required:
       - kind
       - id
@@ -6134,6 +6144,12 @@ components:
           oneOf:
           - $ref: '#/components/schemas/ConnectorBrowserSession'
           - type: 'null'
+        sign_in_config_fields:
+          type: array
+          items:
+            type: string
+          description: Config fields a connection must fill in before it can save
+            a browser sign-in of a whole site; empty when the connector has none.
         auth_methods:
           type: array
           items:
@@ -6143,6 +6159,9 @@ components:
           type: boolean
           description: Whether a passing connection test proves the credentials work,
             rather than only that the service answered.
+        requires_setup:
+          type: boolean
+          description: Whether this connector's context sources must use a setup.
       required:
       - auth_methods
       - auth_schema
@@ -6156,6 +6175,8 @@ components:
       - dynamic_input_test_fields
       - icon
       - id
+      - requires_setup
+      - sign_in_config_fields
       - supports_delivery
       - test_proves_credentials
     ConnectorTypeEnum:
@@ -7823,6 +7844,10 @@ components:
     StepRun:
       type: object
       properties:
+        id:
+          type: string
+          format: uuid
+          readOnly: true
         step_id:
           type: string
           maxLength: 200
@@ -7859,6 +7884,11 @@ components:
           oneOf:
           - $ref: '#/components/schemas/StepRunDeliveryEnum'
           - type: 'null'
+        retryable:
+          type: boolean
+          readOnly: true
+          description: Whether this failed send can be retried on its own, without
+            running the run's other steps again.
         started_at:
           type:
           - string
@@ -7872,6 +7902,8 @@ components:
       required:
       - child_job_id
       - execution_path
+      - id
+      - retryable
       - status
       - step_id
     StepRunDeliveryEnum:
@@ -8524,7 +8556,6 @@ components:
             - $ref: '#/components/schemas/ForEachBlock'
             - $ref: '#/components/schemas/ApprovalBlock'
             - $ref: '#/components/schemas/ParallelBlock'
-          minItems: 1
           type: array
         result:
           anyOf:
@@ -8569,7 +8600,6 @@ components:
             - $ref: '#/components/schemas/ForEachBlock'
             - $ref: '#/components/schemas/ApprovalBlock'
             - $ref: '#/components/schemas/ParallelBlock'
-          minItems: 1
           type: array
         result:
           anyOf:
@@ -8813,6 +8843,14 @@ components:
         description:
           type: string
           maxLength: 1024
+        base_version_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: The version this definition was made from. When given, the
+            save is refused if another version has become current since, so an older
+            definition doesn't replace newer changes.
       required:
       - definition
     WorkflowVersionDetail:
@@ -8862,7 +8900,8 @@ components:
             type: string
           readOnly: true
           description: Why a read-only version couldn't be converted to the block
-            format.
+            format; for another version, why any of its post actions can't become
+            a final step.
       required:
       - conversion_reasons
       - definition

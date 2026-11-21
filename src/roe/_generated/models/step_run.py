@@ -29,6 +29,7 @@ T = TypeVar("T", bound="StepRun")
 class StepRun:
     """ 
         Attributes:
+            id (UUID):
             step_id (str):
             execution_path (Any):
             status (StepRunStatusEnum): * `succeeded` - succeeded
@@ -36,6 +37,8 @@ class StepRun:
                 * `skipped` - skipped
                 * `cancelled` - cancelled
             child_job_id (None | UUID):
+            retryable (bool): Whether this failed send can be retried on its own, without running the run's other steps
+                again.
             cached (bool | Unset):
             input_ (Any | None | Unset):
             output (Any | None | Unset):
@@ -50,10 +53,12 @@ class StepRun:
             finished_at (datetime.datetime | None | Unset):
      """
 
+    id: UUID
     step_id: str
     execution_path: Any
     status: StepRunStatusEnum
     child_job_id: None | UUID
+    retryable: bool
     cached: bool | Unset = UNSET
     input_: Any | None | Unset = UNSET
     output: Any | None | Unset = UNSET
@@ -68,6 +73,8 @@ class StepRun:
 
 
     def to_dict(self) -> dict[str, Any]:
+        id = str(self.id)
+
         step_id = self.step_id
 
         execution_path = self.execution_path
@@ -79,6 +86,8 @@ class StepRun:
             child_job_id = str(self.child_job_id)
         else:
             child_job_id = self.child_job_id
+
+        retryable = self.retryable
 
         cached = self.cached
 
@@ -128,10 +137,12 @@ class StepRun:
         field_dict: dict[str, Any] = {}
         field_dict.update(self.additional_properties)
         field_dict.update({
+            "id": id,
             "step_id": step_id,
             "execution_path": execution_path,
             "status": status,
             "child_job_id": child_job_id,
+            "retryable": retryable,
         })
         if cached is not UNSET:
             field_dict["cached"] = cached
@@ -155,6 +166,11 @@ class StepRun:
     @classmethod
     def from_dict(cls: type[T], src_dict: Mapping[str, Any]) -> T:
         d = dict(src_dict)
+        id = UUID(d.pop("id"))
+
+
+
+
         step_id = d.pop("step_id")
 
         execution_path = d.pop("execution_path")
@@ -181,6 +197,8 @@ class StepRun:
 
         child_job_id = _parse_child_job_id(d.pop("child_job_id"))
 
+
+        retryable = d.pop("retryable")
 
         cached = d.pop("cached", UNSET)
 
@@ -275,10 +293,12 @@ class StepRun:
 
 
         step_run = cls(
+            id=id,
             step_id=step_id,
             execution_path=execution_path,
             status=status,
             child_job_id=child_job_id,
+            retryable=retryable,
             cached=cached,
             input_=input_,
             output=output,

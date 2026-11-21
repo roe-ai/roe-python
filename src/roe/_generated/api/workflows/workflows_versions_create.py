@@ -123,7 +123,9 @@ def sync_detailed(
     """ Save a workflow version
 
      Save a new version from a complete block-format definition and make it current. Agent versions stay
-    pinned as given, and the current version's post actions carry over.
+    pinned as given. With base_version_id, the current version's post actions become final connection
+    steps that keep going when they fail; any that can't, and all of them without it, carry over as post
+    actions, and conversion_reasons says why.
 
     Args:
         workflow_id (UUID):
@@ -163,7 +165,9 @@ def sync(
     """ Save a workflow version
 
      Save a new version from a complete block-format definition and make it current. Agent versions stay
-    pinned as given, and the current version's post actions carry over.
+    pinned as given. With base_version_id, the current version's post actions become final connection
+    steps that keep going when they fail; any that can't, and all of them without it, carry over as post
+    actions, and conversion_reasons says why.
 
     Args:
         workflow_id (UUID):
@@ -198,7 +202,9 @@ async def asyncio_detailed(
     """ Save a workflow version
 
      Save a new version from a complete block-format definition and make it current. Agent versions stay
-    pinned as given, and the current version's post actions carry over.
+    pinned as given. With base_version_id, the current version's post actions become final connection
+    steps that keep going when they fail; any that can't, and all of them without it, carry over as post
+    actions, and conversion_reasons says why.
 
     Args:
         workflow_id (UUID):
@@ -238,7 +244,9 @@ async def asyncio(
     """ Save a workflow version
 
      Save a new version from a complete block-format definition and make it current. Agent versions stay
-    pinned as given, and the current version's post actions carry over.
+    pinned as given. With base_version_id, the current version's post actions become final connection
+    steps that keep going when they fail; any that can't, and all of them without it, carry over as post
+    actions, and conversion_reasons says why.
 
     Args:
         workflow_id (UUID):

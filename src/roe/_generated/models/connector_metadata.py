@@ -40,9 +40,12 @@ class ConnectorMetadata:
             dynamic_input_fields (ConnectorMetadataDynamicInputFields):
             dynamic_input_test_fields (list[str]):
             browser_session (ConnectorBrowserSession | None):
+            sign_in_config_fields (list[str]): Config fields a connection must fill in before it can save a browser sign-in
+                of a whole site; empty when the connector has none.
             auth_methods (list[AuthMethodsEnum]): How people give this connector credentials, default first.
             test_proves_credentials (bool): Whether a passing connection test proves the credentials work, rather than only
                 that the service answered.
+            requires_setup (bool): Whether this connector's context sources must use a setup.
      """
 
     id: str
@@ -57,8 +60,10 @@ class ConnectorMetadata:
     dynamic_input_fields: ConnectorMetadataDynamicInputFields
     dynamic_input_test_fields: list[str]
     browser_session: ConnectorBrowserSession | None
+    sign_in_config_fields: list[str]
     auth_methods: list[AuthMethodsEnum]
     test_proves_credentials: bool
+    requires_setup: bool
     additional_properties: dict[str, Any] = _attrs_field(init=False, factory=dict)
 
 
@@ -99,6 +104,10 @@ class ConnectorMetadata:
         else:
             browser_session = self.browser_session
 
+        sign_in_config_fields = self.sign_in_config_fields
+
+
+
         auth_methods = []
         for auth_methods_item_data in self.auth_methods:
             auth_methods_item = auth_methods_item_data.value
@@ -107,6 +116,8 @@ class ConnectorMetadata:
 
 
         test_proves_credentials = self.test_proves_credentials
+
+        requires_setup = self.requires_setup
 
 
         field_dict: dict[str, Any] = {}
@@ -124,8 +135,10 @@ class ConnectorMetadata:
             "dynamic_input_fields": dynamic_input_fields,
             "dynamic_input_test_fields": dynamic_input_test_fields,
             "browser_session": browser_session,
+            "sign_in_config_fields": sign_in_config_fields,
             "auth_methods": auth_methods,
             "test_proves_credentials": test_proves_credentials,
+            "requires_setup": requires_setup,
         })
 
         return field_dict
@@ -187,6 +200,9 @@ class ConnectorMetadata:
         browser_session = _parse_browser_session(d.pop("browser_session"))
 
 
+        sign_in_config_fields = cast(list[str], d.pop("sign_in_config_fields"))
+
+
         auth_methods = []
         _auth_methods = d.pop("auth_methods")
         for auth_methods_item_data in (_auth_methods):
@@ -198,6 +214,8 @@ class ConnectorMetadata:
 
 
         test_proves_credentials = d.pop("test_proves_credentials")
+
+        requires_setup = d.pop("requires_setup")
 
         connector_metadata = cls(
             id=id,
@@ -212,8 +230,10 @@ class ConnectorMetadata:
             dynamic_input_fields=dynamic_input_fields,
             dynamic_input_test_fields=dynamic_input_test_fields,
             browser_session=browser_session,
+            sign_in_config_fields=sign_in_config_fields,
             auth_methods=auth_methods,
             test_proves_credentials=test_proves_credentials,
+            requires_setup=requires_setup,
         )
 
 

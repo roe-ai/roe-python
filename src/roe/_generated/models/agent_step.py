@@ -32,6 +32,7 @@ class AgentStep:
             base_agent_id (str):
             agent_version_id (str):
             input_mapping (AgentStepInputMapping | Unset):
+            policy_version_id (None | str | Unset):
      """
 
     id: str
@@ -39,6 +40,7 @@ class AgentStep:
     agent_version_id: str
     kind: Literal['agent'] = 'agent'
     input_mapping: AgentStepInputMapping | Unset = UNSET
+    policy_version_id: None | str | Unset = UNSET
 
 
 
@@ -58,6 +60,12 @@ class AgentStep:
         if not isinstance(self.input_mapping, Unset):
             input_mapping = self.input_mapping.to_dict()
 
+        policy_version_id: None | str | Unset
+        if isinstance(self.policy_version_id, Unset):
+            policy_version_id = UNSET
+        else:
+            policy_version_id = self.policy_version_id
+
 
         field_dict: dict[str, Any] = {}
 
@@ -69,6 +77,8 @@ class AgentStep:
         })
         if input_mapping is not UNSET:
             field_dict["input_mapping"] = input_mapping
+        if policy_version_id is not UNSET:
+            field_dict["policy_version_id"] = policy_version_id
 
         return field_dict
 
@@ -98,12 +108,23 @@ class AgentStep:
 
 
 
+        def _parse_policy_version_id(data: object) -> None | str | Unset:
+            if data is None:
+                return data
+            if isinstance(data, Unset):
+                return data
+            return cast(None | str | Unset, data)
+
+        policy_version_id = _parse_policy_version_id(d.pop("policy_version_id", UNSET))
+
+
         agent_step = cls(
             id=id,
             kind=kind,
             base_agent_id=base_agent_id,
             agent_version_id=agent_version_id,
             input_mapping=input_mapping,
+            policy_version_id=policy_version_id,
         )
 
         return agent_step
